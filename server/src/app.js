@@ -54,19 +54,21 @@ export const createApp = () => {
     .filter(Boolean)
 
   app.use(helmet())
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
-          callback(null, true)
-          return
-        }
+  if (env.nodeEnv !== 'production') {
+    app.use(
+      cors({
+        origin: (origin, callback) => {
+          if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+            callback(null, true)
+            return
+          }
 
-        callback(new Error('CORS blocked for this origin'))
-      },
-      credentials: true
-    })
-  )
+          callback(new Error('CORS blocked for this origin'))
+        },
+        credentials: true
+      })
+    )
+  }
   app.use(
     rateLimit({
       windowMs: 15 * 60 * 1000,

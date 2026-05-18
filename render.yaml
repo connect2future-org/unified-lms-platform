@@ -1,9 +1,10 @@
 services:
   - type: web
     name: pes-lms-platform
-    env: node
+    runtime: node
     rootDir: .
     plan: free
-    buildCommand: npm install && npm run install-server && npm run install-client && npm run build
+    buildCommand: npm install && npm run render-build
     startCommand: npm start
+    healthCheckPath: /api/health
     autoDeploy: true

@@ -1,6 +1,15 @@
+import path from 'path'
+import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 
-dotenv.config()
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const rootEnvPath = path.resolve(__dirname, '../../../.env')
+const serverEnvPath = path.resolve(__dirname, '../../.env')
+
+// Prefer root-level env for monorepo centralization, while keeping server/.env as fallback.
+dotenv.config({ path: rootEnvPath })
+dotenv.config({ path: serverEnvPath, override: false })
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
