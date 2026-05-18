@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: pes-lms-platform
+    env: node
+    rootDir: .
+    plan: free
+    buildCommand: npm install && npm run install-server && npm run install-client && npm run build
+    startCommand: npm start
+    autoDeploy: true

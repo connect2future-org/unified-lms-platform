@@ -1,0 +1,105 @@
+import { useEffect, useState } from 'react'
+import { PageShell } from '../components/PageShell'
+import { StatsCard } from '../components/StatsCard'
+import { TeamsTable } from '../components/TeamsTable'
+import { downloadTeamsExcel, getStats, getTeams } from '../services/api'
+import { socket } from '../services/socket'
+
+export function DashboardPage() {
+  const [teams, setTeams] = useState([])
+  const [stats, setStats] = useState({
+    totalTeams: 0,
+    latestTeam: null
+  })
+  const [loading, setLoading] = useState(true)
+  const [downloading, setDownloading] = useState(false)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [teamsData, statsData] = await Promise.all([getTeams(), getStats()])
+        setTeams(teamsData)
+        setStats(statsData)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    load()
+  }, [])
+
+  useEffect(() => {
+    socket.connect()
+
+    const onTeamRegistered = ({ team, stats: liveStats }) => {
+      if (team) {
+        setTeams((prev) => [team, ...prev].slice(0, 200))
+      }
+
+      if (liveStats) {
+        setStats((prev) => ({
+          ...prev,
+          ...liveStats
+        }))
+      }
+    }
+
+    socket.on('team:registered', onTeamRegistered)
+
+    return () => {
+      socket.off('team:registered', onTeamRegistered)
+      socket.disconnect()
+    }
+  }, [])
+
+  const handleDownload = async () => {
+    try {
+      setDownloading(true)
+      await downloadTeamsExcel()
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  return (
+    <PageShell>
+      <section className="space-y-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 md:text-4xl">
+              Live Registration Dashboard
+            </h1>
+            <p className="mt-2 text-sm text-slate-600 md:text-base">
+              Public view of registered teams and allocated projects in real time.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="inline-flex items-center justify-center rounded-xl border border-sky-300 bg-sky-50 px-4 py-2 text-sm font-bold text-sky-800 transition hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {downloading ? 'Preparing Excel...' : 'Download Excel'}
+          </button>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <StatsCard title="Total Teams" value={stats.totalTeams} />
+          <StatsCard
+            title="Latest Team"
+            value={stats.latestTeam?.teamNumber || '-'}
+            subtitle={stats.latestTeam?.teamName || 'Waiting for registrations'}
+          />
+        </div>
+
+        {loading ? (
+          <div className="rounded-2xl border border-[#eadfcd] bg-white p-6 text-slate-600">
+            Loading dashboard...
+          </div>
+        ) : (
+          <TeamsTable teams={teams} />
+        )}
+      </section>
+    </PageShell>
+  )
+}
