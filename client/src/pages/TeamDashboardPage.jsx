@@ -17,6 +17,7 @@ import {
   submitTeamProfileUpdateRequest,
   uploadTeamCustomIdeaFile
 } from '../services/api'
+import { deleteTeam } from '../services/api' // Import the delete function
 
 const TABS = [
   { key: 'profile', label: 'Team Profile' },
@@ -102,7 +103,8 @@ const buildProjectProgressDraft = (progress, progressTopics = []) => {
         : 0,
       isLocked: Boolean(taskProgress.isLocked),
       updatedAt: taskProgress.updatedAt || null,
-      lockedAt: taskProgress.lockedAt || null
+      lockedAt: taskProgress.lockedAt || null,
+      resetRequest: taskProgress.resetRequest || { status: 'none' }
     }
   })
 
@@ -117,7 +119,8 @@ const buildProjectProgressDraft = (progress, progressTopics = []) => {
         : 0,
       isLocked: Boolean(taskProgress.isLocked),
       updatedAt: taskProgress.updatedAt || null,
-      lockedAt: taskProgress.lockedAt || null
+      lockedAt: taskProgress.lockedAt || null,
+      resetRequest: taskProgress.resetRequest || { status: 'none' }
     }
   })
 
@@ -162,6 +165,8 @@ export function TeamDashboardPage() {
   const [projectProgress, setProjectProgress] = useState(
     buildProjectProgressDraft(getTeamProfile()?.projectProgress)
   )
+  const [progressIncrementDraft, setProgressIncrementDraft] = useState({})
+  const [progressIncrementErrors, setProgressIncrementErrors] = useState({})
   const [progressLoading, setProgressLoading] = useState(false)
   const [progressError, setProgressError] = useState('')
   const [progressMessage, setProgressMessage] = useState('')
@@ -237,6 +242,8 @@ export function TeamDashboardPage() {
 
   useEffect(() => {
     setProjectProgress(buildProjectProgressDraft(team?.projectProgress, lookupOptions.progressTopics))
+    setProgressIncrementDraft({})
+    setProgressIncrementErrors({})
   }, [team, lookupOptions.progressTopics])
 
   const updatePasswordField = (field, value) => {
@@ -404,12 +411,89 @@ export function TeamDashboardPage() {
       (progressTaskDefinitions.length || 1)
   )
 
-  const lockedTaskCount = progressTaskDefinitions.filter((task) => projectProgress?.[task.key]?.isLocked).length
+  const getPriorTaskProgress = (task) => {
+    const teamProgress = team?.projectProgress || {}
+    const rawValue = task.scope === 'custom'
+      ? teamProgress?.customTasks?.[task.requestKey]?.progress
+      : teamProgress?.[task.requestKey]?.progress
 
-  const handleProgressValueChange = (taskKey, nextValue) => {
+    const normalized = Number(rawValue)
+    if (!Number.isFinite(normalized)) {
+      return 0
+    }
+
+    return Math.max(0, Math.min(100, Math.round(normalized)))
+  }
+
+  const handleProgressIncreaseChange = (task, rawValue) => {
+    const taskKey = task.key
+    const priorProgress = getPriorTaskProgress(task)
+    const textValue = String(rawValue ?? '')
+
+    setProgressIncrementDraft((prev) => ({
+      ...prev,
+      [taskKey]: textValue,
+    }))
+
+    const trimmed = textValue.trim()
+    if (!trimmed) {
+      setProgressIncrementErrors((prev) => {
+        const next = { ...prev }
+        delete next[taskKey]
+        return next
+      })
+      setProjectProgress((prev) => {
+        const current = prev?.[taskKey]
+        if (!current) {
+          return prev
+        }
+
+        return {
+          ...prev,
+          [taskKey]: {
+            ...current,
+            progress: priorProgress,
+          },
+        }
+      })
+      return
+    }
+
+    const increment = Number(trimmed)
+    if (!Number.isFinite(increment) || increment < 0 || increment > 100) {
+      setProgressIncrementErrors((prev) => ({
+        ...prev,
+        [taskKey]: 'Enter a number between 0 and 100.',
+      }))
+      return
+    }
+
+    const newProgress = priorProgress + increment
+    if (newProgress > 100) {
+      setProgressIncrementErrors((prev) => ({
+        ...prev,
+        [taskKey]: `Cumulative progress cannot exceed 100%. Prior is ${priorProgress}%.`,
+      }))
+      return
+    }
+
+    if (newProgress < priorProgress) {
+      setProgressIncrementErrors((prev) => ({
+        ...prev,
+        [taskKey]: `Progress cannot be decreased. Current progress is ${priorProgress}%.`,
+      }))
+      return
+    }
+
+    setProgressIncrementErrors((prev) => {
+      const next = { ...prev }
+      delete next[taskKey]
+      return next
+    })
+
     setProjectProgress((prev) => {
       const current = prev?.[taskKey]
-      if (!current || current.isLocked) {
+      if (!current) {
         return prev
       }
 
@@ -417,11 +501,13 @@ export function TeamDashboardPage() {
         ...prev,
         [taskKey]: {
           ...current,
-          progress: Math.max(0, Math.min(100, Number(nextValue) || 0))
-        }
+          progress: newProgress,
+        },
       }
     })
   }
+
+  const hasProgressIncrementErrors = Object.keys(progressIncrementErrors).length > 0
 
   const handleSaveProjectProgress = async () => {
     setProgressLoading(true)
@@ -459,49 +545,23 @@ export function TeamDashboardPage() {
     }
   }
 
-  const handleToggleProgressTaskLock = async (taskKey) => {
-    const current = projectProgress?.[taskKey]
-    if (!current) {
-      return
+  const handleDeleteProgress = async () => {
+    if (!window.confirm('Are you sure you want to delete this team and its progress data? This action cannot be undone.')) {
+      return;
     }
-
-    setProgressLoading(true)
-    setProgressError('')
-    setProgressMessage('')
 
     try {
-      const isCustomTask = taskKey.startsWith('custom__')
-      const payload = isCustomTask
-        ? {
-            customTasks: {
-              [taskKey.replace('custom__', '')]: {
-                progress: Number(current.progress || 0),
-                isLocked: !current.isLocked
-              }
-            }
-          }
-        : {
-            tasks: {
-              [taskKey]: {
-                progress: Number(current.progress || 0),
-                isLocked: !current.isLocked
-              }
-            }
-          }
-
-      const result = await submitTeamProjectProgress(payload)
-      setTeam(result.team)
-      setProjectProgress(buildProjectProgressDraft(result.team?.projectProgress, lookupOptions.progressTopics))
-      const taskLabel = progressTaskDefinitions.find((task) => task.key === taskKey)?.label || taskKey
-      setProgressMessage(
-        `${taskLabel} ${current.isLocked ? 'unlocked' : 'locked'} successfully`
-      )
-    } catch (requestError) {
-      setProgressError(requestError.response?.data?.message || 'Failed to update lock status for progress task')
+      setProgressLoading(true);
+      await deleteTeam(team._id); // Call the delete API
+      alert('Team and progress data deleted successfully.');
+      window.location.reload(); // Refresh the page or redirect as needed
+    } catch (error) {
+      console.error('Failed to delete team:', error);
+      alert('Failed to delete team. Please try again.');
     } finally {
-      setProgressLoading(false)
+      setProgressLoading(false);
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -795,12 +855,12 @@ export function TeamDashboardPage() {
               <div>
                 <h2 className="text-xl font-black text-white">Project Progress Tracker</h2>
                 <p className="mt-1 text-sm text-cyan-100">
-                  Update each task percentage, lock completed tasks, and unlock when edits are needed.
+                  Update progress any number of times until 100%. Progress only moves forward and cannot be decreased.
                 </p>
               </div>
               <div className="rounded-lg border border-white/30 bg-black/20 px-3 py-2 text-xs text-cyan-50">
                 <div>Overall Progress: <strong>{averageProgress}%</strong></div>
-                <div>Locked Tasks: <strong>{lockedTaskCount}/{progressTaskDefinitions.length}</strong></div>
+                <div>Total Tasks: <strong>{progressTaskDefinitions.length}</strong></div>
               </div>
             </div>
 
@@ -808,48 +868,46 @@ export function TeamDashboardPage() {
               {progressTaskDefinitions.map((task) => {
                 const state = projectProgress?.[task.key] || {}
                 const progressValue = Number(state.progress || 0)
-                const isLocked = Boolean(state.isLocked)
 
                 return (
                   <div key={task.key} className="rounded-xl border border-white/20 bg-black/20 p-4">
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <h3 className="text-sm font-bold text-cyan-50">{task.label}</h3>
-                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
-                        isLocked
-                          ? 'border border-emerald-300/40 bg-emerald-900/30 text-emerald-100'
-                          : 'border border-amber-300/40 bg-amber-900/30 text-amber-100'
-                      }`}>
-                        {isLocked ? 'Locked' : 'Editable'}
+                      <span className="rounded-full border border-cyan-300/40 bg-cyan-900/30 px-2 py-1 text-xs font-semibold text-cyan-100">
+                        Update Mode
                       </span>
                     </div>
 
                     <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <input
-                        type="range"
-                        min={0}
-                        max={100}
-                        step={1}
-                        value={progressValue}
-                        disabled={isLocked || progressLoading}
-                        onChange={(event) => handleProgressValueChange(task.key, event.target.value)}
-                        className="h-2 w-full cursor-pointer accent-cyan-400 md:flex-1"
-                      />
-                      <span className="w-16 text-right text-sm font-semibold text-cyan-50">
-                        {progressValue}%
+                      <label className="flex items-center gap-2 text-xs text-cyan-100 md:flex-1">
+                        <span>Increase by</span>
+                        <input
+                          type="number"
+                          min={0}
+                          max={100}
+                          step={1}
+                          inputMode="numeric"
+                          value={progressIncrementDraft[task.key] ?? ''}
+                          disabled={progressLoading}
+                          onChange={(event) => handleProgressIncreaseChange(task, event.target.value)}
+                          placeholder="0-100"
+                          className="w-24 rounded border border-white/30 bg-black/30 px-2 py-1 text-sm text-cyan-50"
+                        />
+                      </label>
+                      <span className="text-sm font-semibold text-cyan-50">
+                        Prior {getPriorTaskProgress(task)}% {'->'} New {progressValue}%
                       </span>
-                      <button
-                        type="button"
-                        disabled={progressLoading}
-                        onClick={() => handleToggleProgressTaskLock(task.key)}
-                        className={`rounded-lg px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
-                          isLocked
-                            ? 'border border-amber-300/40 bg-amber-900/30 text-amber-100'
-                            : 'border border-emerald-300/40 bg-emerald-900/30 text-emerald-100'
-                        }`}
-                      >
-                        {isLocked ? 'Unlock Task' : 'Lock Task'}
-                      </button>
                     </div>
+
+                    {progressIncrementErrors[task.key] ? (
+                      <div className="mt-2 rounded border border-rose-300/40 bg-rose-900/30 px-2 py-1 text-[11px] text-rose-100">
+                        {progressIncrementErrors[task.key]}
+                      </div>
+                    ) : (
+                      <div className="mt-2 rounded border border-cyan-300/30 bg-cyan-950/40 px-2 py-1 text-[11px] text-cyan-100/90">
+                        Example: prior 60 + 10 = 70. You can update again later until it reaches 100%.
+                      </div>
+                    )}
 
                     <div className="mt-3 h-2 w-full rounded-full bg-slate-700">
                       <div
@@ -876,11 +934,11 @@ export function TeamDashboardPage() {
 
             <button
               type="button"
-              disabled={progressLoading}
+              disabled={progressLoading || hasProgressIncrementErrors}
               onClick={handleSaveProjectProgress}
               className="mt-4 rounded-lg bg-cyan-400 px-4 py-2 text-sm font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {progressLoading ? 'Saving...' : 'Save Progress'}
+              {progressLoading ? 'Updating...' : 'Update Progress'}
             </button>
           </section>
         ) : null}

@@ -106,6 +106,37 @@ const profileUpdateRequestSchema = new mongoose.Schema(
   { _id: false }
 )
 
+const progressResetRequestSchema = new mongoose.Schema(
+  {
+    status: {
+      type: String,
+      enum: ['none', 'pending', 'approved', 'rejected'],
+      default: 'none'
+    },
+    requestedAt: {
+      type: Date,
+      default: null
+    },
+    requestNote: {
+      type: String,
+      default: ''
+    },
+    reviewedAt: {
+      type: Date,
+      default: null
+    },
+    reviewedBy: {
+      type: String,
+      default: ''
+    },
+    reviewNote: {
+      type: String,
+      default: ''
+    }
+  },
+  { _id: false }
+)
+
 const progressTaskSchema = new mongoose.Schema(
   {
     progress: {
@@ -125,6 +156,10 @@ const progressTaskSchema = new mongoose.Schema(
     lockedAt: {
       type: Date,
       default: null
+    },
+    resetRequest: {
+      type: progressResetRequestSchema,
+      default: () => ({})
     }
   },
   { _id: false }

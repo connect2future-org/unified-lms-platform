@@ -50,7 +50,9 @@ export function AdminProjectProgressSection({
   onCreateTopic,
   onToggleTopicActive,
   onUpdateTopicLabel,
-  onDeleteTopic
+  onDeleteTopic,
+  onReviewResetRequest,
+  onUnlockAllProgress
 }) {
   const [topicLabel, setTopicLabel] = useState('')
   const [editingTopicId, setEditingTopicId] = useState('')
@@ -63,6 +65,7 @@ export function AdminProjectProgressSection({
     id: topic._id || topic.id,
     active: topic.active !== false
   }))
+  const allTasks = [...BASE_TASKS.map((task) => ({ ...task, scope: 'base' })), ...customTasks]
   const allTaskCount = BASE_TASKS.length + customTasks.length
 
   const rows = teams
@@ -122,12 +125,22 @@ export function AdminProjectProgressSection({
     <section className="rounded-2xl border border-violet-300/30 bg-violet-900/20 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-black text-violet-100">Project Progress Monitor</h2>
-        <span className="rounded-full border border-violet-200/40 bg-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-100">
-          Teams: {rows.length}
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="rounded-full border border-violet-200/40 bg-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-100">
+            Teams: {rows.length}
+          </span>
+          <button
+            type="button"
+            disabled={topicPending || !onUnlockAllProgress}
+            onClick={() => onUnlockAllProgress?.()}
+            className="rounded-lg border border-emerald-300/50 bg-emerald-900/30 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Unlock All Progress
+          </button>
+        </div>
       </div>
       <p className="mt-1 text-xs text-violet-100/90">
-        Add custom project topics here. Teams can update and lock/unlock their progress for all active topics.
+        Add custom project topics and review per-topic reset requests from teams.
       </p>
 
       <div className="mt-4 rounded-xl border border-violet-300/30 bg-black/20 p-4">
@@ -263,12 +276,13 @@ export function AdminProjectProgressSection({
                 </div>
 
                 <div className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-3">
-                  {[...BASE_TASKS, ...customTasks].map((task) => {
+                  {allTasks.map((task) => {
                     const taskState = task.scope === 'custom'
                       ? progress?.customTasks?.[task.key] || {}
                       : progress?.[task.key] || {}
                     const value = toProgress(taskState.progress)
                     const isLocked = Boolean(taskState.isLocked)
+                    const resetStatus = taskState?.resetRequest?.status || 'none'
 
                     return (
                       <div key={`${team._id}-${task.key}`} className="rounded-lg border border-white/15 bg-slate-900/70 p-3">
@@ -286,6 +300,43 @@ export function AdminProjectProgressSection({
                           <div className="h-2 rounded-full bg-cyan-400" style={{ width: `${value}%` }} />
                         </div>
                         <p className="mt-2 text-xs text-cyan-100">{value}%</p>
+
+                        {resetStatus === 'pending' ? (
+                          <div className="mt-2 rounded border border-amber-300/40 bg-amber-900/30 px-2 py-1 text-[10px] text-amber-100">
+                            Reset request pending
+                          </div>
+                        ) : null}
+
+                        {resetStatus === 'pending' ? (
+                          <div className="mt-2 flex gap-2">
+                            <button
+                              type="button"
+                              disabled={topicPending || !onReviewResetRequest}
+                              onClick={() => onReviewResetRequest({
+                                teamId: team._id,
+                                scope: task.scope,
+                                taskKey: task.key,
+                                action: 'approve'
+                              })}
+                              className="rounded border border-emerald-300/40 bg-emerald-900/30 px-2 py-1 text-[10px] font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Approve Reset
+                            </button>
+                            <button
+                              type="button"
+                              disabled={topicPending || !onReviewResetRequest}
+                              onClick={() => onReviewResetRequest({
+                                teamId: team._id,
+                                scope: task.scope,
+                                taskKey: task.key,
+                                action: 'reject'
+                              })}
+                              className="rounded border border-rose-300/40 bg-rose-900/30 px-2 py-1 text-[10px] font-semibold text-rose-100 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        ) : null}
                       </div>
                     )
                   })}
