@@ -19,6 +19,11 @@ const TAB_META = {
     active: 'bg-amber-300 text-slate-950 shadow-sm',
     idle: 'border border-amber-300/40 bg-slate-800 text-amber-100 hover:bg-slate-700'
   },
+  progress: {
+    label: 'Progress',
+    active: 'bg-violet-300 text-slate-950 shadow-sm',
+    idle: 'border border-violet-300/40 bg-slate-800 text-violet-100 hover:bg-slate-700'
+  },
   github: {
     label: 'GitHub',
     active: 'bg-sky-300 text-slate-950 shadow-sm',
@@ -47,11 +52,11 @@ const TAB_META = {
 }
 
 export function AdminFlowTabs({ activeFlow, onChange, counts }) {
-  const order = ['approval', 'edit', 'directory', 'projects', 'github', 'revoke', 'security', 'migration', 'bulkUpdate']
+  const order = ['approval', 'edit', 'directory', 'projects', 'progress', 'github', 'revoke', 'security', 'migration', 'bulkUpdate']
 
   return (
     <div className="rounded-2xl border border-slate-700 bg-slate-900/80 p-2">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-8">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5 xl:grid-cols-10">
         {order.map((key) => {
           const meta = TAB_META[key]
           const isActive = activeFlow === key

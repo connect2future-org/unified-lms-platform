@@ -26,6 +26,7 @@ import { AdminFlowTabs } from '../components/admin/AdminFlowTabs'
 import { AdminGithubCollaborationSection } from '../components/admin/AdminGithubCollaborationSection'
 import { AdminLookupManagerSection } from '../components/admin/AdminLookupManagerSection'
 import { AdminMigrationSection } from '../components/admin/AdminMigrationSection'
+import { AdminProjectProgressSection } from '../components/admin/AdminProjectProgressSection'
 import { AdminRevokeSection } from '../components/admin/AdminRevokeSection'
 import { PageShell } from '../components/PageShell'
 import { ActionDialog } from '../components/ActionDialog'
@@ -38,6 +39,7 @@ const FLOW_TABS = {
   edit: 'edit',
   directory: 'directory',
   projects: 'projects',
+  progress: 'progress',
   github: 'github',
   revoke: 'revoke',
   security: 'security',
@@ -136,7 +138,7 @@ const AdminTeamsPage = () => {
   const [reviewingRegistrationTeamId, setReviewingRegistrationTeamId] = useState('')
   const [reviewingGithubTeamId, setReviewingGithubTeamId] = useState('')
   const [migrationSummary, setMigrationSummary] = useState(null)
-  const [lookupCatalog, setLookupCatalog] = useState({ colleges: [], departments: [] })
+  const [lookupCatalog, setLookupCatalog] = useState({ colleges: [], departments: [], progressTopics: [] })
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupPending, setLookupPending] = useState(false)
   const [lookupMessage, setLookupMessage] = useState('')
@@ -215,7 +217,8 @@ const AdminTeamsPage = () => {
       const data = await getAdminRegistrationLookups()
       setLookupCatalog({
         colleges: Array.isArray(data?.colleges) ? data.colleges : [],
-        departments: Array.isArray(data?.departments) ? data.departments : []
+        departments: Array.isArray(data?.departments) ? data.departments : [],
+        progressTopics: Array.isArray(data?.progressTopics) ? data.progressTopics : []
       })
     } catch {
       setError('Failed to fetch college/department lookup data')
@@ -245,7 +248,8 @@ const AdminTeamsPage = () => {
         setUserMigrationSummary(userSummaryData?.summary || null)
         setLookupCatalog({
           colleges: Array.isArray(lookupData?.colleges) ? lookupData.colleges : [],
-          departments: Array.isArray(lookupData?.departments) ? lookupData.departments : []
+          departments: Array.isArray(lookupData?.departments) ? lookupData.departments : [],
+          progressTopics: Array.isArray(lookupData?.progressTopics) ? lookupData.progressTopics : []
         })
       } catch {
         if (cancelled) return
@@ -625,6 +629,7 @@ const AdminTeamsPage = () => {
                 approval: totalApprovalPending,
                 edit: editableTeams.length,
                 projects: projects.length,
+                progress: editableTeams.length,
                 github: githubTeams.length,
                 revoke: revokableTeams.length
               }}
@@ -695,6 +700,23 @@ const AdminTeamsPage = () => {
                   <AdminProjectsManager onProjectsChanged={refreshAdminData} projects={projects} />
                 </div>
               </section>
+            ) : null}
+
+            {activeFlow === FLOW_TABS.progress ? (
+              <AdminProjectProgressSection
+                teams={editableTeams}
+                progressTopics={lookupCatalog.progressTopics}
+                topicPending={lookupPending}
+                topicMessage={lookupMessage}
+                onCreateTopic={(label) => handleCreateLookup('progressTopic', label)}
+                onUpdateTopicLabel={(topic, label) =>
+                  handleUpdateLookup('progressTopic', topic.id, { label })
+                }
+                onDeleteTopic={(topic) => handleDeleteLookup('progressTopic', topic.id)}
+                onToggleTopicActive={(topic) =>
+                  handleUpdateLookup('progressTopic', topic.id, { active: !topic.active })
+                }
+              />
             ) : null}
 
             {activeFlow === FLOW_TABS.security ? (

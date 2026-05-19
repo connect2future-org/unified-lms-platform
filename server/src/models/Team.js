@@ -106,6 +106,69 @@ const profileUpdateRequestSchema = new mongoose.Schema(
   { _id: false }
 )
 
+const progressTaskSchema = new mongoose.Schema(
+  {
+    progress: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    },
+    isLocked: {
+      type: Boolean,
+      default: false
+    },
+    updatedAt: {
+      type: Date,
+      default: null
+    },
+    lockedAt: {
+      type: Date,
+      default: null
+    }
+  },
+  { _id: false }
+)
+
+const projectProgressSchema = new mongoose.Schema(
+  {
+    frontend: {
+      type: progressTaskSchema,
+      default: () => ({})
+    },
+    backend: {
+      type: progressTaskSchema,
+      default: () => ({})
+    },
+    aiModelImplementation: {
+      type: progressTaskSchema,
+      default: () => ({})
+    },
+    projectReport: {
+      type: progressTaskSchema,
+      default: () => ({})
+    },
+    presentationPpt: {
+      type: progressTaskSchema,
+      default: () => ({})
+    },
+    deployment: {
+      type: progressTaskSchema,
+      default: () => ({})
+    },
+    customTasks: {
+      type: Map,
+      of: progressTaskSchema,
+      default: () => ({})
+    },
+    lastUpdatedAt: {
+      type: Date,
+      default: null
+    }
+  },
+  { _id: false }
+)
+
 const teamSchema = new mongoose.Schema(
   {
     teamNumber: {
@@ -244,6 +307,10 @@ const teamSchema = new mongoose.Schema(
     profileUpdateRequest: {
       type: profileUpdateRequestSchema,
       default: () => ({ status: 'none' })
+    },
+    projectProgress: {
+      type: projectProgressSchema,
+      default: () => ({})
     },
     registrationStatus: {
       type: String,

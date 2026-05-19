@@ -132,6 +132,14 @@ const isPhone = (value) => /^\+?[0-9]{10,15}$/.test(value)
 const isGithubRepoUrl = (value) => /^https?:\/\/(www\.)?github\.com\/[^/\s]+\/[^/\s#?]+\/?$/i.test(value)
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
 const ALLOWED_DIFFICULTIES = new Set(['Easy', 'Medium', 'Hard'])
+const PROJECT_PROGRESS_TASK_KEYS = [
+  'frontend',
+  'backend',
+  'aiModelImplementation',
+  'projectReport',
+  'presentationPpt',
+  'deployment'
+]
 
 const normalizeMembers = (members = []) => {
   return members
@@ -317,6 +325,65 @@ const assertProfileUpdateUniqueness = async (teamId, normalizedProfile) => {
 }
 
 const toPlainTeam = (team) => (team.toObject ? team.toObject() : team)
+
+const normalizeProjectProgressPayload = (payload = {}) => {
+  const updates = []
+
+  for (const key of PROJECT_PROGRESS_TASK_KEYS) {
+    const taskPayload = payload?.[key]
+    if (!taskPayload || typeof taskPayload !== 'object') {
+      continue
+    }
+
+    const progress = Number(taskPayload.progress)
+    const hasLockFlag = Object.prototype.hasOwnProperty.call(taskPayload, 'isLocked')
+    const isLocked = taskPayload.isLocked === true
+
+    if (!Number.isFinite(progress) || progress < 0 || progress > 100) {
+      throw new ApiError(400, `Invalid progress value for ${key}`)
+    }
+
+    updates.push({
+      key,
+      progress: Math.round(progress),
+      isLocked,
+      hasLockFlag
+    })
+  }
+
+  return updates
+}
+
+const normalizeCustomProjectProgressPayload = (payload = {}, allowedKeys = new Set()) => {
+  const updates = []
+
+  for (const [key, value] of Object.entries(payload || {})) {
+    if (!allowedKeys.has(key)) {
+      throw new ApiError(400, `Invalid custom progress topic key: ${key}`)
+    }
+
+    if (!value || typeof value !== 'object') {
+      continue
+    }
+
+    const progress = Number(value.progress)
+    const hasLockFlag = Object.prototype.hasOwnProperty.call(value, 'isLocked')
+    const isLocked = value.isLocked === true
+
+    if (!Number.isFinite(progress) || progress < 0 || progress > 100) {
+      throw new ApiError(400, `Invalid progress value for custom topic ${key}`)
+    }
+
+    updates.push({
+      key,
+      progress: Math.round(progress),
+      isLocked,
+      hasLockFlag
+    })
+  }
+
+  return updates
+}
 
 const publicApprovedTeamsQuery = {
   $or: [
@@ -1104,6 +1171,119 @@ export const submitTeamGithubRepository = asyncHandler(async (req, res) => {
 
   res.json({
     message: 'GitHub repository URL saved. Collaboration status is pending until admin confirms.',
+    team: toPlainTeam(team)
+  })
+})
+
+export const updateTeamProjectProgress = asyncHandler(async (req, res) => {
+  const team = await Team.findById(req.team.teamId)
+  if (!team) {
+    throw new ApiError(404, 'Team not found')
+  }
+
+  const updates = normalizeProjectProgressPayload(req.body?.tasks || {})
+  const activeCustomTopics = await RegistrationLookup.find({
+    type: 'progressTopic',
+    active: true
+  })
+    .select({ key: 1 })
+    .lean()
+  const activeCustomTopicKeys = new Set(
+    activeCustomTopics
+      .map((topic) => String(topic?.key || '').trim())
+      .filter(Boolean)
+  )
+  const customUpdates = normalizeCustomProjectProgressPayload(
+    req.body?.customTasks || {},
+    activeCustomTopicKeys
+  )
+
+  if (updates.length === 0 && customUpdates.length === 0) {
+    throw new ApiError(400, 'At least one progress task update is required')
+  }
+
+  const now = new Date()
+
+  if (!team.projectProgress) {
+    team.projectProgress = {}
+  }
+
+  for (const update of updates) {
+    const existing = team.projectProgress[update.key] || {}
+
+    const currentProgress = Number(existing.progress || 0)
+    const currentLocked = Boolean(existing.isLocked)
+
+    if (currentLocked && update.progress !== currentProgress && (!update.hasLockFlag || update.isLocked !== false)) {
+      throw new ApiError(409, `${update.key} is locked and cannot be edited`)
+    }
+
+    const nextLocked = update.hasLockFlag ? update.isLocked : currentLocked
+
+    const nextTask = {
+      progress: update.progress,
+      isLocked: nextLocked,
+      updatedAt: now,
+      lockedAt: existing.lockedAt || null
+    }
+
+    if (!currentLocked && nextLocked) {
+      nextTask.lockedAt = now
+    }
+
+    if (currentLocked && !nextLocked) {
+      nextTask.lockedAt = null
+    }
+
+    team.projectProgress[update.key] = nextTask
+  }
+
+  if (!team.projectProgress.customTasks) {
+    team.projectProgress.customTasks = {}
+  }
+
+  for (const update of customUpdates) {
+    const existing = team.projectProgress.customTasks.get
+      ? team.projectProgress.customTasks.get(update.key) || {}
+      : team.projectProgress.customTasks[update.key] || {}
+
+    const currentProgress = Number(existing.progress || 0)
+    const currentLocked = Boolean(existing.isLocked)
+
+    if (currentLocked && update.progress !== currentProgress && (!update.hasLockFlag || update.isLocked !== false)) {
+      throw new ApiError(409, `custom topic ${update.key} is locked and cannot be edited`)
+    }
+
+    const nextLocked = update.hasLockFlag ? update.isLocked : currentLocked
+
+    const nextTask = {
+      progress: update.progress,
+      isLocked: nextLocked,
+      updatedAt: now,
+      lockedAt: existing.lockedAt || null
+    }
+
+    if (!currentLocked && nextLocked) {
+      nextTask.lockedAt = now
+    }
+
+    if (currentLocked && !nextLocked) {
+      nextTask.lockedAt = null
+    }
+
+    if (team.projectProgress.customTasks.set) {
+      team.projectProgress.customTasks.set(update.key, nextTask)
+    } else {
+      team.projectProgress.customTasks[update.key] = nextTask
+    }
+  }
+
+  team.projectProgress.lastUpdatedAt = now
+
+  await team.save()
+
+  res.json({
+    message: 'Project progress updated successfully',
     team: toPlainTeam(team)
   })
 })

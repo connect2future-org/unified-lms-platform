@@ -15,6 +15,7 @@ import {
   reviewProfileUpdateRequest,
   submitCustomProjectIdeaRequest,
   submitTeamGithubRepository,
+  updateTeamProjectProgress,
   reviewCustomProjectIdeaRequest,
   reviewTeamGithubCollaboration,
   reviewTeamRegistrationRequest,
@@ -47,6 +48,7 @@ router.post('/team/update-request', requireTeamAuth, submitProfileUpdateRequest)
 router.post('/team/update-request/recall', requireTeamAuth, recallProfileUpdateRequest)
 router.post('/team/custom-idea/request', requireTeamAuth, submitCustomProjectIdeaRequest)
 router.post('/team/github', requireTeamAuth, submitTeamGithubRepository)
+router.post('/team/project-progress', requireTeamAuth, updateTeamProjectProgress)
 
 // Team bulk custom project idea upload/preview (Excel/PDF)
 router.post('/team/custom-idea/upload/preview', requireTeamAuth, uploadProjectFile.single('file'), previewTeamCustomIdeaUpload)

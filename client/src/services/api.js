@@ -316,6 +316,21 @@ export const submitTeamGithubRepository = async (payload, token) => {
   return data
 }
 
+export const submitTeamProjectProgress = async (payload, token) => {
+  const activeToken = token || getTeamToken()
+  const { data } = await api.post('/teams/team/project-progress', payload, {
+    headers: {
+      Authorization: `Bearer ${activeToken}`
+    }
+  })
+
+  if (data?.team) {
+    setTeamSession({ token: activeToken, team: data.team })
+  }
+
+  return data
+}
+
 export const reviewTeamGithubCollaboration = async (teamId, payload) => {
   const { data } = await api.post(`/teams/admin/${teamId}/github-collaboration/review`, payload)
   return data

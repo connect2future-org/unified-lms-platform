@@ -12,6 +12,7 @@ import {
   previewTeamCustomIdeaFile,
   recallTeamProfileUpdateRequest,
   submitTeamGithubRepository,
+  submitTeamProjectProgress,
   submitTeamCustomProjectIdeaRequest,
   submitTeamProfileUpdateRequest,
   uploadTeamCustomIdeaFile
@@ -21,9 +22,35 @@ const TABS = [
   { key: 'profile', label: 'Team Profile' },
   { key: 'github', label: 'GitHub Collaboration' },
   { key: 'idea', label: 'New Project Idea' },
+  { key: 'progress', label: 'Project Progress' },
   { key: 'update', label: 'Student Details Change' },
   { key: 'password', label: 'Change Password' }
 ]
+
+const BASE_PROJECT_PROGRESS_TASKS = [
+  { key: 'frontend', label: 'Frontend' },
+  { key: 'backend', label: 'Backend' },
+  { key: 'aiModelImplementation', label: 'AI Model Implementation (Gen AI)' },
+  { key: 'projectReport', label: 'Project Report' },
+  { key: 'presentationPpt', label: 'PPT for Presentation' },
+  { key: 'deployment', label: 'Deployment' }
+]
+
+const toCustomTopicClientKey = (topicKey) => `custom__${topicKey}`
+
+const getProgressTaskDefinitions = (progressTopics = []) => {
+  const customTasks = (progressTopics || []).map((topic) => ({
+    key: toCustomTopicClientKey(topic.key),
+    label: topic.label,
+    scope: 'custom',
+    requestKey: topic.key
+  }))
+
+  return [
+    ...BASE_PROJECT_PROGRESS_TASKS.map((task) => ({ ...task, scope: 'base', requestKey: task.key })),
+    ...customTasks
+  ]
+}
 
 const initialPasswordForm = {
   currentPassword: '',
@@ -61,6 +88,42 @@ const buildProfileDraft = (team) => ({
   requestNote: ''
 })
 
+const buildProjectProgressDraft = (progress, progressTopics = []) => {
+  const source = progress && typeof progress === 'object' ? progress : {}
+  const draft = {}
+
+  BASE_PROJECT_PROGRESS_TASKS.forEach((task) => {
+    const taskProgress = source?.[task.key] || {}
+    const normalizedProgress = Number(taskProgress.progress)
+
+    draft[task.key] = {
+      progress: Number.isFinite(normalizedProgress)
+        ? Math.max(0, Math.min(100, Math.round(normalizedProgress)))
+        : 0,
+      isLocked: Boolean(taskProgress.isLocked),
+      updatedAt: taskProgress.updatedAt || null,
+      lockedAt: taskProgress.lockedAt || null
+    }
+  })
+
+  ;(progressTopics || []).forEach((topic) => {
+    const clientKey = toCustomTopicClientKey(topic.key)
+    const taskProgress = source?.customTasks?.[topic.key] || {}
+    const normalizedProgress = Number(taskProgress.progress)
+
+    draft[clientKey] = {
+      progress: Number.isFinite(normalizedProgress)
+        ? Math.max(0, Math.min(100, Math.round(normalizedProgress)))
+        : 0,
+      isLocked: Boolean(taskProgress.isLocked),
+      updatedAt: taskProgress.updatedAt || null,
+      lockedAt: taskProgress.lockedAt || null
+    }
+  })
+
+  return draft
+}
+
 export function TeamDashboardPage() {
   const [activeTab, setActiveTab] = useState('profile')
   const [team, setTeam] = useState(getTeamProfile())
@@ -77,7 +140,7 @@ export function TeamDashboardPage() {
   const [profileRequestLoading, setProfileRequestLoading] = useState(false)
   const [profileRequestError, setProfileRequestError] = useState('')
   const [profileRequestMessage, setProfileRequestMessage] = useState('')
-  const [lookupOptions, setLookupOptions] = useState({ colleges: [], departments: [] })
+  const [lookupOptions, setLookupOptions] = useState({ colleges: [], departments: [], progressTopics: [] })
   const [lookupLoading, setLookupLoading] = useState(true)
   const [lookupError, setLookupError] = useState('')
   const [showRecallDialog, setShowRecallDialog] = useState(false)
@@ -96,6 +159,12 @@ export function TeamDashboardPage() {
   const [githubLoading, setGithubLoading] = useState(false)
   const [githubError, setGithubError] = useState('')
   const [githubMessage, setGithubMessage] = useState('')
+  const [projectProgress, setProjectProgress] = useState(
+    buildProjectProgressDraft(getTeamProfile()?.projectProgress)
+  )
+  const [progressLoading, setProgressLoading] = useState(false)
+  const [progressError, setProgressError] = useState('')
+  const [progressMessage, setProgressMessage] = useState('')
 
   useEffect(() => {
     const token = getTeamToken()
@@ -143,9 +212,11 @@ export function TeamDashboardPage() {
       try {
         const data = await getRegistrationLookups()
         if (cancelled) return
+        const progressTopics = Array.isArray(data?.progressTopics) ? data.progressTopics : []
         setLookupOptions({
           colleges: Array.isArray(data?.colleges) ? data.colleges : [],
-          departments: Array.isArray(data?.departments) ? data.departments : []
+          departments: Array.isArray(data?.departments) ? data.departments : [],
+          progressTopics
         })
       } catch {
         if (cancelled) return
@@ -163,6 +234,10 @@ export function TeamDashboardPage() {
       cancelled = true
     }
   }, [])
+
+  useEffect(() => {
+    setProjectProgress(buildProjectProgressDraft(team?.projectProgress, lookupOptions.progressTopics))
+  }, [team, lookupOptions.progressTopics])
 
   const updatePasswordField = (field, value) => {
     setPasswordForm((prev) => ({ ...prev, [field]: value }))
@@ -322,6 +397,111 @@ export function TeamDashboardPage() {
   const pendingProfileRequest = team?.profileUpdateRequest?.status === 'pending'
   const pendingGithubReviewNeedsResubmission =
     team?.collaborationStatus === 'pending' && Boolean(team?.collaborationMarkedBy)
+  const progressTaskDefinitions = getProgressTaskDefinitions(lookupOptions.progressTopics)
+
+  const averageProgress = Math.round(
+    (progressTaskDefinitions.reduce((sum, task) => sum + Number(projectProgress?.[task.key]?.progress || 0), 0) || 0) /
+      (progressTaskDefinitions.length || 1)
+  )
+
+  const lockedTaskCount = progressTaskDefinitions.filter((task) => projectProgress?.[task.key]?.isLocked).length
+
+  const handleProgressValueChange = (taskKey, nextValue) => {
+    setProjectProgress((prev) => {
+      const current = prev?.[taskKey]
+      if (!current || current.isLocked) {
+        return prev
+      }
+
+      return {
+        ...prev,
+        [taskKey]: {
+          ...current,
+          progress: Math.max(0, Math.min(100, Number(nextValue) || 0))
+        }
+      }
+    })
+  }
+
+  const handleSaveProjectProgress = async () => {
+    setProgressLoading(true)
+    setProgressError('')
+    setProgressMessage('')
+
+    try {
+      const tasks = BASE_PROJECT_PROGRESS_TASKS.reduce((acc, task) => {
+        const current = projectProgress?.[task.key] || {}
+        acc[task.key] = {
+          progress: Number(current.progress || 0),
+          isLocked: Boolean(current.isLocked)
+        }
+        return acc
+      }, {})
+
+      const customTasks = (lookupOptions.progressTopics || []).reduce((acc, topic) => {
+        const clientKey = toCustomTopicClientKey(topic.key)
+        const current = projectProgress?.[clientKey] || {}
+        acc[topic.key] = {
+          progress: Number(current.progress || 0),
+          isLocked: Boolean(current.isLocked)
+        }
+        return acc
+      }, {})
+
+      const result = await submitTeamProjectProgress({ tasks, customTasks })
+      setTeam(result.team)
+      setProjectProgress(buildProjectProgressDraft(result.team?.projectProgress, lookupOptions.progressTopics))
+      setProgressMessage(result.message || 'Project progress saved')
+    } catch (requestError) {
+      setProgressError(requestError.response?.data?.message || 'Failed to save project progress')
+    } finally {
+      setProgressLoading(false)
+    }
+  }
+
+  const handleToggleProgressTaskLock = async (taskKey) => {
+    const current = projectProgress?.[taskKey]
+    if (!current) {
+      return
+    }
+
+    setProgressLoading(true)
+    setProgressError('')
+    setProgressMessage('')
+
+    try {
+      const isCustomTask = taskKey.startsWith('custom__')
+      const payload = isCustomTask
+        ? {
+            customTasks: {
+              [taskKey.replace('custom__', '')]: {
+                progress: Number(current.progress || 0),
+                isLocked: !current.isLocked
+              }
+            }
+          }
+        : {
+            tasks: {
+              [taskKey]: {
+                progress: Number(current.progress || 0),
+                isLocked: !current.isLocked
+              }
+            }
+          }
+
+      const result = await submitTeamProjectProgress(payload)
+      setTeam(result.team)
+      setProjectProgress(buildProjectProgressDraft(result.team?.projectProgress, lookupOptions.progressTopics))
+      const taskLabel = progressTaskDefinitions.find((task) => task.key === taskKey)?.label || taskKey
+      setProgressMessage(
+        `${taskLabel} ${current.isLocked ? 'unlocked' : 'locked'} successfully`
+      )
+    } catch (requestError) {
+      setProgressError(requestError.response?.data?.message || 'Failed to update lock status for progress task')
+    } finally {
+      setProgressLoading(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -607,6 +787,102 @@ export function TeamDashboardPage() {
               ) : null}
             </div>
           </div>
+        ) : null}
+
+        {activeTab === 'progress' ? (
+          <section className="rounded-2xl border border-white/20 bg-white/10 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-black text-white">Project Progress Tracker</h2>
+                <p className="mt-1 text-sm text-cyan-100">
+                  Update each task percentage, lock completed tasks, and unlock when edits are needed.
+                </p>
+              </div>
+              <div className="rounded-lg border border-white/30 bg-black/20 px-3 py-2 text-xs text-cyan-50">
+                <div>Overall Progress: <strong>{averageProgress}%</strong></div>
+                <div>Locked Tasks: <strong>{lockedTaskCount}/{progressTaskDefinitions.length}</strong></div>
+              </div>
+            </div>
+
+            <div className="mt-5 space-y-4">
+              {progressTaskDefinitions.map((task) => {
+                const state = projectProgress?.[task.key] || {}
+                const progressValue = Number(state.progress || 0)
+                const isLocked = Boolean(state.isLocked)
+
+                return (
+                  <div key={task.key} className="rounded-xl border border-white/20 bg-black/20 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <h3 className="text-sm font-bold text-cyan-50">{task.label}</h3>
+                      <span className={`rounded-full px-2 py-1 text-xs font-semibold ${
+                        isLocked
+                          ? 'border border-emerald-300/40 bg-emerald-900/30 text-emerald-100'
+                          : 'border border-amber-300/40 bg-amber-900/30 text-amber-100'
+                      }`}>
+                        {isLocked ? 'Locked' : 'Editable'}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        step={1}
+                        value={progressValue}
+                        disabled={isLocked || progressLoading}
+                        onChange={(event) => handleProgressValueChange(task.key, event.target.value)}
+                        className="h-2 w-full cursor-pointer accent-cyan-400 md:flex-1"
+                      />
+                      <span className="w-16 text-right text-sm font-semibold text-cyan-50">
+                        {progressValue}%
+                      </span>
+                      <button
+                        type="button"
+                        disabled={progressLoading}
+                        onClick={() => handleToggleProgressTaskLock(task.key)}
+                        className={`rounded-lg px-3 py-2 text-xs font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                          isLocked
+                            ? 'border border-amber-300/40 bg-amber-900/30 text-amber-100'
+                            : 'border border-emerald-300/40 bg-emerald-900/30 text-emerald-100'
+                        }`}
+                      >
+                        {isLocked ? 'Unlock Task' : 'Lock Task'}
+                      </button>
+                    </div>
+
+                    <div className="mt-3 h-2 w-full rounded-full bg-slate-700">
+                      <div
+                        className="h-2 rounded-full bg-cyan-400"
+                        style={{ width: `${progressValue}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {progressError ? (
+              <div className="mt-3 rounded-lg border border-rose-300/40 bg-rose-900/30 px-3 py-2 text-sm text-rose-100">
+                {progressError}
+              </div>
+            ) : null}
+
+            {progressMessage ? (
+              <div className="mt-3 rounded-lg border border-emerald-300/40 bg-emerald-900/30 px-3 py-2 text-sm text-emerald-100">
+                {progressMessage}
+              </div>
+            ) : null}
+
+            <button
+              type="button"
+              disabled={progressLoading}
+              onClick={handleSaveProjectProgress}
+              className="mt-4 rounded-lg bg-cyan-400 px-4 py-2 text-sm font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {progressLoading ? 'Saving...' : 'Save Progress'}
+            </button>
+          </section>
         ) : null}
 
         {activeTab === 'update' ? (

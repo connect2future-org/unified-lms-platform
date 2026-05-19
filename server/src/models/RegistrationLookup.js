@@ -4,7 +4,7 @@ const registrationLookupSchema = new mongoose.Schema(
   {
     type: {
       type: String,
-      enum: ['college', 'department'],
+      enum: ['college', 'department', 'progressTopic'],
       required: true,
       index: true
     },
@@ -16,6 +16,11 @@ const registrationLookupSchema = new mongoose.Schema(
     normalizedLabel: {
       type: String,
       required: true,
+      trim: true
+    },
+    key: {
+      type: String,
+      default: '',
       trim: true
     },
     active: {
@@ -38,5 +43,6 @@ const registrationLookupSchema = new mongoose.Schema(
 )
 
 registrationLookupSchema.index({ type: 1, normalizedLabel: 1 }, { unique: true })
+registrationLookupSchema.index({ type: 1, key: 1 }, { unique: true, partialFilterExpression: { key: { $type: 'string', $ne: '' } } })
 
 export const RegistrationLookup = mongoose.model('RegistrationLookup', registrationLookupSchema)
