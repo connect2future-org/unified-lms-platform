@@ -29,6 +29,31 @@ export const CandidateDashboard = () => {
 
   return (
     <section className="dashboard-grid">
+      <div className="panel candidate-hero">
+        <div>
+          <h1>Candidate Dashboard</h1>
+          <p>Track your tests, monitor attempts, and continue where you left off.</p>
+        </div>
+      </div>
+
+      <div className="panel candidate-future-features">
+        <h2>Planned Features</h2>
+        <div className="future-grid">
+          <article className="future-card">
+            <h3>Performance Insights</h3>
+            <p>Topic-wise strengths, weak areas, and trend charts across attempts.</p>
+          </article>
+          <article className="future-card">
+            <h3>Smart Recommendations</h3>
+            <p>Suggested practice tests and coding topics based on your scores.</p>
+          </article>
+          <article className="future-card">
+            <h3>Interview Prep Kit</h3>
+            <p>Company-wise question sets, timed drills, and revision checklists.</p>
+          </article>
+        </div>
+      </div>
+
       <div className="panel">
         <h2>Available Tests</h2>
         {loading ? <div>Loading...</div> : null}

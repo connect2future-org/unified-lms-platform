@@ -126,6 +126,102 @@ a:hover {
   font-size: 0.9rem;
 }
 
+.nav-profile {
+  position: relative;
+}
+
+.nav-profile-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  border: 2px solid var(--border);
+  background: #fff;
+  border-radius: 10px;
+  padding: 0.45rem 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nav-avatar {
+  width: 1.8rem;
+  height: 1.8rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  color: #fff;
+  font-size: 0.75rem;
+}
+
+.nav-profile-name {
+  color: var(--text);
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.nav-profile-caret {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+}
+
+.nav-profile-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.5rem);
+  width: 260px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: var(--shadow-lg);
+  padding: 0.75rem;
+  z-index: 50;
+}
+
+.nav-profile-title {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.74rem;
+  text-transform: uppercase;
+}
+
+.nav-profile-value {
+  margin: 0.2rem 0;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.nav-profile-sub {
+  margin: 0 0 0.6rem;
+  color: var(--text-secondary);
+  font-size: 0.84rem;
+}
+
+.nav-menu-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--border);
+  background: var(--bg-alt);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 0.5rem 0.6rem;
+  margin-top: 0.4rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.nav-menu-item:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.nav-menu-item.danger {
+  color: #b91c1c;
+  border-color: #fecaca;
+  background: #fff5f5;
+}
+
 .app-main {
   max-width: 1200px;
   margin: 0 auto;
@@ -384,6 +480,51 @@ textarea {
   font-weight: 800;
 }
 
+.candidate-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.candidate-hero h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.candidate-hero p {
+  margin: 0.45rem 0 0;
+  color: var(--text-secondary);
+}
+
+.candidate-future-features h2 {
+  margin-top: 0;
+}
+
+.future-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.future-card {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: linear-gradient(180deg, #ffffff, #f8fbff);
+  padding: 0.9rem;
+}
+
+.future-card h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.future-card p {
+  margin: 0.5rem 0 0;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
 .table-wrap {
   overflow-x: auto;
   border-radius: 10px;
@@ -603,7 +744,70 @@ tr:hover {
   border-color: #94a3b8 !important;
 }
 
+.team-dashboard-page {
+  color: #e2e8f0;
+}
+
+.team-dashboard-page [class*="bg-white/10"],
+.team-dashboard-page [class*="bg-black/20"] {
+  background-color: #0f172a !important;
+}
+
+.team-dashboard-page [class*="border-white/"] {
+  border-color: #334155 !important;
+}
+
+.team-dashboard-page .text-white,
+.team-dashboard-page .text-slate-100,
+.team-dashboard-page .text-cyan-50,
+.team-dashboard-page .text-cyan-50\/90,
+.team-dashboard-page .text-cyan-100,
+.team-dashboard-page .text-cyan-100\/90,
+.team-dashboard-page .text-cyan-100\/80 {
+  color: #e2e8f0 !important;
+}
+
+.team-dashboard-page .text-cyan-300 {
+  color: #7dd3fc !important;
+}
+
+.team-dashboard-page input:not([type="checkbox"]):not([type="radio"]),
+.team-dashboard-page select,
+.team-dashboard-page textarea {
+  background: #111827 !important;
+  color: #e2e8f0 !important;
+  border-color: #475569 !important;
+}
+
+.team-dashboard-page input::placeholder,
+.team-dashboard-page textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
 @media (max-width: 900px) {
+  .candidate-hero {
+    flex-direction: column;
+  }
+
+  .nav-profile {
+    width: 100%;
+  }
+
+  .nav-profile-trigger {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nav-profile-menu {
+    left: 0;
+    right: auto;
+    width: min(320px, 100%);
+  }
+
+  .future-grid {
+    grid-template-columns: 1fr;
+  }
+
   .test-layout {
     grid-template-columns: 1fr;
   }

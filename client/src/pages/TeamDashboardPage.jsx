@@ -345,7 +345,7 @@ export function TeamDashboardPage() {
 
   return (
     <PageShell>
-      <section className="space-y-6">
+      <section className="team-dashboard-page space-y-6">
         <header className="rounded-2xl border border-white/20 bg-white/10 p-5">
           <h1 className="text-2xl font-black text-white md:text-3xl">Team Dashboard</h1>
           <p className="mt-2 text-sm text-cyan-100">
