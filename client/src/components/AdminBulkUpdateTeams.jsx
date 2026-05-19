@@ -238,8 +238,8 @@ const AdminBulkUpdateTeams = () => {
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-white/15">
-        <table className="min-w-full text-left text-sm text-cyan-50">
-          <thead className="bg-black/25 text-xs uppercase tracking-wide text-cyan-100/90">
+        <table className="bulk-update-table min-w-full text-left text-sm text-cyan-50">
+          <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-900">
             <tr>
               <th className="px-3 py-2">
                 <input type="checkbox" onChange={handleSelectAll} checked={allOnPageSelected} />

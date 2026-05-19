@@ -581,6 +581,28 @@ tr:hover {
   color: #dbeafe !important;
 }
 
+.admin-teams-page label {
+  color: #cbd5e1 !important;
+}
+
+.admin-teams-page table td {
+  color: #e5e7eb !important;
+}
+
+.admin-teams-page .bulk-update-table thead th,
+.admin-teams-page .migration-fields-table thead th {
+  color: #0f172a !important;
+  background-color: #f1f5f9 !important;
+}
+
+.admin-teams-page select,
+.admin-teams-page input:not([type="checkbox"]):not([type="radio"]),
+.admin-teams-page textarea {
+  background: #f8fafc !important;
+  color: #0f172a !important;
+  border-color: #94a3b8 !important;
+}
+
 @media (max-width: 900px) {
   .test-layout {
     grid-template-columns: 1fr;

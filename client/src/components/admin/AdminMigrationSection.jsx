@@ -55,8 +55,8 @@ export function AdminMigrationSection({
         <div className="rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-fuchsia-100 md:col-span-3">
           <p className="font-semibold">Fields Updated By Migration</p>
           <div className="mt-2 overflow-x-auto rounded border border-white/20">
-            <table className="min-w-full text-left text-xs text-fuchsia-100">
-              <thead className="bg-white/10 uppercase tracking-wide">
+            <table className="migration-fields-table min-w-full text-left text-xs text-fuchsia-100">
+              <thead className="bg-slate-100 uppercase tracking-wide text-slate-900">
                 <tr>
                   <th className="px-3 py-2">Field</th>
                   <th className="px-3 py-2">Value Source</th>
