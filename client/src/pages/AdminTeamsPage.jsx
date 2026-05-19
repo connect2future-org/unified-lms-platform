@@ -576,7 +576,7 @@ const AdminTeamsPage = () => {
 
   return (
     <PageShell>
-      <section className="rounded-3xl border border-white/25 bg-white/10 p-6 shadow-2xl backdrop-blur-xl md:p-8">
+      <section className="admin-teams-page rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-black text-white md:text-4xl">Admin Team Management</h1>
@@ -588,7 +588,7 @@ const AdminTeamsPage = () => {
             <button
               type="button"
               onClick={() => setShowExportDialog(true)}
-              className="rounded-lg border border-emerald-300/50 bg-emerald-600/20 px-4 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-600/40"
+              className="rounded-lg border border-emerald-400/70 bg-emerald-500/80 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
             >
               Export Excel
             </button>
@@ -599,7 +599,7 @@ const AdminTeamsPage = () => {
                 fetchProjects()
                 fetchLookupCatalog()
               }}
-              className="rounded-lg border border-cyan-200/60 bg-cyan-100/10 px-4 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-100/20"
+              className="rounded-lg border border-cyan-300/70 bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-300"
             >
               Refresh
             </button>

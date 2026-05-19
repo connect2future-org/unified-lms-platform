@@ -553,6 +553,34 @@ tr:hover {
   white-space: pre-wrap;
 }
 
+.admin-teams-page {
+  color: #e5e7eb;
+}
+
+.admin-teams-page [class*="bg-white/10"],
+.admin-teams-page [class*="bg-white/5"],
+.admin-teams-page [class*="bg-black/20"],
+.admin-teams-page [class*="bg-black/10"] {
+  background-color: #111827 !important;
+}
+
+.admin-teams-page [class*="border-white/"] {
+  border-color: #334155 !important;
+}
+
+.admin-teams-page thead[class*="bg-white/10"] {
+  background-color: #1f2937 !important;
+}
+
+.admin-teams-page .text-cyan-50,
+.admin-teams-page .text-cyan-50\/90,
+.admin-teams-page .text-cyan-100,
+.admin-teams-page .text-cyan-100\/90,
+.admin-teams-page .text-cyan-100\/80,
+.admin-teams-page .text-cyan-100\/70 {
+  color: #dbeafe !important;
+}
+
 @media (max-width: 900px) {
   .test-layout {
     grid-template-columns: 1fr;
