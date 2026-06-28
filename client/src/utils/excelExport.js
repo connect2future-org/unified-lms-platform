@@ -179,17 +179,17 @@ const normalizeCollege = (value = '') => {
   if (!raw) return ''
 
   const compact = raw.toLowerCase().replace(/[^a-z0-9]/g, '')
-  const pesAliases = [
-    'pesce',
-    'pescollegeofengineering',
+  const lmsAliases = [
+    'lmsce',
+    'lmscollegeofengineering',
     'pcollegeofengineering',
-    'pescollege',
-    'pescemandya',
-    'pescollegeengineering'
+    'lmscollege',
+    'lmscemandya',
+    'lmscollegeengineering'
   ]
 
-  if (pesAliases.some((alias) => compact.includes(alias)) || compact.startsWith('pes')) {
-    return 'PES College of Engineering, Mandya'
+  if (lmsAliases.some((alias) => compact.includes(alias)) || compact.startsWith('lms')) {
+    return 'LMS College of Engineering, Mandya'
   }
 
   return toTitleCase(raw)

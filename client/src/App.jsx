@@ -110,7 +110,7 @@ function TopNav() {
 
   return (
     <header className="top-nav">
-      <div className="brand">PES LMS Platform</div>
+      <div className="brand">LMS Platform</div>
       <nav>
         <NavLink to="/landing" className="nav-link-chip">
           Home

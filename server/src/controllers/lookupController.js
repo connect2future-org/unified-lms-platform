@@ -10,7 +10,7 @@ const LOOKUP_TYPE_ALIAS_MAP = {
 }
 
 const DEFAULT_LOOKUPS = {
-  college: ['PES College of Engineering, Mandya'],
+  college: ['LMS College of Engineering, Mandya'],
   department: ['Computer Science and Engineering']
 }
 
