@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: pes-lms-platform
+    name: lms-platform
     runtime: node
     rootDir: .
     plan: free

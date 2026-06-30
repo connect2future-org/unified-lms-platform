@@ -1,4 +1,4 @@
-# PES LMS Platform Monorepo
+# LMS Platform Monorepo
 
 Single-repo, single-deployment full-stack architecture using React + Vite frontend and Node.js + Express backend.
 
