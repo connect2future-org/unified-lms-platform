@@ -17,6 +17,7 @@ import { AdminDashboard } from '../../pages/AdminDashboard'
 import AdminTeamsPage from '../../pages/AdminTeamsPage'
 import { StudentDetailPage } from '../../pages/StudentDetailPage'
 import { SuperAdminDashboard } from '../../pages/SuperAdminDashboard'
+import { RoleTestFlowsPage } from '../../pages/RoleTestFlowsPage'
 
 function RootRedirect() {
   const { user, loading } = useAuth()
@@ -55,6 +56,7 @@ export function AppRouter() {
       <Route path="/home" element={<Navigate to="/landing" replace />} />
 
       <Route path="/landing" element={<LandingPage />} />
+      <Route path="/role-test-flows" element={<RoleTestFlowsPage />} />
       <Route path="/register-team" element={<RegistrationPage />} />
       <Route path="/register" element={<Navigate to="/register-team" replace />} />
       <Route path="/success" element={<SuccessPage />} />
