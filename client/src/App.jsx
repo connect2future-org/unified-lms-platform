@@ -128,9 +128,6 @@ function TopNav() {
         <NavLink to="/register-team" className="nav-link-chip">
           Team Register
         </NavLink>
-        <NavLink to="/login" className="nav-link-chip">
-          Login
-        </NavLink>
 
         {isAuthenticated ? (
           <div className="nav-profile" ref={profileRef}>
