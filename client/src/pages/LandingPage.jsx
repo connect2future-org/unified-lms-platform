@@ -24,7 +24,7 @@ export function LandingPage() {
             Start Team Registration
           </Link>
           <Link
-            to="/team/login"
+            to="/login?role=team"
             className="rounded-xl border border-blue-400 bg-blue-50 px-6 py-3 text-sm font-black text-blue-900 transition hover:bg-blue-100"
           >
             Team Login
@@ -35,6 +35,54 @@ export function LandingPage() {
           >
             View Live Dashboard
           </Link>
+        </div>
+
+        <div className="mt-8 rounded-2xl border border-slate-300/70 bg-white/50 p-5">
+          <h2 className="text-lg font-black text-slate-900">Role Test Flows</h2>
+          <p className="mt-1 text-sm text-slate-700">
+            Use these buttons to create accounts and test complete flows for Student, Team, and Admin.
+          </p>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <div className="rounded-xl border border-slate-300/80 bg-slate-50 p-4">
+              <h3 className="text-sm font-black text-slate-900">Student</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link to="/signup?role=candidate" className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white">
+                  Create Account
+                </Link>
+                <Link to="/login?role=student" className="rounded-lg border border-slate-400 px-3 py-1.5 text-xs font-bold text-slate-800">
+                  Login Flow
+                </Link>
+              </div>
+              <p className="mt-3 text-xs text-slate-600">API: /api/auth/signup, /api/auth/login, /api/tests, /api/attempts</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-300/80 bg-slate-50 p-4">
+              <h3 className="text-sm font-black text-slate-900">Team</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link to="/register-team" className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white">
+                  Create Account
+                </Link>
+                <Link to="/login?role=team" className="rounded-lg border border-slate-400 px-3 py-1.5 text-xs font-bold text-slate-800">
+                  Login Flow
+                </Link>
+              </div>
+              <p className="mt-3 text-xs text-slate-600">API: /api/teams/register, /api/auth/team/login, /api/auth/team/me</p>
+            </div>
+
+            <div className="rounded-xl border border-slate-300/80 bg-slate-50 p-4">
+              <h3 className="text-sm font-black text-slate-900">Admin</h3>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link to="/signup?role=admin" className="rounded-lg bg-slate-900 px-3 py-1.5 text-xs font-bold text-white">
+                  Create Account
+                </Link>
+                <Link to="/login?role=admin" className="rounded-lg border border-slate-400 px-3 py-1.5 text-xs font-bold text-slate-800">
+                  Login Flow
+                </Link>
+              </div>
+              <p className="mt-3 text-xs text-slate-600">API: /api/auth/signup, /api/auth/login, /api/teams/admin</p>
+            </div>
+          </div>
         </div>
       </section>
     </PageShell>

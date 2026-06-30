@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { authService } from "../services/authService";
 import { loginTeam } from "../services/api";
@@ -13,8 +13,13 @@ const ROLE_LABELS = {
 
 export const LoginPage = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { login } = useAuth();
-  const [loginType, setLoginType] = useState("student");
+  const roleFromQuery = String(searchParams.get("role") || "").toLowerCase();
+  const initialRole = ["student", "team", "admin"].includes(roleFromQuery)
+    ? roleFromQuery
+    : "student";
+  const [loginType, setLoginType] = useState(initialRole);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -131,7 +136,7 @@ export const LoginPage = () => {
           </button>
         </form>
         <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
-          Don't have an account? <Link to="/signup">Create one here</Link>
+          Don't have an account? <Link to={`/signup?role=${loginType === "student" ? "candidate" : loginType}`}>Create one here</Link>
         </p>
       </section>
     </PageShell>
