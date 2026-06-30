@@ -94,6 +94,11 @@ Implemented in `server/src/app.js`:
 
 Use one root `.env` as source of truth for backend runtime and local dev proxy defaults.
 Vite is configured with `envDir` pointing to repository root, so `client/.env` is not required.
+Backend env loader reads from root `.env` only.
+
+Important:
+- Use only root `.env` and root `.env.example`.
+- Do not create or maintain `server/.env` or `server/.env.example`.
 
 Server variables (secrets stay server-side):
 - `PORT`

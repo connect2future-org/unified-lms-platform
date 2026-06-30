@@ -13,6 +13,7 @@ export function DashboardPage() {
   })
   const [loading, setLoading] = useState(true)
   const [downloading, setDownloading] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -20,6 +21,9 @@ export function DashboardPage() {
         const [teamsData, statsData] = await Promise.all([getTeams(), getStats()])
         setTeams(teamsData)
         setStats(statsData)
+        setError('')
+      } catch (requestError) {
+        setError(requestError?.response?.data?.message || 'Failed to load dashboard data')
       } finally {
         setLoading(false)
       }
@@ -91,6 +95,12 @@ export function DashboardPage() {
             subtitle={stats.latestTeam?.teamName || 'Waiting for registrations'}
           />
         </div>
+
+        {error ? (
+          <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+            {error}
+          </div>
+        ) : null}
 
         {loading ? (
           <div className="rounded-2xl border border-[#eadfcd] bg-white p-6 text-slate-600">
