@@ -128,8 +128,8 @@ function TopNav() {
         <NavLink to="/register-team" className="nav-link-chip">
           Team Register
         </NavLink>
-        <NavLink to="/team/login" className="nav-link-chip">
-          Team Login
+        <NavLink to="/login" className="nav-link-chip">
+          Login
         </NavLink>
 
         {isAuthenticated ? (
@@ -168,14 +168,9 @@ function TopNav() {
             ) : null}
           </div>
         ) : (
-          <>
-            <NavLink to="/login" className="nav-link-chip">
-              Candidate Login
-            </NavLink>
-            <NavLink to="/signup" className="nav-link-chip">
-              Signup
-            </NavLink>
-          </>
+          <NavLink to="/login" className="nav-link-chip">
+            Login
+          </NavLink>
         )}
       </nav>
     </header>

@@ -9,7 +9,9 @@ import {
   getRegistrationMigrationSummary,
   getUserUnifiedAuthMigrationSummary,
   reviewTeamGithubCollaboration,
+  reviewTeamProjectProgressResetRequest,
   reviewTeamRegistrationRequest,
+  unlockAllTeamsProgress,
   runRegistrationMigration,
   runUserUnifiedAuthMigration,
   reviewTeamCustomProjectIdea,
@@ -426,6 +428,45 @@ const AdminTeamsPage = () => {
     }
   }
 
+  const handleReviewProgressResetRequest = async ({ teamId, scope, taskKey, action, reviewNote = '' }) => {
+    setLookupPending(true)
+    setError('')
+
+    try {
+      const response = await reviewTeamProjectProgressResetRequest(teamId, {
+        scope,
+        taskKey,
+        action,
+        reviewNote
+      })
+      setLookupMessage(response.message || 'Progress reset request reviewed')
+      await fetchTeams()
+      return true
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to review progress reset request')
+      return false
+    } finally {
+      setLookupPending(false)
+    }
+  }
+
+  const handleUnlockAllProgress = async () => {
+    setLookupPending(true)
+    setError('')
+
+    try {
+      const response = await unlockAllTeamsProgress()
+      setLookupMessage(response.message || 'All team progress unlocked')
+      await fetchTeams()
+      return true
+    } catch (requestError) {
+      setError(requestError.response?.data?.message || 'Failed to unlock all team progress')
+      return false
+    } finally {
+      setLookupPending(false)
+    }
+  }
+
   const handleRunMigration = async (config) => {
     setMigrationLoading(true)
     setMigrationMessage('')
@@ -716,6 +757,8 @@ const AdminTeamsPage = () => {
                 onToggleTopicActive={(topic) =>
                   handleUpdateLookup('progressTopic', topic.id, { active: !topic.active })
                 }
+                onReviewResetRequest={handleReviewProgressResetRequest}
+                onUnlockAllProgress={handleUnlockAllProgress}
               />
             ) : null}
 

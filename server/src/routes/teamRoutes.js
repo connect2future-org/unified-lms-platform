@@ -16,15 +16,20 @@ import {
   submitCustomProjectIdeaRequest,
   submitTeamGithubRepository,
   updateTeamProjectProgress,
+  requestProjectProgressReset,
+  reviewProjectProgressResetRequest,
   reviewCustomProjectIdeaRequest,
   reviewTeamGithubCollaboration,
   reviewTeamRegistrationRequest,
   previewTeamCustomIdeaUpload,
   uploadTeamCustomIdeaBulk,
-  bulkUpdateTeams
+  bulkUpdateTeams,
+  toggleProgressStatus,
+  unlockAllTeamsProgress
 } from '../controllers/teamController.js'
 import { uploadProjectFile } from '../middleware/upload.js'
 import { requireAdminAuth, requireTeamAuth } from '../middleware/auth.js'
+import { unlockAllProgress, deleteTeamProgress } from '../controllers/teamController.js'
 
 const router = Router()
 
@@ -34,6 +39,10 @@ router.post('/admin/:teamId/update-request/review', requireAdminAuth, reviewProf
 router.post('/admin/:teamId/custom-idea/review', requireAdminAuth, reviewCustomProjectIdeaRequest)
 router.post('/admin/:teamId/github-collaboration/review', requireAdminAuth, reviewTeamGithubCollaboration)
 router.post('/admin/:teamId/registration/review', requireAdminAuth, reviewTeamRegistrationRequest)
+router.post('/admin/:teamId/project-progress/reset-request/review', requireAdminAuth, reviewProjectProgressResetRequest)
+router.post('/admin/:teamId/unlock-progress', requireAdminAuth, unlockAllProgress)
+router.post('/admin/progress/unlock-all', requireAdminAuth, unlockAllTeamsProgress)
+router.delete('/admin/:teamId/progress', requireAdminAuth, deleteTeamProgress)
 router.get('/admin', requireAdminAuth, getAdminTeams)
 router.get('/admin/migration/registration-summary', requireAdminAuth, getRegistrationMigrationSummary)
 router.post('/admin/migration/registration', requireAdminAuth, runRegistrationMigration)
@@ -44,11 +53,14 @@ router.post('/admin/reconcile-projects', requireAdminAuth, reconcileProjectAssig
 // Bulk update College values for selected teams
 router.post('/admin/teams/bulk-update', requireAdminAuth, bulkUpdateTeams)
 
+router.post('/admin/:teamId/toggle-progress-status', requireAdminAuth, toggleProgressStatus)
+
 router.post('/team/update-request', requireTeamAuth, submitProfileUpdateRequest)
 router.post('/team/update-request/recall', requireTeamAuth, recallProfileUpdateRequest)
 router.post('/team/custom-idea/request', requireTeamAuth, submitCustomProjectIdeaRequest)
 router.post('/team/github', requireTeamAuth, submitTeamGithubRepository)
 router.post('/team/project-progress', requireTeamAuth, updateTeamProjectProgress)
+router.post('/team/project-progress/reset-request', requireTeamAuth, requestProjectProgressReset)
 
 // Team bulk custom project idea upload/preview (Excel/PDF)
 router.post('/team/custom-idea/upload/preview', requireTeamAuth, uploadProjectFile.single('file'), previewTeamCustomIdeaUpload)

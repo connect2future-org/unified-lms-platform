@@ -1175,6 +1175,80 @@ export const submitTeamGithubRepository = asyncHandler(async (req, res) => {
   })
 })
 
+const getActiveCustomProgressTopicKeys = async () => {
+  const activeCustomTopics = await RegistrationLookup.find({
+    type: 'progressTopic',
+    active: true
+  })
+    .select({ key: 1 })
+    .lean()
+
+  return new Set(
+    activeCustomTopics
+      .map((topic) => String(topic?.key || '').trim())
+      .filter(Boolean)
+  )
+}
+
+const getProgressTaskState = (team, scope, key) => {
+  if (scope === 'custom') {
+    const container = team.projectProgress?.customTasks
+    if (!container) {
+      return {}
+    }
+    if (container.get) {
+      return container.get(key) || {}
+    }
+    return container[key] || {}
+  }
+
+  return team.projectProgress?.[key] || {}
+}
+
+const setProgressTaskState = (team, scope, key, value) => {
+  if (scope === 'custom') {
+    if (!team.projectProgress.customTasks) {
+      team.projectProgress.customTasks = {}
+    }
+
+    if (team.projectProgress.customTasks.set) {
+      team.projectProgress.customTasks.set(key, value)
+    } else {
+      team.projectProgress.customTasks[key] = value
+    }
+    return
+  }
+
+  team.projectProgress[key] = value
+}
+
+const parseProgressTaskLocator = async (payload = {}) => {
+  const scope = String(payload.scope || 'base').trim().toLowerCase()
+
+  if (!['base', 'custom'].includes(scope)) {
+    throw new ApiError(400, 'Invalid progress task scope')
+  }
+
+  const key = String(payload.taskKey || '').trim()
+  if (!key) {
+    throw new ApiError(400, 'Progress task key is required')
+  }
+
+  if (scope === 'base') {
+    if (!PROJECT_PROGRESS_TASK_KEYS.includes(key)) {
+      throw new ApiError(400, 'Invalid base progress task key')
+    }
+    return { scope, key }
+  }
+
+  const activeCustomTopicKeys = await getActiveCustomProgressTopicKeys()
+  if (!activeCustomTopicKeys.has(key)) {
+    throw new ApiError(400, 'Invalid custom progress topic key')
+  }
+
+  return { scope, key }
+}
+
 export const updateTeamProjectProgress = asyncHandler(async (req, res) => {
   const team = await Team.findById(req.team.teamId)
   if (!team) {
@@ -1182,17 +1256,7 @@ export const updateTeamProjectProgress = asyncHandler(async (req, res) => {
   }
 
   const updates = normalizeProjectProgressPayload(req.body?.tasks || {})
-  const activeCustomTopics = await RegistrationLookup.find({
-    type: 'progressTopic',
-    active: true
-  })
-    .select({ key: 1 })
-    .lean()
-  const activeCustomTopicKeys = new Set(
-    activeCustomTopics
-      .map((topic) => String(topic?.key || '').trim())
-      .filter(Boolean)
-  )
+  const activeCustomTopicKeys = await getActiveCustomProgressTopicKeys()
   const customUpdates = normalizeCustomProjectProgressPayload(
     req.body?.customTasks || {},
     activeCustomTopicKeys
@@ -1209,73 +1273,41 @@ export const updateTeamProjectProgress = asyncHandler(async (req, res) => {
   }
 
   for (const update of updates) {
-    const existing = team.projectProgress[update.key] || {}
-
+    const existing = getProgressTaskState(team, 'base', update.key)
     const currentProgress = Number(existing.progress || 0)
-    const currentLocked = Boolean(existing.isLocked)
 
-    if (currentLocked && update.progress !== currentProgress && (!update.hasLockFlag || update.isLocked !== false)) {
-      throw new ApiError(409, `${update.key} is locked and cannot be edited`)
+    if (update.progress < currentProgress) {
+      throw new ApiError(409, `${update.key} progress cannot be decreased from ${currentProgress}`)
     }
-
-    const nextLocked = update.hasLockFlag ? update.isLocked : currentLocked
 
     const nextTask = {
       progress: update.progress,
-      isLocked: nextLocked,
+      isLocked: false,
       updatedAt: now,
-      lockedAt: existing.lockedAt || null
+      lockedAt: null,
+      resetRequest: existing.resetRequest || {}
     }
 
-    if (!currentLocked && nextLocked) {
-      nextTask.lockedAt = now
-    }
-
-    if (currentLocked && !nextLocked) {
-      nextTask.lockedAt = null
-    }
-
-    team.projectProgress[update.key] = nextTask
-  }
-
-  if (!team.projectProgress.customTasks) {
-    team.projectProgress.customTasks = {}
+    setProgressTaskState(team, 'base', update.key, nextTask)
   }
 
   for (const update of customUpdates) {
-    const existing = team.projectProgress.customTasks.get
-      ? team.projectProgress.customTasks.get(update.key) || {}
-      : team.projectProgress.customTasks[update.key] || {}
-
+    const existing = getProgressTaskState(team, 'custom', update.key)
     const currentProgress = Number(existing.progress || 0)
-    const currentLocked = Boolean(existing.isLocked)
 
-    if (currentLocked && update.progress !== currentProgress && (!update.hasLockFlag || update.isLocked !== false)) {
-      throw new ApiError(409, `custom topic ${update.key} is locked and cannot be edited`)
+    if (update.progress < currentProgress) {
+      throw new ApiError(409, `custom topic ${update.key} progress cannot be decreased from ${currentProgress}`)
     }
-
-    const nextLocked = update.hasLockFlag ? update.isLocked : currentLocked
 
     const nextTask = {
       progress: update.progress,
-      isLocked: nextLocked,
+      isLocked: false,
       updatedAt: now,
-      lockedAt: existing.lockedAt || null
+      lockedAt: null,
+      resetRequest: existing.resetRequest || {}
     }
 
-    if (!currentLocked && nextLocked) {
-      nextTask.lockedAt = now
-    }
-
-    if (currentLocked && !nextLocked) {
-      nextTask.lockedAt = null
-    }
-
-    if (team.projectProgress.customTasks.set) {
-      team.projectProgress.customTasks.set(update.key, nextTask)
-    } else {
-      team.projectProgress.customTasks[update.key] = nextTask
-    }
+    setProgressTaskState(team, 'custom', update.key, nextTask)
   }
 
   team.projectProgress.lastUpdatedAt = now
@@ -1284,6 +1316,127 @@ export const updateTeamProjectProgress = asyncHandler(async (req, res) => {
 
   res.json({
     message: 'Project progress updated successfully',
+    team: toPlainTeam(team)
+  })
+})
+
+export const requestProjectProgressReset = asyncHandler(async (req, res) => {
+  const team = await Team.findById(req.team.teamId)
+  if (!team) {
+    throw new ApiError(404, 'Team not found')
+  }
+
+  const locator = await parseProgressTaskLocator(req.body || {})
+  const task = getProgressTaskState(team, locator.scope, locator.key)
+
+  if (!task || typeof task !== 'object') {
+    throw new ApiError(404, 'Progress task not found')
+  }
+
+  if (!task.isLocked) {
+    throw new ApiError(400, 'Reset request is allowed only for locked tasks')
+  }
+
+  const existingReset = task.resetRequest || {}
+  if (existingReset.status === 'pending') {
+    throw new ApiError(409, 'A reset request is already pending for this task')
+  }
+
+  const now = new Date()
+  const requestNote = String(req.body?.requestNote || '').trim()
+
+  const nextTask = {
+    ...task,
+    resetRequest: {
+      status: 'pending',
+      requestedAt: now,
+      requestNote,
+      reviewedAt: null,
+      reviewedBy: '',
+      reviewNote: ''
+    }
+  }
+
+  setProgressTaskState(team, locator.scope, locator.key, nextTask)
+  team.projectProgress.lastUpdatedAt = now
+
+  await team.save()
+
+  res.json({
+    message: 'Progress reset request submitted for admin approval',
+    team: toPlainTeam(team)
+  })
+})
+
+export const reviewProjectProgressResetRequest = asyncHandler(async (req, res) => {
+  const team = await Team.findById(req.params.teamId)
+  if (!team) {
+    throw new ApiError(404, 'Team not found')
+  }
+
+  const locator = await parseProgressTaskLocator(req.body || {})
+  const task = getProgressTaskState(team, locator.scope, locator.key)
+
+  if (!task || typeof task !== 'object') {
+    throw new ApiError(404, 'Progress task not found')
+  }
+
+  if (task.resetRequest?.status !== 'pending') {
+    throw new ApiError(400, 'No pending reset request found for this task')
+  }
+
+  const action = String(req.body?.action || '').trim().toLowerCase()
+  if (!['approve', 'reject'].includes(action)) {
+    throw new ApiError(400, 'Action must be approve or reject')
+  }
+
+  const now = new Date()
+  const reviewNote = String(req.body?.reviewNote || '').trim()
+  const nextTask = {
+    ...task,
+    updatedAt: now
+  }
+
+  if (action === 'approve') {
+    const resetTo = Number(req.body?.resetTo ?? 0)
+    if (!Number.isFinite(resetTo) || resetTo < 0 || resetTo > 100) {
+      throw new ApiError(400, 'Reset value must be between 0 and 100')
+    }
+
+    const roundedResetTo = Math.round(resetTo)
+    if (roundedResetTo > Number(task.progress || 0)) {
+      throw new ApiError(400, 'Reset value cannot be greater than current progress')
+    }
+
+    nextTask.progress = roundedResetTo
+    nextTask.isLocked = false
+    nextTask.lockedAt = null
+    nextTask.resetRequest = {
+      ...task.resetRequest,
+      status: 'approved',
+      reviewedAt: now,
+      reviewedBy: String(req.admin?.username || 'admin'),
+      reviewNote
+    }
+  } else {
+    nextTask.resetRequest = {
+      ...task.resetRequest,
+      status: 'rejected',
+      reviewedAt: now,
+      reviewedBy: String(req.admin?.username || 'admin'),
+      reviewNote
+    }
+  }
+
+  setProgressTaskState(team, locator.scope, locator.key, nextTask)
+  team.projectProgress.lastUpdatedAt = now
+
+  await team.save()
+
+  res.json({
+    message: action === 'approve'
+      ? 'Progress reset request approved and task unlocked'
+      : 'Progress reset request rejected',
     team: toPlainTeam(team)
   })
 })
@@ -1504,3 +1657,110 @@ export const bulkUpdateTeams = asyncHandler(async (req, res) => {
     message: `${modifiedCount} teams updated successfully for ${targetField}.`
   })
 })
+
+export const unlockAllProgress = asyncHandler(async (req, res) => {
+  const team = await Team.findById(req.params.teamId);
+  if (!team) {
+    throw new ApiError(404, 'Team not found');
+  }
+
+  if (!team.projectProgress) {
+    throw new ApiError(400, 'No progress data to unlock');
+  }
+
+  const now = new Date();
+
+  for (const key of Object.keys(team.projectProgress)) {
+    const task = team.projectProgress[key];
+    if (task && typeof task === 'object') {
+      task.isLocked = false;
+      task.lockedAt = null;
+      task.updatedAt = now;
+    }
+  }
+
+  await team.save();
+
+  res.status(200).json({ message: 'All progress unlocked successfully', team });
+});
+
+export const deleteTeamProgress = asyncHandler(async (req, res) => {
+  const team = await Team.findById(req.params.teamId);
+  if (!team) {
+    throw new ApiError(404, 'Team not found');
+  }
+
+  team.projectProgress = undefined; // Remove progress data
+  await team.save();
+
+  res.status(200).json({ message: 'Progress data deleted successfully', team });
+});
+
+export const unlockAllTeamsProgress = asyncHandler(async (req, res) => {
+  const teams = await Team.find({})
+  const now = new Date()
+  let modifiedTeams = 0
+
+  teams.forEach((team) => {
+    const progress = team.projectProgress
+    if (!progress) {
+      return
+    }
+
+    let changed = false
+
+    for (const key of PROJECT_PROGRESS_TASK_KEYS) {
+      const task = progress?.[key]
+      if (task && typeof task === 'object' && task.isLocked) {
+        task.isLocked = false
+        task.lockedAt = null
+        task.updatedAt = now
+        changed = true
+      }
+    }
+
+    const customEntries = progress?.customTasks?.entries?.() ? Array.from(progress.customTasks.entries()) : []
+    customEntries.forEach(([taskKey, taskState]) => {
+      if (taskState && typeof taskState === 'object' && taskState.isLocked) {
+        progress.customTasks.set(taskKey, {
+          ...taskState,
+          isLocked: false,
+          lockedAt: null,
+          updatedAt: now
+        })
+        changed = true
+      }
+    })
+
+    if (changed) {
+      progress.lastUpdatedAt = now
+      modifiedTeams += 1
+      team.markModified('projectProgress')
+    }
+  })
+
+  if (modifiedTeams > 0) {
+    await Promise.all(teams.map((team) => team.save()))
+  }
+
+  res.status(200).json({
+    message: 'All team progress is now editable',
+    modifiedTeams
+  })
+})
+
+export const toggleProgressStatus = async (req, res) => {
+  const { teamId } = req.params;
+  try {
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ message: 'Team not found' });
+    }
+    team.isProgressLocked = !team.isProgressLocked;
+    await team.save();
+    res.status(200).json({ message: 'Progress status toggled successfully' });
+  } catch (error) {
+    console.error('Error toggling progress status:', error);
+    res.status(500).json({ message: 'Internal server error' });
+  }
+};

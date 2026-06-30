@@ -331,6 +331,31 @@ export const submitTeamProjectProgress = async (payload, token) => {
   return data
 }
 
+export const submitTeamProjectProgressResetRequest = async (payload, token) => {
+  const activeToken = token || getTeamToken()
+  const { data } = await api.post('/teams/team/project-progress/reset-request', payload, {
+    headers: {
+      Authorization: `Bearer ${activeToken}`
+    }
+  })
+
+  if (data?.team) {
+    setTeamSession({ token: activeToken, team: data.team })
+  }
+
+  return data
+}
+
+export const reviewTeamProjectProgressResetRequest = async (teamId, payload) => {
+  const { data } = await api.post(`/teams/admin/${teamId}/project-progress/reset-request/review`, payload)
+  return data
+}
+
+export const unlockAllTeamsProgress = async () => {
+  const { data } = await api.post('/teams/admin/progress/unlock-all')
+  return data
+}
+
 export const reviewTeamGithubCollaboration = async (teamId, payload) => {
   const { data } = await api.post(`/teams/admin/${teamId}/github-collaboration/review`, payload)
   return data
