@@ -2,6 +2,7 @@ import Editor from "@monaco-editor/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { attemptService } from "../services/attemptService";
+import { authService } from "../services/authService";
 import { submissionService } from "../services/submissionService";
 import { testService } from "../services/testService";
 
@@ -23,7 +24,26 @@ export const TestTakingPage = () => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [executionResult, setExecutionResult] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileRequired, setProfileRequired] = useState(false);
+  const [profileError, setProfileError] = useState("");
+  const [profileSubmitting, setProfileSubmitting] = useState(false);
+  const [profileForm, setProfileForm] = useState({
+    email: "",
+    usn: "",
+    branch: "",
+    college: ""
+  });
   const dirtyRef = useRef(new Set());
+
+  const isProfileComplete = (profile) => {
+    return Boolean(
+      String(profile?.email || "").trim()
+      && String(profile?.usn || "").trim()
+      && String(profile?.branch || "").trim()
+      && String(profile?.college || "").trim()
+    );
+  };
 
   const getId = (value) => {
     if (!value) {
@@ -80,6 +100,68 @@ export const TestTakingPage = () => {
     setAnswers(answerMap);
   };
 
+  const prepareTestSession = async () => {
+    setProfileLoading(true);
+    setProfileError("");
+
+    try {
+      const meResponse = await authService.me();
+      const user = meResponse?.user || {};
+      const nextProfile = {
+        email: user.email || "",
+        usn: user.usn || "",
+        branch: user.branch || "",
+        college: user.college || ""
+      };
+
+      setProfileForm(nextProfile);
+
+      if (!isProfileComplete(nextProfile)) {
+        setProfileRequired(true);
+        return;
+      }
+
+      setProfileRequired(false);
+      await bootstrap();
+    } catch (error) {
+      const code = error?.response?.data?.code;
+      if (code === "PROFILE_INCOMPLETE") {
+        setProfileRequired(true);
+      } else {
+        setProfileError(error?.response?.data?.message || "Unable to prepare test session.");
+      }
+    } finally {
+      setProfileLoading(false);
+    }
+  };
+
+  const saveProfileAndStart = async () => {
+    const payload = {
+      usn: String(profileForm.usn || "").trim(),
+      branch: String(profileForm.branch || "").trim(),
+      college: String(profileForm.college || "").trim()
+    };
+
+    if (!payload.usn || !payload.branch || !payload.college) {
+      setProfileError("USN, Branch and College are required.");
+      return;
+    }
+
+    setProfileSubmitting(true);
+    setProfileError("");
+
+    try {
+      await authService.updateCandidateProfile(payload);
+      setProfileRequired(false);
+      await bootstrap();
+    } catch (error) {
+      setProfileError(error?.response?.data?.message || "Unable to save profile details.");
+      setProfileRequired(true);
+    } finally {
+      setProfileSubmitting(false);
+    }
+  };
+
   const submitTest = async () => {
     if (!attempt || submitting) {
       return;
@@ -131,7 +213,7 @@ export const TestTakingPage = () => {
   };
 
   useEffect(() => {
-    bootstrap();
+    prepareTestSession();
   }, [testId]);
 
   useEffect(() => {
@@ -215,6 +297,43 @@ export const TestTakingPage = () => {
       document.removeEventListener("paste", onPaste);
     };
   }, [test, attempt]);
+
+  if (profileLoading) {
+    return <div className="center-state">Preparing assessment...</div>;
+  }
+
+  if (profileRequired) {
+    return (
+      <section className="dashboard-grid">
+        <div className="panel" style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <h2>Complete Student Details Before Test</h2>
+          <p className="muted">Email, USN, Branch and College are required to start the test and for final report export.</p>
+          {profileError ? <p className="muted" style={{ color: "#b91c1c" }}>{profileError}</p> : null}
+          <div className="form-grid">
+            <input value={profileForm.email} readOnly placeholder="Email" />
+            <input
+              value={profileForm.usn}
+              onChange={(e) => setProfileForm((prev) => ({ ...prev, usn: e.target.value }))}
+              placeholder="USN"
+            />
+            <input
+              value={profileForm.branch}
+              onChange={(e) => setProfileForm((prev) => ({ ...prev, branch: e.target.value }))}
+              placeholder="Branch"
+            />
+            <input
+              value={profileForm.college}
+              onChange={(e) => setProfileForm((prev) => ({ ...prev, college: e.target.value }))}
+              placeholder="College"
+            />
+            <button className="btn" onClick={saveProfileAndStart} disabled={profileSubmitting}>
+              {profileSubmitting ? "Saving..." : "Save and Start Test"}
+            </button>
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   if (!test || !attempt || !currentQuestion) {
     return <div className="center-state">Preparing assessment...</div>;

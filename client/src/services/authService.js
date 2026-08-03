@@ -10,6 +10,9 @@ export const authService = {
   me() {
     return api.get("/auth/me").then((res) => res.data);
   },
+  updateCandidateProfile(payload) {
+    return api.patch("/auth/candidate/profile", payload).then((res) => res.data);
+  },
   getAdminRegistration() {
     return api.get("/auth/admin/registration").then((res) => res.data);
   },

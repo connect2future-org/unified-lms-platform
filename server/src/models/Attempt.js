@@ -47,6 +47,17 @@ const codeSubmissionSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const candidateProfileSnapshotSchema = new mongoose.Schema(
+  {
+    name: { type: String, default: "" },
+    email: { type: String, default: "" },
+    usn: { type: String, default: "" },
+    branch: { type: String, default: "" },
+    college: { type: String, default: "" }
+  },
+  { _id: false }
+);
+
 const attemptSchema = new mongoose.Schema(
   {
     userId: {
@@ -61,6 +72,7 @@ const attemptSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+    candidateProfileSnapshot: { type: candidateProfileSnapshotSchema, default: () => ({}) },
     answers: [answerSchema],
     codeSubmissions: [codeSubmissionSchema],
     questionOrder: [{ type: mongoose.Schema.Types.ObjectId, ref: "Question" }],

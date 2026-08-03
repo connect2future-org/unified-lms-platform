@@ -202,6 +202,15 @@ export const AdminDashboard = () => {
     await loadStudents();
   };
 
+  const exportFinalDataExcel = async () => {
+    try {
+      await analyticsService.exportFinalDataExcel();
+      setStatusMessage("Final student data exported successfully.");
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to export final student data.");
+    }
+  };
+
   const togglePublish = async (test) => {
     if (test.isPublished) {
       await testService.unpublish(test._id);
@@ -421,6 +430,7 @@ export const AdminDashboard = () => {
           setStudentCsvFile={setStudentCsvFile}
           importStudentsCsv={importStudentsCsv}
           students={students}
+          exportFinalDataExcel={exportFinalDataExcel}
         />
       ) : null}
 

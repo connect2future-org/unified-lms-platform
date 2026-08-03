@@ -20,10 +20,11 @@ import {
 	runUserUnifiedAuthMigration,
 	resetTeamPassword,
 	signup,
+	updateCandidateProfile,
 	verifyPasswordResetOtp
 } from '../controllers/authController.js'
 import { requireAdminAuth, requireAdminRole, adminToUserCompat, requireLmsAdmin, requireTeamAuth } from '../middleware/auth.js'
-import { requireRole } from '../middleware/authMiddleware.js'
+import { requireAuth, requireRole } from '../middleware/authMiddleware.js'
 
 const router = Router()
 
@@ -31,6 +32,7 @@ router.post('/signup', signup)
 router.post('/login', login)
 router.post('/admin/login', loginAdmin)
 router.get('/me', me)
+router.patch('/candidate/profile', requireAuth, requireRole('candidate'), updateCandidateProfile)
 
 router.get('/admin/registration', requireAdminAuth, adminToUserCompat, requireLmsAdmin, requireAdminRole('admin', 'super-admin'), getAdminRegistrationInfo)
 router.post('/admin/registration/regenerate', requireAdminAuth, adminToUserCompat, requireLmsAdmin, requireAdminRole('admin', 'super-admin'), regenerateAdminCode)

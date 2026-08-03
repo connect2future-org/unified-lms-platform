@@ -3,6 +3,7 @@ import { CheatingLog } from "../models/CheatingLog.js";
 import { Test } from "../models/Test.js";
 import { User } from "../models/User.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+import ExcelJS from "exceljs";
 
 const resolveAdminScope = async (requestUser) => {
   if (requestUser.role === "admin") {
@@ -15,6 +16,17 @@ const resolveAdminScope = async (requestUser) => {
   }
 
   return { adminIds: [] };
+};
+
+const formatDateTime = (value) => {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toISOString();
 };
 
 export const getAdminAnalytics = asyncHandler(async (req, res) => {
@@ -192,4 +204,73 @@ export const getStudentDetail = asyncHandler(async (req, res) => {
     })),
     scoreTrend
   });
+});
+
+export const exportAdminFinalDataExcel = asyncHandler(async (req, res) => {
+  const { adminIds } = await resolveAdminScope(req.user);
+  const tests = await Test.find({ createdBy: { $in: adminIds } }).select("_id title");
+  const testIds = tests.map((test) => test._id);
+
+  const attempts = await Attempt.find({
+    testId: { $in: testIds },
+    status: { $ne: "IN_PROGRESS" }
+  })
+    .sort({ submittedAt: -1, updatedAt: -1 })
+    .populate("userId", "name email usn branch college")
+    .populate("testId", "title");
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Final Student Data");
+
+  worksheet.columns = [
+    { header: "Student Name", key: "studentName", width: 24 },
+    { header: "Email", key: "email", width: 30 },
+    { header: "USN", key: "usn", width: 18 },
+    { header: "Branch", key: "branch", width: 18 },
+    { header: "College", key: "college", width: 28 },
+    { header: "Test Title", key: "testTitle", width: 30 },
+    { header: "Score", key: "score", width: 10 },
+    { header: "Max Score", key: "maxScore", width: 12 },
+    { header: "Percentage", key: "percentage", width: 12 },
+    { header: "Status", key: "status", width: 16 },
+    { header: "Violation Count", key: "violationCount", width: 15 },
+    { header: "Started At", key: "startedAt", width: 28 },
+    { header: "Submitted At", key: "submittedAt", width: 28 }
+  ];
+
+  worksheet.getRow(1).font = { bold: true };
+
+  attempts.forEach((attempt) => {
+    const snapshot = attempt.candidateProfileSnapshot || {};
+    const student = attempt.userId || {};
+    const score = Number(attempt.score || 0);
+    const maxScore = Number(attempt.maxScore || 0);
+    const percentage = maxScore > 0 ? Number(((score / maxScore) * 100).toFixed(2)) : 0;
+
+    worksheet.addRow({
+      studentName: snapshot.name || student.name || "",
+      email: snapshot.email || student.email || "",
+      usn: snapshot.usn || student.usn || "",
+      branch: snapshot.branch || student.branch || "",
+      college: snapshot.college || student.college || "",
+      testTitle: attempt.testId?.title || "",
+      score,
+      maxScore,
+      percentage,
+      status: attempt.status,
+      violationCount: Number(attempt.violationCount || 0),
+      startedAt: formatDateTime(attempt.startedAt),
+      submittedAt: formatDateTime(attempt.submittedAt || attempt.updatedAt)
+    });
+  });
+
+  const fileName = `final-student-data-${new Date().toISOString().slice(0, 10)}.xlsx`;
+  res.setHeader(
+    "Content-Type",
+    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  );
+  res.setHeader("Content-Disposition", `attachment; filename=\"${fileName}\"`);
+
+  await workbook.xlsx.write(res);
+  res.end();
 });

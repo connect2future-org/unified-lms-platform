@@ -544,6 +544,9 @@ const toUserAuthResponse = (user) => {
       name: user.name,
       email: user.email,
       role: user.role,
+      usn: user.usn,
+      branch: user.branch,
+      college: user.college,
       adminCode: user.adminCode,
       linkedAdmin: user.linkedAdmin,
       linkedSuperAdmin: user.linkedSuperAdmin
@@ -678,7 +681,7 @@ export const me = asyncHandler(async (req, res) => {
 
   if (payload?.userId) {
     const user = await User.findById(payload.userId).select(
-      '_id name email role adminCode linkedAdmin linkedSuperAdmin'
+      '_id name email role usn branch college adminCode linkedAdmin linkedSuperAdmin'
     )
 
     if (!user) {
@@ -691,6 +694,9 @@ export const me = asyncHandler(async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        usn: user.usn,
+        branch: user.branch,
+        college: user.college,
         adminCode: user.adminCode,
         linkedAdmin: user.linkedAdmin,
         linkedSuperAdmin: user.linkedSuperAdmin
@@ -768,7 +774,7 @@ export const listAdminStudents = asyncHandler(async (req, res) => {
   }
 
   const [items, total] = await Promise.all([
-    User.find(filter).select('_id name email createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit),
+    User.find(filter).select('_id name email usn branch college createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit),
     User.countDocuments(filter)
   ])
 
@@ -870,6 +876,9 @@ export const importStudentsCsv = asyncHandler(async (req, res) => {
     const name = String(row.name || '').trim()
     const email = String(row.email || '').trim().toLowerCase()
     const password = String(row.password || '').trim() || 'C2F@12345'
+    const usn = String(row.usn || '').trim()
+    const branch = String(row.branch || '').trim()
+    const college = String(row.college || '').trim()
 
     if (!name || !email) {
       errors.push({ row: index + 2, message: 'name and email are required' })
@@ -888,7 +897,10 @@ export const importStudentsCsv = asyncHandler(async (req, res) => {
       email,
       password,
       role: 'candidate',
-      linkedAdmin: targetAdmin._id
+      linkedAdmin: targetAdmin._id,
+      usn,
+      branch,
+      college
     })
     imported += 1
   }
@@ -902,6 +914,40 @@ export const importStudentsCsv = asyncHandler(async (req, res) => {
     imported,
     skipped,
     errors
+  })
+})
+
+export const updateCandidateProfile = asyncHandler(async (req, res) => {
+  const usn = String(req.body?.usn || '').trim()
+  const branch = String(req.body?.branch || '').trim()
+  const college = String(req.body?.college || '').trim()
+
+  if (!usn || !branch || !college) {
+    throw new ApiError(400, 'usn, branch and college are required')
+  }
+
+  const user = await User.findOne({ _id: req.user._id, role: 'candidate' })
+  if (!user) {
+    throw new ApiError(404, 'Candidate user not found')
+  }
+
+  user.usn = usn
+  user.branch = branch
+  user.college = college
+  await user.save()
+
+  res.json({
+    user: {
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      usn: user.usn,
+      branch: user.branch,
+      college: user.college,
+      linkedAdmin: user.linkedAdmin,
+      linkedSuperAdmin: user.linkedSuperAdmin
+    }
   })
 })
 

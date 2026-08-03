@@ -2,10 +2,30 @@ import { Attempt } from "../models/Attempt.js";
 import { CheatingLog } from "../models/CheatingLog.js";
 import { Question } from "../models/Question.js";
 import { Test } from "../models/Test.js";
+import { User } from "../models/User.js";
 import { env } from "../config/env.js";
 import { calculateAttemptScore } from "../services/scoringService.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { shuffleArray } from "../utils/randomization.js";
+
+const getMissingCandidateProfileFields = (user) => {
+  const missingFields = [];
+
+  if (!String(user?.email || "").trim()) {
+    missingFields.push("email");
+  }
+  if (!String(user?.usn || "").trim()) {
+    missingFields.push("usn");
+  }
+  if (!String(user?.branch || "").trim()) {
+    missingFields.push("branch");
+  }
+  if (!String(user?.college || "").trim()) {
+    missingFields.push("college");
+  }
+
+  return missingFields;
+};
 
 const assertAttemptOwnership = (attempt, user) => {
   if (!attempt) {
@@ -55,14 +75,21 @@ const finalizeAttempt = async (attempt, status = "SUBMITTED") => {
   return attempt;
 };
 
-const createAttemptForTest = async ({ test, userId }) => {
+const createAttemptForTest = async ({ test, user }) => {
   const { questionOrder, optionOrders } = buildQuestionAndOptionOrder(test, test.questions);
   const startedAt = new Date();
   const expiresAt = new Date(startedAt.getTime() + test.durationMinutes * 60 * 1000);
 
   return Attempt.create({
-    userId,
+    userId: user._id,
     testId: test._id,
+    candidateProfileSnapshot: {
+      name: user.name,
+      email: user.email,
+      usn: user.usn,
+      branch: user.branch,
+      college: user.college
+    },
     startedAt,
     expiresAt,
     questionOrder,
@@ -81,6 +108,22 @@ const hasSavedProgress = (attempt) => {
 
 export const startAttempt = asyncHandler(async (req, res) => {
   const { testId } = req.params;
+  const candidate = await User.findById(req.user._id).select("_id name email role usn branch college");
+
+  if (!candidate || candidate.role !== "candidate") {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+
+  const missingFields = getMissingCandidateProfileFields(candidate);
+  if (missingFields.length) {
+    return res.status(400).json({
+      message: "Complete profile details before attempting the test",
+      code: "PROFILE_INCOMPLETE",
+      missingFields,
+      requiredFields: ["email", "usn", "branch", "college"]
+    });
+  }
+
   const test = await Test.findById(testId).populate("questions");
 
   if (!test) {
@@ -92,7 +135,7 @@ export const startAttempt = asyncHandler(async (req, res) => {
   }
 
   const activeAttempt = await Attempt.findOne({
-    userId: req.user._id,
+    userId: candidate._id,
     testId,
     status: "IN_PROGRESS"
   });
@@ -106,7 +149,7 @@ export const startAttempt = asyncHandler(async (req, res) => {
     const isQuestionSetStale = Number(activeAttempt.questionOrder?.length || 0) !== Number(test.questions.length || 0);
     if (isQuestionSetStale && !hasSavedProgress(activeAttempt)) {
       await Attempt.deleteOne({ _id: activeAttempt._id });
-      const freshAttempt = await createAttemptForTest({ test, userId: req.user._id });
+      const freshAttempt = await createAttemptForTest({ test, user: candidate });
       return res.status(201).json({
         attempt: freshAttempt,
         refreshed: true,
@@ -117,7 +160,7 @@ export const startAttempt = asyncHandler(async (req, res) => {
     return res.json({ attempt: activeAttempt });
   }
 
-  const attempt = await createAttemptForTest({ test, userId: req.user._id });
+  const attempt = await createAttemptForTest({ test, user: candidate });
 
   return res.status(201).json({ attempt });
 });

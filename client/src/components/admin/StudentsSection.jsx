@@ -5,7 +5,8 @@ export const StudentsSection = ({
   regenerateCode,
   setStudentCsvFile,
   importStudentsCsv,
-  students
+  students,
+  exportFinalDataExcel
 }) => {
   return (
     <div className="panel">
@@ -16,6 +17,7 @@ export const StudentsSection = ({
         <button className="btn btn-ghost" onClick={regenerateCode}>Regenerate Code</button>
         <input type="file" accept=".csv,text/csv" onChange={(event) => setStudentCsvFile(event.target.files?.[0] || null)} />
         <button className="btn" onClick={importStudentsCsv}>Bulk Import Students CSV</button>
+        <button className="btn btn-ghost" onClick={exportFinalDataExcel}>Export Final Data (Excel)</button>
         <p className="muted">CSV headers: name,email,password</p>
       </div>
 

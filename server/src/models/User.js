@@ -42,6 +42,21 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       index: true
+    },
+    usn: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    branch: {
+      type: String,
+      trim: true,
+      default: ""
+    },
+    college: {
+      type: String,
+      trim: true,
+      default: ""
     }
   },
   { timestamps: true }
