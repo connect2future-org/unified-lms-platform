@@ -83,6 +83,34 @@ Production behavior from one app:
 - Frontend API calls use relative `/api` base URL
 - No absolute API URLs are required in production
 
+## Test Import (CSV and Excel)
+
+Admins can create tests by importing question banks from `.csv` or `.xlsx` files.
+
+- UI path: Admin Dashboard -> Overview -> Create Test / Import CSV or Excel
+- If a file is selected, clicking Create Test imports questions and creates one draft test.
+- If no file is selected, clicking Create Test creates an empty draft test.
+
+Supported question columns (header names are matched flexibly):
+
+- `Question` or `QuestionTitle` or `Title`
+- `Explanation` or `QuestionDescription` or `Description`
+- `OptionA`, `OptionB`, `OptionC`, `OptionD`
+- `CorrectAnswer` or `CorrectAnswers` (single: `A`, multi: `A|C`)
+- Optional: `Marks`, `NegativeMarks`, `AllowMultiple`
+
+Import validation rules:
+
+- Question title required
+- Minimum two options required
+- At least one correct answer required
+- Correct answer values must match present option keys (`A`, `B`, `C`, `D`)
+
+Backend endpoints:
+
+- `POST /api/tests/import/file` for multipart file upload (`file`, `title`, `durationMinutes`, etc.)
+- `POST /api/tests/import/csv` for legacy raw CSV text payload support
+
 ## Express Static + SPA Fallback
 
 Implemented in `server/src/app.js`:

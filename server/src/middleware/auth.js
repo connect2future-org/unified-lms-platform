@@ -3,6 +3,8 @@ import { env } from '../config/env.js'
 import { ApiError } from '../utils/apiError.js'
 import { User } from '../models/User.js'
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 const extractBearerToken = (authorizationHeader) => {
   if (!authorizationHeader) {
     return null
@@ -49,6 +51,29 @@ export const requireAdminAuth = async (req, res, next) => {
     // Backward compatibility for legacy platform-admin token shape.
     if (payload.role !== 'admin') {
       throw new ApiError(403, 'Admin access required')
+    }
+
+    const legacyUsername = String(payload.username || '').trim()
+    if (legacyUsername) {
+      const usernameRegex = new RegExp(`^${escapeRegex(legacyUsername)}$`, 'i')
+      const mappedAdminUser = await User.findOne({
+        role: { $in: ['admin', 'super-admin'] },
+        $or: [
+          { email: usernameRegex },
+          { name: usernameRegex }
+        ]
+      }).select('_id name email role')
+
+      if (mappedAdminUser) {
+        req.admin = {
+          id: mappedAdminUser._id,
+          username: mappedAdminUser.email || mappedAdminUser.name,
+          role: mappedAdminUser.role
+        }
+
+        next()
+        return
+      }
     }
 
     req.admin = {
