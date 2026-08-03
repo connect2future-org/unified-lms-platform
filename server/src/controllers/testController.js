@@ -62,28 +62,49 @@ const sanitizeQuestionInput = (question) => {
 };
 
 const buildCsvMcqQuestion = (row) => {
+  const getVal = (possibleKeys, fallback = "") => {
+    for (const key of Object.keys(row)) {
+      if (possibleKeys.includes(key.toLowerCase().trim())) {
+        return row[key] !== undefined && row[key] !== null ? row[key] : fallback;
+      }
+    }
+    return fallback;
+  };
+
+  const optionA = getVal(["option a", "optiona"]);
+  const optionB = getVal(["option b", "optionb"]);
+  const optionC = getVal(["option c", "optionc"]);
+  const optionD = getVal(["option d", "optiond"]);
+
   const options = [
-    { key: "A", text: row.optionA || "" },
-    { key: "B", text: row.optionB || "" },
-    { key: "C", text: row.optionC || "" },
-    { key: "D", text: row.optionD || "" }
+    { key: "A", text: optionA },
+    { key: "B", text: optionB },
+    { key: "C", text: optionC },
+    { key: "D", text: optionD }
   ].filter((opt) => opt.text.trim().length);
 
-  const correctAnswers = String(row.correctAnswers || "")
+  const rawCorrect = getVal(["correct answer", "correctanswers", "correct_answer"]);
+  const correctAnswers = String(rawCorrect)
     .split("|")
     .map((item) => item.trim().toUpperCase())
     .filter(Boolean);
 
+  const title = String(getVal(["question", "questiontitle", "title", "question_title"])).trim();
+  const description = String(getVal(["explanation", "questiondescription", "description", "question_description"])).trim() || "No explanation provided";
+  const marks = getVal(["marks", "mark"], "1");
+  const negativeMarks = getVal(["negativemarks", "negative_marks", "negative mark", "negative marking"], "0");
+  const allowMultiple = getVal(["allowmultiple", "allow_multiple", "multiple"], "false");
+
   return {
-    title: row.questionTitle,
-    description: row.questionDescription,
+    title: title,
+    description: description,
     type: "MCQ",
-    marks: Number(row.marks || 1),
-    negativeMarks: Number(row.negativeMarks || 0),
+    marks: Number(marks || 1),
+    negativeMarks: Number(negativeMarks || 0),
     mcq: {
       options,
       correctAnswers,
-      allowMultiple: normalizeBoolean(row.allowMultiple, false)
+      allowMultiple: normalizeBoolean(allowMultiple, false)
     }
   };
 };

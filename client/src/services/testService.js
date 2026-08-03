@@ -13,6 +13,20 @@ export const testService = {
   importCsv(payload) {
     return api.post("/tests/import/csv", payload).then((res) => res.data);
   },
+  downloadCsvTemplate() {
+    return api.get("/tests/csv-template", {
+      responseType: "blob"
+    }).then((response) => {
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.setAttribute("download", "question-import-template.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(blobUrl);
+    });
+  },
   update(id, payload) {
     return api.patch(`/tests/${id}`, payload).then((res) => res.data);
   },

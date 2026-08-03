@@ -11,7 +11,8 @@ export const OverviewSection = ({
   loading,
   togglePublish,
   openTestEditor,
-  deleteTest
+  deleteTest,
+  downloadCsvTemplate
 }) => {
   return (
     <>
@@ -36,8 +37,19 @@ export const OverviewSection = ({
       </div>
 
       <div className="panel">
-        <h2>Create Test / Import CSV</h2>
-        <p className="muted">If a CSV file is selected below, Create Test will import questions from that CSV. Without CSV, it creates an empty draft test.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
+          <h2 style={{ margin: 0 }}>Create Test / Import CSV</h2>
+          <button
+            className="btn btn-ghost"
+            style={{ padding: "0.4rem 0.8rem", fontSize: "0.9rem" }}
+            onClick={downloadCsvTemplate}
+          >
+            Download CSV Template
+          </button>
+        </div>
+        <p className="muted" style={{ marginBottom: "1.2rem" }}>
+          If a CSV file is selected below, Create Test imports questions from the CSV. Without a CSV, an empty draft test is created.
+        </p>
         <div className="form-grid">
           <input
             placeholder="Test title"
@@ -50,21 +62,28 @@ export const OverviewSection = ({
             onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
             rows={3}
           />
-          <input
-            type="number"
-            value={form.durationMinutes}
-            onChange={(e) => setForm((prev) => ({ ...prev, durationMinutes: Number(e.target.value) }))}
-            min={1}
-          />
-          <button className="btn" onClick={createTestSkeleton}>Create Test</button>
-
-          <input
-            type="file"
-            accept=".csv,text/csv"
-            onChange={(event) => setCsvFile(event.target.files?.[0] || null)}
-          />
-          <button className="btn btn-ghost" onClick={importCsv} disabled={csvUploading}>
-            {csvUploading ? "Importing..." : "Import CSV"}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1rem", alignItems: "flex-end" }}>
+            <div>
+              <label style={{ marginBottom: "0.3rem", fontSize: "0.85rem" }}>Duration (Minutes)</label>
+              <input
+                type="number"
+                value={form.durationMinutes}
+                onChange={(e) => setForm((prev) => ({ ...prev, durationMinutes: Number(e.target.value) }))}
+                min={1}
+              />
+            </div>
+            <div>
+              <label style={{ marginBottom: "0.3rem", fontSize: "0.85rem" }}>Choose CSV File (Optional)</label>
+              <input
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => setCsvFile(event.target.files?.[0] || null)}
+                style={{ padding: "0.55rem" }}
+              />
+            </div>
+          </div>
+          <button className="btn" onClick={createTestSkeleton} disabled={csvUploading}>
+            {csvUploading ? "Importing questions..." : "Create Test"}
           </button>
         </div>
       </div>

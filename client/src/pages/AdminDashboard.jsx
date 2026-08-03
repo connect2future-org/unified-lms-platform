@@ -184,6 +184,14 @@ export const AdminDashboard = () => {
     }
   };
 
+  const downloadCsvTemplate = async () => {
+    try {
+      await testService.downloadCsvTemplate();
+    } catch (error) {
+      setStatusMessage("Failed to download CSV template.");
+    }
+  };
+
   const importStudentsCsv = async () => {
     if (!studentCsvFile) {
       setStatusMessage("Please choose student CSV file.");
@@ -375,6 +383,7 @@ export const AdminDashboard = () => {
           csvUploading={csvUploading}
           setCsvFile={setCsvFile}
           importCsv={importCsv}
+          downloadCsvTemplate={downloadCsvTemplate}
           tests={tests}
           loading={loading}
           togglePublish={togglePublish}

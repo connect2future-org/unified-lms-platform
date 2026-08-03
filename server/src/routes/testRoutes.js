@@ -18,6 +18,17 @@ import { requireAuth } from "../middleware/authMiddleware.js";
 export const testRoutes = Router();
 
 testRoutes.get("/", requireAuth, getTests);
+testRoutes.get("/csv-template", requireAuth, (req, res) => {
+  const csv = `Question Type,Question,Option A,Option B,Option C,Option D,Correct Answer,Explanation,Difficulty,Topic,Marks
+MCQ,"Sample Question","Option A","Option B","Option C","Option D","A","One-line explanation","Easy","Sample Topic",1`;
+
+  res.setHeader("Content-Type", "text/csv");
+  res.setHeader(
+    "Content-Disposition",
+    'attachment; filename="question-import-template.csv"'
+  );
+  return res.status(200).send(csv);
+});
 testRoutes.get("/:id", requireAuth, getTestById);
 
 testRoutes.use(requireAdminAuth);
