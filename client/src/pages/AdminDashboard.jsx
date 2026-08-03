@@ -142,7 +142,7 @@ export const AdminDashboard = () => {
   const createTestSkeleton = async () => {
     setStatusMessage("");
     if (csvFile) {
-      await importCsv();
+      await importQuestionFile();
       return;
     }
 
@@ -150,13 +150,13 @@ export const AdminDashboard = () => {
       ...form,
       questions: []
     });
-    setStatusMessage("Empty draft test created. Add questions in Test & Question Editor or upload CSV.");
+    setStatusMessage("Empty draft test created. Add questions in Test & Question Editor or upload CSV/Excel.");
     await loadOverview();
   };
 
-  const importCsv = async () => {
+  const importQuestionFile = async () => {
     if (!csvFile) {
-      setStatusMessage("Please choose a CSV file.");
+      setStatusMessage("Please choose a CSV or Excel file.");
       return;
     }
 
@@ -164,11 +164,9 @@ export const AdminDashboard = () => {
     setStatusMessage("");
 
     try {
-      const csvContent = await csvFile.text();
-      const response = await testService.importCsv({
-        csvContent,
+      const response = await testService.importFile(csvFile, {
         title: form.title || "Imported Test",
-        description: form.description || "Imported from CSV",
+        description: form.description || "Imported from CSV/Excel",
         durationMinutes: form.durationMinutes,
         negativeMarkingEnabled: form.negativeMarkingEnabled,
         randomizeQuestions: form.randomizeQuestions,
@@ -178,7 +176,7 @@ export const AdminDashboard = () => {
       setStatusMessage(`${response.importedQuestions} questions imported to MongoDB.`);
       await loadOverview();
     } catch (error) {
-      setStatusMessage(error.response?.data?.message || "CSV import failed.");
+      setStatusMessage(error.response?.data?.message || "File import failed.");
     } finally {
       setCsvUploading(false);
     }
@@ -382,7 +380,6 @@ export const AdminDashboard = () => {
           createTestSkeleton={createTestSkeleton}
           csvUploading={csvUploading}
           setCsvFile={setCsvFile}
-          importCsv={importCsv}
           downloadCsvTemplate={downloadCsvTemplate}
           tests={tests}
           loading={loading}

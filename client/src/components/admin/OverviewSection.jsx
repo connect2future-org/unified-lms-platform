@@ -6,7 +6,6 @@ export const OverviewSection = ({
   createTestSkeleton,
   csvUploading,
   setCsvFile,
-  importCsv,
   tests,
   loading,
   togglePublish,
@@ -38,7 +37,7 @@ export const OverviewSection = ({
 
       <div className="panel">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem", flexWrap: "wrap", gap: "0.5rem" }}>
-          <h2 style={{ margin: 0 }}>Create Test / Import CSV</h2>
+          <h2 style={{ margin: 0 }}>Create Test / Import CSV or Excel</h2>
           <button
             className="btn btn-ghost"
             style={{ padding: "0.4rem 0.8rem", fontSize: "0.9rem" }}
@@ -48,7 +47,7 @@ export const OverviewSection = ({
           </button>
         </div>
         <p className="muted" style={{ marginBottom: "1.2rem" }}>
-          If a CSV file is selected below, Create Test imports questions from the CSV. Without a CSV, an empty draft test is created.
+          If a CSV or Excel file is selected below, Create Test imports questions from that file. Without a file, an empty draft test is created.
         </p>
         <div className="form-grid">
           <input
@@ -73,10 +72,10 @@ export const OverviewSection = ({
               />
             </div>
             <div>
-              <label style={{ marginBottom: "0.3rem", fontSize: "0.85rem" }}>Choose CSV File (Optional)</label>
+              <label style={{ marginBottom: "0.3rem", fontSize: "0.85rem" }}>Choose CSV/Excel File (Optional)</label>
               <input
                 type="file"
-                accept=".csv,text/csv"
+                accept=".csv,text/csv,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={(event) => setCsvFile(event.target.files?.[0] || null)}
                 style={{ padding: "0.55rem" }}
               />

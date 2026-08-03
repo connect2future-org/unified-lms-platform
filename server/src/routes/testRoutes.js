@@ -7,6 +7,7 @@ import {
   getTestById,
   getTestQuestions,
   getTests,
+  importTestsFromFile,
   importTestsFromCsv,
   setPublishStatus,
   updateQuestionInTest,
@@ -14,6 +15,7 @@ import {
 } from "../controllers/testController.js";
 import { requireAdminAuth, requireAdminRole, adminToUserCompat, requireLmsAdmin } from "../middleware/auth.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
+import { uploadTestImportFile } from "../middleware/upload.js";
 
 export const testRoutes = Router();
 
@@ -36,6 +38,7 @@ testRoutes.use(adminToUserCompat);
 testRoutes.use(requireLmsAdmin);
 
 testRoutes.post("/import/csv", requireAdminRole("admin"), importTestsFromCsv);
+testRoutes.post("/import/file", requireAdminRole("admin"), uploadTestImportFile.single("file"), importTestsFromFile);
 testRoutes.post("/", requireAdminRole("admin"), createTest);
 testRoutes.get("/:id/questions", requireAdminRole("admin"), getTestQuestions);
 testRoutes.post("/:id/questions", requireAdminRole("admin"), addQuestionToTest);

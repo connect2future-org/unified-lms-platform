@@ -10,6 +10,23 @@ export const testService = {
   create(payload) {
     return api.post("/tests", payload).then((res) => res.data);
   },
+  importFile(file, payload) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("title", payload.title || "Imported Test");
+    formData.append("description", payload.description || "Imported from file");
+    formData.append("durationMinutes", String(payload.durationMinutes || 60));
+    formData.append("negativeMarkingEnabled", String(Boolean(payload.negativeMarkingEnabled)));
+    formData.append("randomizeQuestions", String(Boolean(payload.randomizeQuestions)));
+    formData.append("randomizeOptions", String(Boolean(payload.randomizeOptions)));
+    formData.append("antiCheat", JSON.stringify(payload.antiCheat || {}));
+
+    return api.post("/tests/import/file", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data"
+      }
+    }).then((res) => res.data);
+  },
   importCsv(payload) {
     return api.post("/tests/import/csv", payload).then((res) => res.data);
   },

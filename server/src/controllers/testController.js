@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 import { parse } from "csv-parse/sync";
+import ExcelJS from "exceljs";
 import { Attempt } from "../models/Attempt.js";
 import { CheatingLog } from "../models/CheatingLog.js";
 import { Question } from "../models/Question.js";
 import { Test } from "../models/Test.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
+
+const SUPPORTED_IMPORT_EXTENSIONS = [".csv", ".xlsx"];
 
 const normalizeBoolean = (value, fallback = false) => {
   if (typeof value === "boolean") {
@@ -61,20 +64,39 @@ const sanitizeQuestionInput = (question) => {
   return base;
 };
 
-const buildCsvMcqQuestion = (row) => {
-  const getVal = (possibleKeys, fallback = "") => {
-    for (const key of Object.keys(row)) {
-      if (possibleKeys.includes(key.toLowerCase().trim())) {
-        return row[key] !== undefined && row[key] !== null ? row[key] : fallback;
-      }
-    }
-    return fallback;
-  };
+const normalizeHeader = (value) => String(value || "").trim().toLowerCase().replace(/[^a-z0-9]/g, "");
 
-  const optionA = getVal(["option a", "optiona"]);
-  const optionB = getVal(["option b", "optionb"]);
-  const optionC = getVal(["option c", "optionc"]);
-  const optionD = getVal(["option d", "optiond"]);
+const getNormalizedRow = (row) => {
+  const normalized = {};
+  for (const [key, value] of Object.entries(row || {})) {
+    normalized[normalizeHeader(key)] = value;
+  }
+  return normalized;
+};
+
+const getRowValue = (normalizedRow, possibleKeys, fallback = "") => {
+  for (const key of possibleKeys) {
+    if (normalizedRow[key] !== undefined && normalizedRow[key] !== null) {
+      return normalizedRow[key];
+    }
+  }
+  return fallback;
+};
+
+const normalizeCorrectAnswers = (rawCorrectAnswer) => {
+  return String(rawCorrectAnswer || "")
+    .split(/[|,;\/]/)
+    .map((item) => item.trim().toUpperCase())
+    .filter(Boolean);
+};
+
+const buildMcqQuestion = (row) => {
+  const normalizedRow = getNormalizedRow(row);
+
+  const optionA = getRowValue(normalizedRow, ["optiona"]);
+  const optionB = getRowValue(normalizedRow, ["optionb"]);
+  const optionC = getRowValue(normalizedRow, ["optionc"]);
+  const optionD = getRowValue(normalizedRow, ["optiond"]);
 
   const options = [
     { key: "A", text: optionA },
@@ -83,17 +105,14 @@ const buildCsvMcqQuestion = (row) => {
     { key: "D", text: optionD }
   ].filter((opt) => opt.text.trim().length);
 
-  const rawCorrect = getVal(["correct answer", "correctanswers", "correct_answer"]);
-  const correctAnswers = String(rawCorrect)
-    .split("|")
-    .map((item) => item.trim().toUpperCase())
-    .filter(Boolean);
+  const rawCorrect = getRowValue(normalizedRow, ["correctanswer", "correctanswers"]);
+  const correctAnswers = normalizeCorrectAnswers(rawCorrect);
 
-  const title = String(getVal(["question", "questiontitle", "title", "question_title"])).trim();
-  const description = String(getVal(["explanation", "questiondescription", "description", "question_description"])).trim() || "No explanation provided";
-  const marks = getVal(["marks", "mark"], "1");
-  const negativeMarks = getVal(["negativemarks", "negative_marks", "negative mark", "negative marking"], "0");
-  const allowMultiple = getVal(["allowmultiple", "allow_multiple", "multiple"], "false");
+  const title = String(getRowValue(normalizedRow, ["question", "questiontitle", "title"])).trim();
+  const description = String(getRowValue(normalizedRow, ["explanation", "questiondescription", "description"], "No explanation provided")).trim() || "No explanation provided";
+  const marks = getRowValue(normalizedRow, ["marks", "mark"], "1");
+  const negativeMarks = getRowValue(normalizedRow, ["negativemarks", "negativemark", "negativemarking"], "0");
+  const allowMultiple = getRowValue(normalizedRow, ["allowmultiple", "multiple"], "false");
 
   return {
     title: title,
@@ -107,6 +126,136 @@ const buildCsvMcqQuestion = (row) => {
       allowMultiple: normalizeBoolean(allowMultiple, false)
     }
   };
+};
+
+const validateImportedQuestions = (questionsPayload) => {
+  const invalidQuestion = questionsPayload.find((question) => {
+    if (!question.title || !question.description || question.mcq.options.length < 2 || !question.mcq.correctAnswers.length) {
+      return true;
+    }
+
+    const optionKeys = new Set(question.mcq.options.map((option) => option.key));
+    return question.mcq.correctAnswers.some((answer) => !optionKeys.has(answer));
+  });
+
+  if (!invalidQuestion) {
+    return null;
+  }
+
+  return "Invalid row detected. Ensure each question has title, minimum 2 options, and valid correct answer values like A|B.";
+};
+
+const parseRowsFromCsvText = (csvContent) => {
+  return parse(csvContent, {
+    columns: true,
+    skip_empty_lines: true,
+    trim: true
+  });
+};
+
+const parseRowsFromExcelBuffer = async (buffer) => {
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(buffer);
+
+  const worksheet = workbook.worksheets.find((sheet) => sheet.actualRowCount > 0);
+  if (!worksheet) {
+    return [];
+  }
+
+  const headerRow = worksheet.getRow(1);
+  const headers = headerRow.values
+    .slice(1)
+    .map((value) => String(value || "").trim());
+
+  const rows = [];
+  for (let index = 2; index <= worksheet.rowCount; index += 1) {
+    const row = worksheet.getRow(index);
+    const rowValues = row.values.slice(1);
+
+    const hasData = rowValues.some((value) => String(value || "").trim().length > 0);
+    if (!hasData) {
+      continue;
+    }
+
+    const entry = {};
+    headers.forEach((header, headerIndex) => {
+      if (header) {
+        entry[header] = rowValues[headerIndex];
+      }
+    });
+    rows.push(entry);
+  }
+
+  return rows;
+};
+
+const parseAntiCheatField = (value) => {
+  if (!value) {
+    return {};
+  }
+  if (typeof value === "object") {
+    return value;
+  }
+  try {
+    const parsed = JSON.parse(value);
+    return typeof parsed === "object" && parsed !== null ? parsed : {};
+  } catch {
+    return {};
+  }
+};
+
+const createImportedTest = async ({ req, rows, title, description, durationMinutes, negativeMarkingEnabled, randomizeQuestions, randomizeOptions, antiCheat }) => {
+  if (!rows.length) {
+    return { status: 400, payload: { message: "Import file has no question rows" } };
+  }
+
+  const questionsPayload = rows.map(buildMcqQuestion);
+  const validationError = validateImportedQuestions(questionsPayload);
+  if (validationError) {
+    return { status: 400, payload: { message: validationError } };
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const createdQuestions = await Question.insertMany(
+      questionsPayload.map((q) => ({ ...sanitizeQuestionInput(q), createdBy: req.user._id })),
+      { session }
+    );
+
+    const [test] = await Test.create(
+      [
+        {
+          title,
+          description,
+          durationMinutes: Number(durationMinutes),
+          negativeMarkingEnabled: normalizeBoolean(negativeMarkingEnabled, true),
+          randomizeQuestions: normalizeBoolean(randomizeQuestions, true),
+          randomizeOptions: normalizeBoolean(randomizeOptions, true),
+          antiCheat,
+          questions: createdQuestions.map((q) => q._id),
+          createdBy: req.user._id
+        }
+      ],
+      { session }
+    );
+
+    await session.commitTransaction();
+    return {
+      status: 201,
+      payload: {
+        message: "Questions imported successfully",
+        test,
+        importedQuestions: createdQuestions.length
+      }
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
 };
 
 const sanitizeQuestionForCandidate = (question) => {
@@ -202,62 +351,57 @@ export const importTestsFromCsv = asyncHandler(async (req, res) => {
     });
   }
 
-  const rows = parse(csvContent, {
-    columns: true,
-    skip_empty_lines: true,
-    trim: true
+  const rows = parseRowsFromCsvText(csvContent);
+  const result = await createImportedTest({
+    req,
+    rows,
+    title,
+    description,
+    durationMinutes,
+    negativeMarkingEnabled: req.body.negativeMarkingEnabled,
+    randomizeQuestions: req.body.randomizeQuestions,
+    randomizeOptions: req.body.randomizeOptions,
+    antiCheat: parseAntiCheatField(req.body.antiCheat)
   });
 
-  if (!rows.length) {
-    return res.status(400).json({ message: "CSV has no question rows" });
-  }
+  return res.status(result.status).json(result.payload);
+});
 
-  const questionsPayload = rows.map(buildCsvMcqQuestion);
-  const invalidRow = questionsPayload.find((q) => !q.title || !q.description || q.mcq.options.length < 2 || !q.mcq.correctAnswers.length);
-  if (invalidRow) {
+export const importTestsFromFile = asyncHandler(async (req, res) => {
+  const { title, description, durationMinutes } = req.body;
+
+  if (!req.file || !title || !durationMinutes) {
     return res.status(400).json({
-      message: "Invalid CSV row detected. Ensure questionTitle, questionDescription, optionA/optionB..., and correctAnswers are present"
+      message: "file, title and durationMinutes are required"
     });
   }
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const fileName = String(req.file.originalname || "").toLowerCase();
+  let rows = [];
 
-  try {
-    const createdQuestions = await Question.insertMany(
-      questionsPayload.map((q) => ({ ...sanitizeQuestionInput(q), createdBy: req.user._id })),
-      { session }
-    );
-
-    const [test] = await Test.create(
-      [
-        {
-          title,
-          description,
-          durationMinutes: Number(durationMinutes),
-          negativeMarkingEnabled: normalizeBoolean(req.body.negativeMarkingEnabled, true),
-          randomizeQuestions: normalizeBoolean(req.body.randomizeQuestions, true),
-          randomizeOptions: normalizeBoolean(req.body.randomizeOptions, true),
-          antiCheat: req.body.antiCheat || {},
-          questions: createdQuestions.map((q) => q._id),
-          createdBy: req.user._id
-        }
-      ],
-      { session }
-    );
-
-    await session.commitTransaction();
-    return res.status(201).json({
-      message: "CSV imported successfully",
-      test,
-      importedQuestions: createdQuestions.length
+  if (fileName.endsWith(".csv")) {
+    rows = parseRowsFromCsvText(req.file.buffer.toString("utf-8"));
+  } else if (fileName.endsWith(".xlsx")) {
+    rows = await parseRowsFromExcelBuffer(req.file.buffer);
+  } else {
+    return res.status(400).json({
+      message: `Unsupported file type. Use ${SUPPORTED_IMPORT_EXTENSIONS.join(" or ")}`
     });
-  } catch (error) {
-    await session.abortTransaction();
-    throw error;
-  } finally {
-    session.endSession();
   }
+
+  const result = await createImportedTest({
+    req,
+    rows,
+    title,
+    description,
+    durationMinutes,
+    negativeMarkingEnabled: req.body.negativeMarkingEnabled,
+    randomizeQuestions: req.body.randomizeQuestions,
+    randomizeOptions: req.body.randomizeOptions,
+    antiCheat: parseAntiCheatField(req.body.antiCheat)
+  });
+
+  return res.status(result.status).json(result.payload);
 });
 
 export const updateTest = asyncHandler(async (req, res) => {
