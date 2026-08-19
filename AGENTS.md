@@ -10,6 +10,23 @@ overwritten on the next run.
 
 Single source of truth for AI agent behaviour in this repository.
 
+## AI framework invocation
+
+- Use the default coding workflow for every request unless the user explicitly asks to
+  run a named SDLC skill, a named custom agent, a phase/gate/checkpoint assessment, or
+  an MCP-backed documentation lookup.
+- Do not infer, select, trigger, recommend, load, or execute a skill or agent solely
+  because a task, prompt, query, filename, or keyword resembles its description.
+- Treat skills, agents, SDLC phases, gates, checkpoints, output routing, and the usage
+  log as opt-in framework features. They run only when the user explicitly names the
+  feature or invokes its endpoint/command.
+- Explicit examples include: `/status`, "run `run-tests-and-report`", "use the
+  `reviewer` agent", "assess the Phase 05 gate", or "query the documentation MCP".
+- A normal request to implement, fix, test, review, explain, or search does not invoke
+  any framework feature. Do not ask for SDLC phase, skill, gate, evidence paths, or
+  human approval unless the user has explicitly invoked the framework.
+- Retain all framework files and tooling. Manual invocation remains available.
+
 ## Coding standards
 
 - British English in prose and comments.
@@ -42,6 +59,8 @@ Single source of truth for AI agent behaviour in this repository.
 
 ## Working with the SDLC phases
 
+- This section applies only after the user explicitly invokes an SDLC phase, gate,
+  checkpoint, skill, agent, or other framework workflow.
 - Phase definitions live in `sdlc/phases/`. Check the current phase's `gate.md` (phases
   1–6) or `checkpoint.md` (phases 7–9) before treating a phase as complete.
 - Before making any code change, tool edit, or SDLC-governed output, identify which
@@ -74,6 +93,7 @@ Single source of truth for AI agent behaviour in this repository.
 
 ## Tracking skill and agent usage
 
+- This section applies only to an explicitly invoked skill or agent task.
 - After finishing any skill or agent task, append one row to the *consuming
   project's own* `docs/usage-log.md` — git-tracked, append-only, created on
   first use (never in the framework repo) with this exact table:
