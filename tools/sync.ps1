@@ -20,7 +20,8 @@ all 4 and flag the narrowed-out tools' files as drift. See docs/reference.md.
 param(
     [switch]$Check,
     [ValidateSet('copilot', 'claude', 'codex', 'gemini')]
-    [string[]]$Tools = @('copilot', 'claude', 'codex', 'gemini')
+    [string[]]$Tools = @('copilot', 'claude', 'codex', 'gemini'),
+        [switch]$EnableFrameworkDiscovery
 )
 
 Set-StrictMode -Version Latest
@@ -105,7 +106,7 @@ function Sync-Instructions {
 # mirror function below is written to support extra targets, but the extra-target
 # list stays empty until that is verified, so we don't reintroduce the four-way
 # mirror V2 is meant to cut.
-$SkillMirrorTargets = @('.agents/skills')  # add '.claude/skills', '.gemini/skills' here once verified
+$SkillMirrorTargets = if ($EnableFrameworkDiscovery) { @('.agents/skills') } else { @() }
 
 function Sync-Skills {
     # Sources nest skills under a phase folder (skills/strategy-planning/kick-off-a-project/
@@ -141,6 +142,10 @@ function Sync-Skills {
 # the fix for V1's bug where agents lived in .github/agents AND plugins/v1-sdlc,
 # with no single source and drift between the two.
 function Sync-Agents {
+    if (-not $EnableFrameworkDiscovery) {
+        return
+    }
+
     $src = Join-Path $Root 'agents'
     if (-not (Test-Path -LiteralPath $src)) { Write-Warning 'agents/ not found - skipping agents'; return }
     $want = [System.Collections.Generic.HashSet[string]]::new()
