@@ -1,0 +1,13 @@
+{
+  "_comment": "mcp/servers.json — SOURCE. Edit 2 of 2. Canonical MCP server list, human-edited. tools/sync.ps1 derives .vscode/mcp.json, .mcp.json, .codex/config.toml and .gemini/settings.json from this file — never hand-edit those. Ships near-empty: add your team's real servers below. The entry below is a documented example, not a live server; remove or replace it.",
+  "servers": {
+    "version1-sdlc": {
+      "type": "http",
+      "url": "https://version1sdlcmcp.happyisland-59907481.uksouth.azurecontainerapps.io/mcp",
+      "headers": {
+        "X-API-Key": "iMBMB9xq2Ktt1UxwP7FSb-Mikgt3b6_dOfNV0yOj30g"
+      },
+      "_comment": "Version 1's AI-Assisted Development SDLC documentation server."
+    }
+  }
+}

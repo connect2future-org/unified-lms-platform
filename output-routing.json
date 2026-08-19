@@ -1,0 +1,28 @@
+{
+  "_file": "output-routing.json — SOURCE, human-edited. Every deliverable is written to git and delivered as a pull request. SharePoint is a one-way mirror of merged documents, for readers without repo access. Ships usable with zero edits; edit only to add a class or change what gets mirrored.",
+  "default": "git",
+  "routes": {
+    "adr": "git",
+    "readme": "git",
+    "api-reference": "git",
+    "report": "git",
+    "release-notes": "git",
+    "spec": "git"
+  },
+  "destinations": {
+    "git": {
+      "type": "path",
+      "root": "docs/"
+    }
+  },
+  "mirror": {
+    "_comment": "Classes a stakeholder outside the repo needs to read. Copied to SharePoint AFTER merge, via the mirror-to-sharepoint skill. One-way — the mirror is never a source of truth.",
+    "classes": ["report", "release-notes", "spec"],
+    "never": ["usage-log", "consent-log", "traceability-matrix", "tech-debt"],
+    "library": "AI Deliverables",
+    "sensitivityLabel": "Controlled",
+    "sensitivityLabelApplied": false,
+    "requiresConsent": true,
+    "rootFrom": "output-routing.local.json"
+  }
+}

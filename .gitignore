@@ -22,3 +22,6 @@ pnpm-debug.log*
 .DS_Store
 .vscode/
 .idea/
+
+# Per-machine SharePoint mirror path. Contains a local user path - never commit it.
+output-routing.local.json

@@ -1,0 +1,4 @@
+{
+  "_file": "output-routing.local.json — SOURCE, per-machine, NEVER committed (see .gitignore). Absolute path to your OneDrive-synced SharePoint library folder. tools/bootstrap.ps1 writes this for you; leave it empty to skip mirroring entirely. This is a separate file because the path contains your username and differs on every machine — committing it would leak a local path and break for teammates.",
+  "sharepointRoot": ""
+}

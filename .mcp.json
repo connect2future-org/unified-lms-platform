@@ -1,0 +1,12 @@
+{
+    "mcpServers":  {
+                       "version1-sdlc":  {
+                                             "type":  "http",
+                                             "url":  "https://version1sdlcmcp.happyisland-59907481.uksouth.azurecontainerapps.io/mcp",
+                                             "headers":  {
+                                                             "X-API-Key":  "iMBMB9xq2Ktt1UxwP7FSb-Mikgt3b6_dOfNV0yOj30g"
+                                                         },
+                                             "_comment":  "Version 1\u0027s AI-Assisted Development SDLC documentation server."
+                                         }
+                   }
+}

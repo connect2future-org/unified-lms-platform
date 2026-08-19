@@ -1,0 +1,10 @@
+{
+  "_comment": "mcp/servers.json — SOURCE. Edit 2 of 3. Canonical MCP server list, human-edited. tools/sync.ps1 derives .vscode/mcp.json, .mcp.json, .codex/config.toml and .gemini/settings.json from this file — never hand-edit those. Ships near-empty: add your team's real servers below. The entry below is a documented example, not a live server; remove or replace it. Never put a secret in here — it is git-tracked and copied into four derived files.",
+  "servers": {
+    "example-standards-server": {
+      "command": "npx",
+      "args": ["-y", "@your-org/standards-mcp"],
+      "_comment": "Example only. Replace with a real MCP server (e.g. a documentation server) or remove this entry. A SharePoint/Graph server is optional — deliverables reach SharePoint by file copy via the mirror-to-sharepoint skill. Adding one would let the mirror apply a sensitivity label and run headless."
+    }
+  }
+}
