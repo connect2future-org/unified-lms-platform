@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
+    "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js",
     "seed": "node src/utils/seedProjects.js",
     "migrate:users:unified-auth:dry": "node src/utils/migrateUsersForUnifiedAuth.js --dry-run",
     "migrate:users:unified-auth": "node src/utils/migrateUsersForUnifiedAuth.js",
