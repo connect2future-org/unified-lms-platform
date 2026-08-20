@@ -1,13 +1,13 @@
 const TAB_META = {
   approval: {
     label: 'Approval',
-    active: 'bg-indigo-300 text-slate-950 shadow-sm',
-    idle: 'border border-indigo-300/40 bg-slate-800 text-indigo-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   edit: {
     label: 'Edit',
-    active: 'bg-cyan-300 text-slate-950 shadow-sm',
-    idle: 'border border-cyan-300/40 bg-slate-800 text-cyan-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   directory: {
     label: 'Directory',
@@ -16,38 +16,38 @@ const TAB_META = {
   },
   projects: {
     label: 'Projects',
-    active: 'bg-amber-300 text-slate-950 shadow-sm',
-    idle: 'border border-amber-300/40 bg-slate-800 text-amber-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   progress: {
     label: 'Progress',
-    active: 'bg-violet-300 text-slate-950 shadow-sm',
-    idle: 'border border-violet-300/40 bg-slate-800 text-violet-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   github: {
     label: 'GitHub',
-    active: 'bg-sky-300 text-slate-950 shadow-sm',
-    idle: 'border border-sky-300/40 bg-slate-800 text-sky-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   revoke: {
     label: 'Revoke',
-    active: 'bg-rose-300 text-slate-950 shadow-sm',
-    idle: 'border border-rose-300/40 bg-slate-800 text-rose-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   security: {
     label: 'Password Security',
-    active: 'bg-emerald-300 text-slate-950 shadow-sm',
-    idle: 'border border-emerald-300/40 bg-slate-800 text-emerald-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   migration: {
     label: 'Migration',
-    active: 'bg-fuchsia-300 text-slate-950 shadow-sm',
-    idle: 'border border-fuchsia-300/40 bg-slate-800 text-fuchsia-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   },
   bulkUpdate: {
     label: 'Bulk Update Teams',
-    active: 'bg-teal-300 text-slate-950 shadow-sm',
-    idle: 'border border-teal-300/40 bg-slate-800 text-teal-100 hover:bg-slate-700'
+    active: 'bg-blue-300 text-slate-950 shadow-sm',
+    idle: 'border border-blue-300/40 bg-slate-800 text-blue-100 hover:bg-slate-700'
   }
 }
 

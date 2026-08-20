@@ -136,7 +136,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-4 md:p-6">
+    <section className="mt-6 rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4 md:p-6">
       <h2 className="text-xl font-black text-white">Project Management</h2>
       <p className="mt-1 text-sm text-cyan-100/90">
         Add projects manually, upload from Excel/PDF, and reconcile past assignment mismatch caused by direct DB deletes.
@@ -154,7 +154,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
       )}
 
       <div className="mt-5 grid gap-6 lg:grid-cols-2">
-        <form onSubmit={handleManualSubmit} className="space-y-3 rounded-xl border border-white/15 bg-white/5 p-4">
+        <form onSubmit={handleManualSubmit} className="space-y-3 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
           <h3 className="text-sm font-bold uppercase tracking-wide text-cyan-100">Manual Add</h3>
           <input
             required
@@ -203,7 +203,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
           </button>
         </form>
 
-        <div className="space-y-4 rounded-xl border border-white/15 bg-white/5 p-4">
+        <div className="space-y-4 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
           <h3 className="text-sm font-bold uppercase tracking-wide text-cyan-100">Bulk Upload</h3>
           <input
             type="file"
@@ -310,7 +310,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
         </div>
       </div>
 
-      <div className="mt-6 rounded-xl border border-white/15 bg-white/5 p-4">
+      <div className="mt-6 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-bold uppercase tracking-wide text-cyan-100">
             Populated Projects (Row by Row)

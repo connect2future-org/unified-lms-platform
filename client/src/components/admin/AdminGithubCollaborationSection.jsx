@@ -4,18 +4,18 @@ export function AdminGithubCollaborationSection({
   onReviewGithubCollaboration
 }) {
   return (
-    <section className="rounded-2xl border border-sky-300/30 bg-sky-900/20 p-4">
+    <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-black text-sky-100">GitHub Collaboration</h2>
-        <span className="rounded-full border border-sky-200/40 bg-sky-500/20 px-3 py-1 text-xs font-semibold text-sky-100">
+        <h2 className="text-lg font-black text-blue-100">GitHub Collaboration</h2>
+        <span className="rounded-full border border-blue-200/40 bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-100">
           Teams: {githubTeams.length}
         </span>
       </div>
-      <p className="mt-1 text-xs text-sky-100/90">
+      <p className="mt-1 text-xs text-blue-100/90">
         Manage repository links and mark collaboration status after invite acceptance.
       </p>
 
-      <div className="mt-3 overflow-x-auto rounded-xl border border-white/15 bg-black/20">
+      <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
         <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
           <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
             <tr>

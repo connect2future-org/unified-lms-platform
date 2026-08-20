@@ -67,7 +67,7 @@ a:hover {
   font-size: 1.3rem;
   font-weight: 800;
   color: var(--text);
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -148,7 +148,7 @@ a:hover {
   border-radius: 999px;
   display: grid;
   place-items: center;
-  background: linear-gradient(135deg, var(--primary), var(--accent));
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
   color: #fff;
   font-size: 0.75rem;
 }

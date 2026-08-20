@@ -33,9 +33,9 @@ export function AdminMigrationSection({
   onRefreshSummary
 }) {
   return (
-    <section className="rounded-2xl border border-fuchsia-300/30 bg-fuchsia-900/20 p-4">
-      <h2 className="text-lg font-black text-fuchsia-100">Data Migration</h2>
-      <p className="mt-1 text-xs text-fuchsia-100/90">
+    <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
+      <h2 className="text-lg font-black text-blue-100">Data Migration</h2>
+      <p className="mt-1 text-xs text-blue-100/90">
         Bulk-fix old records when new schema fields are introduced.
       </p>
 
@@ -52,10 +52,10 @@ export function AdminMigrationSection({
       ) : null}
 
       <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <div className="rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-fuchsia-100 md:col-span-3">
+        <div className="rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3 text-sm text-blue-100 md:col-span-3">
           <p className="font-semibold">Fields Updated By Migration</p>
           <div className="mt-2 overflow-x-auto rounded border border-white/20">
-            <table className="migration-fields-table min-w-full text-left text-xs text-fuchsia-100">
+            <table className="migration-fields-table min-w-full text-left text-xs text-blue-100">
               <thead className="bg-slate-100 uppercase tracking-wide text-slate-900">
                 <tr>
                   <th className="px-3 py-2">Field</th>
@@ -89,9 +89,9 @@ export function AdminMigrationSection({
           </div>
         </div>
 
-        <div className="rounded-lg border border-sky-300/30 bg-sky-900/20 p-3 text-sm text-sky-100 md:col-span-3">
+        <div className="rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3 text-sm text-blue-100 md:col-span-3">
           <p className="font-semibold">User Role/Auth Migration (No Delete)</p>
-          <p className="mt-1 text-xs text-sky-100/90">
+          <p className="mt-1 text-xs text-blue-100/90">
             Upgrades existing user records for unified login by normalizing roles and backfilling missing auth fields.
           </p>
           <div className="mt-3 grid gap-2 md:grid-cols-3">
@@ -119,18 +119,18 @@ export function AdminMigrationSection({
           </div>
         </div>
 
-        <div className="rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-fuchsia-100">
+        <div className="rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3 text-sm text-blue-100">
           <p><strong>Total Teams:</strong> {migrationSummary?.totalTeams ?? '-'}</p>
           <p><strong>Approved:</strong> {migrationSummary?.approved ?? '-'}</p>
           <p><strong>Pending:</strong> {migrationSummary?.pending ?? '-'}</p>
           <p><strong>Rejected:</strong> {migrationSummary?.rejected ?? '-'}</p>
         </div>
-        <div className="rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-fuchsia-100">
+        <div className="rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3 text-sm text-blue-100">
           <p><strong>Missing Status:</strong> {migrationSummary?.missingStatus ?? '-'}</p>
           <p><strong>Pending + Assigned:</strong> {migrationSummary?.pendingWithAssignedProject ?? '-'}</p>
           <p><strong>Pending + Idea:</strong> {migrationSummary?.pendingWithCustomIdea ?? '-'}</p>
         </div>
-        <div className="rounded-lg border border-white/20 bg-black/20 p-3 text-sm text-fuchsia-100">
+        <div className="rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3 text-sm text-blue-100">
           <p className="font-semibold">Bulk Actions</p>
           <div className="mt-2 flex flex-col gap-2">
             <button
@@ -171,15 +171,15 @@ export function AdminMigrationSection({
 
       {showMigrationWizard ? (
         <div className="fixed inset-0 z-90 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-2xl rounded-2xl border border-fuchsia-300/40 bg-slate-900 p-6 shadow-2xl">
+          <div className="w-full max-w-2xl rounded-2xl border border-blue-300/40 bg-slate-900 p-6 shadow-2xl">
             <h3 className="text-xl font-black text-white">Migration Wizard</h3>
-            <p className="mt-1 text-sm text-fuchsia-100/90">
+            <p className="mt-1 text-sm text-blue-100/90">
               Select enum values below. These fields will be updated in bulk.
             </p>
 
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-fuchsia-100">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-100">
                   Migration Mode (Enum)
                 </label>
                 <select
@@ -194,7 +194,7 @@ export function AdminMigrationSection({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-fuchsia-100">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-100">
                   registrationStatus (Enum)
                 </label>
                 <select
@@ -209,7 +209,7 @@ export function AdminMigrationSection({
               </div>
 
               <div>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-fuchsia-100">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-100">
                   reviewNote Template (Enum)
                 </label>
                 <select
@@ -224,7 +224,7 @@ export function AdminMigrationSection({
               </div>
             </div>
 
-            <div className="mt-4 rounded-lg border border-white/20 bg-black/20 p-3 text-xs text-fuchsia-100">
+            <div className="mt-4 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3 text-xs text-blue-100">
               <p><strong>Will update fields:</strong> registrationStatus, registrationReviewedAt, registrationReviewedBy, registrationReviewNote</p>
               <p className="mt-1"><strong>Selected values:</strong> {migrationConfig.mode} | {migrationConfig.targetStatus} | {migrationConfig.reviewNote}</p>
             </div>

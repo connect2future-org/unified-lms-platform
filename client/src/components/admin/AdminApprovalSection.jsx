@@ -48,23 +48,23 @@ export function AdminApprovalSection({
   onReviewCustomIdeaRequest
 }) {
   return (
-    <section className="rounded-2xl border border-indigo-300/30 bg-indigo-900/20 p-4">
+    <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-black text-indigo-100">Approval Section</h2>
-        <span className="rounded-full border border-indigo-200/40 bg-indigo-500/20 px-3 py-1 text-xs font-semibold text-indigo-100">
+        <h2 className="text-lg font-black text-blue-100">Approval Section</h2>
+        <span className="rounded-full border border-blue-200/40 bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-100">
           Pending: {totalApprovalPending}
         </span>
       </div>
 
-      <div className="mt-4 rounded-xl border border-emerald-200/30 bg-emerald-950/30 p-3">
-        <h3 className="text-sm font-black uppercase tracking-wide text-emerald-100">
+      <div className="mt-4 rounded-xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3">
+        <h3 className="text-sm font-black uppercase tracking-wide text-blue-100">
           Team Registration Approvals
         </h3>
-        <p className="mt-1 text-xs text-emerald-100/85">
+        <p className="mt-1 text-xs text-blue-100/85">
           Pending registrations: {registrationApprovalTeams.length}
         </p>
 
-        <div className="mt-3 overflow-x-auto rounded-xl border border-white/15 bg-black/20">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
           <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
             <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
               <tr>
@@ -138,15 +138,15 @@ export function AdminApprovalSection({
         </div>
       </div>
 
-      <div className="mt-4 rounded-xl border border-indigo-200/30 bg-indigo-950/30 p-3">
-        <h3 className="text-sm font-black uppercase tracking-wide text-indigo-100">
+      <div className="mt-4 rounded-xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3">
+        <h3 className="text-sm font-black uppercase tracking-wide text-blue-100">
           Profile Update Approvals
         </h3>
-        <p className="mt-1 text-xs text-indigo-100/85">
+        <p className="mt-1 text-xs text-blue-100/85">
           Pending profile requests: {approvalTeams.length}
         </p>
 
-        <div className="mt-3 overflow-x-auto rounded-xl border border-white/15 bg-black/20">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
           <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
             <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
               <tr>
@@ -179,22 +179,22 @@ export function AdminApprovalSection({
                       <div>Note: {team.profileUpdateRequest?.payload?.requestNote || '-'}</div>
                     </td>
                     <td className="px-3 py-3">
-                      <div className="rounded border border-indigo-200/30 bg-indigo-950/30 p-2 text-xs text-indigo-100">
+                      <div className="rounded border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-2 text-xs text-blue-100">
                         {diffItems.length > 0 ? (
                           <div className="space-y-1">
                             {diffItems.slice(0, 6).map((item) => (
                               <div key={`${team._id}-${item.label}`}>
-                                <div className="font-semibold text-indigo-100">{item.label}</div>
-                                <div className="text-indigo-200/90">Now: {item.current || '-'}</div>
-                                <div className="text-emerald-200">Req: {item.requested || '-'}</div>
+                                <div className="font-semibold text-blue-100">{item.label}</div>
+                                <div className="text-blue-200/90">Now: {item.current || '-'}</div>
+                                <div className="text-blue-200">Req: {item.requested || '-'}</div>
                               </div>
                             ))}
                             {diffItems.length > 6 ? (
-                              <div className="text-indigo-200/80">+{diffItems.length - 6} more changes</div>
+                              <div className="text-blue-200/80">+{diffItems.length - 6} more changes</div>
                             ) : null}
                           </div>
                         ) : (
-                          <div className="text-indigo-200/80">No field differences detected.</div>
+                          <div className="text-blue-200/80">No field differences detected.</div>
                         )}
                       </div>
                     </td>
@@ -231,15 +231,15 @@ export function AdminApprovalSection({
         />
       </div>
 
-      <div className="mt-5 rounded-xl border border-amber-200/30 bg-amber-950/30 p-3">
-        <h3 className="text-sm font-black uppercase tracking-wide text-amber-100">
+      <div className="mt-5 rounded-xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-3">
+        <h3 className="text-sm font-black uppercase tracking-wide text-blue-100">
           Custom Project Idea Approvals
         </h3>
-        <p className="mt-1 text-xs text-amber-100/85">
+        <p className="mt-1 text-xs text-blue-100/85">
           Pending custom ideas: {ideaApprovalTeams.length}
         </p>
 
-        <div className="mt-3 overflow-x-auto rounded-xl border border-white/15 bg-black/20">
+        <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
           <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
             <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
               <tr>
@@ -264,7 +264,7 @@ export function AdminApprovalSection({
                     <div className="text-xs text-cyan-100/90">{team.leadEmail}</div>
                   </td>
                   <td className="px-3 py-3 text-xs">
-                    <div className="font-semibold text-amber-100">{team.customProjectIdea?.title || '-'}</div>
+                    <div className="font-semibold text-blue-100">{team.customProjectIdea?.title || '-'}</div>
                     <div className="mt-1 text-cyan-100/90">{team.customProjectIdea?.description || '-'}</div>
                     <div className="mt-1 text-cyan-100/80">
                       {(team.customProjectIdea?.domain || '-')}

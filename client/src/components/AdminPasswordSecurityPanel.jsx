@@ -56,7 +56,7 @@ export function AdminPasswordSecurityPanel() {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-white/20 bg-black/20 p-4 md:p-6">
+    <section className="mt-6 rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4 md:p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-white">Password Security Control</h2>
@@ -85,11 +85,11 @@ export function AdminPasswordSecurityPanel() {
       ) : null}
 
       {loading ? (
-        <div className="mt-5 rounded-lg border border-white/15 bg-white/5 px-4 py-4 text-sm text-cyan-100">
+        <div className="mt-5 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 px-4 py-4 text-sm text-cyan-100">
           Loading password activity...
         </div>
       ) : (
-        <div className="mt-5 overflow-x-auto rounded-xl border border-white/15">
+        <div className="mt-5 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
           <table className="min-w-full divide-y divide-white/15 text-left text-sm text-cyan-50">
             <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
               <tr>

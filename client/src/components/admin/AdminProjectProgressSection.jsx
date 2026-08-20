@@ -122,11 +122,11 @@ export function AdminProjectProgressSection({
   }
 
   return (
-    <section className="rounded-2xl border border-violet-300/30 bg-violet-900/20 p-4">
+    <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-black text-violet-100">Project Progress Monitor</h2>
+        <h2 className="text-lg font-black text-blue-100">Project Progress Monitor</h2>
         <div className="flex items-center gap-2">
-          <span className="rounded-full border border-violet-200/40 bg-violet-500/20 px-3 py-1 text-xs font-semibold text-violet-100">
+          <span className="rounded-full border border-blue-200/40 bg-blue-500/20 px-3 py-1 text-xs font-semibold text-blue-100">
             Teams: {rows.length}
           </span>
           <button
@@ -139,55 +139,55 @@ export function AdminProjectProgressSection({
           </button>
         </div>
       </div>
-      <p className="mt-1 text-xs text-violet-100/90">
+      <p className="mt-1 text-xs text-blue-100/90">
         Add custom project topics and review per-topic reset requests from teams.
       </p>
 
-      <div className="mt-4 rounded-xl border border-violet-300/30 bg-black/20 p-4">
-        <h3 className="text-sm font-bold text-violet-100">Custom Progress Topics</h3>
+      <div className="mt-4 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
+        <h3 className="text-sm font-bold text-blue-100">Custom Progress Topics</h3>
         <form className="mt-3 flex flex-wrap items-center gap-2" onSubmit={handleCreate}>
           <input
             type="text"
             value={topicLabel}
             onChange={(event) => setTopicLabel(event.target.value)}
             placeholder="Add custom topic (for example: Testing, Documentation)"
-            className="min-w-65 flex-1 rounded-lg border border-violet-300/30 bg-slate-900/70 px-3 py-2 text-sm text-violet-50"
+            className="min-w-65 flex-1 rounded-lg border border-blue-300/30 bg-slate-900/70 px-3 py-2 text-sm text-blue-50"
           />
           <button
             type="submit"
             disabled={topicPending}
-            className="rounded-lg border border-violet-200/60 bg-violet-400 px-3 py-2 text-xs font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-blue-200/60 bg-blue-400 px-3 py-2 text-xs font-bold text-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {topicPending ? 'Adding...' : 'Add Topic'}
           </button>
         </form>
 
         {topicMessage ? (
-          <div className="mt-3 rounded-lg border border-violet-200/30 bg-violet-500/20 px-3 py-2 text-xs text-violet-100">
+          <div className="mt-3 rounded-lg border border-blue-200/30 bg-blue-500/20 px-3 py-2 text-xs text-blue-100">
             {topicMessage}
           </div>
         ) : null}
 
         <div className="mt-3 space-y-2">
           {customTasks.length === 0 ? (
-            <span className="text-xs text-violet-100/90">No custom topics yet.</span>
+            <span className="text-xs text-blue-100/90">No custom topics yet.</span>
           ) : (
             customTasks.map((topic) => {
               const topicId = topic.id || topic.key
               const isEditing = editingTopicId === topicId
 
               return (
-                <div key={topicId} className="rounded-lg border border-violet-300/20 bg-slate-900/50 px-3 py-2">
+                <div key={topicId} className="rounded-lg border border-blue-300/20 bg-slate-900/50 px-3 py-2">
                   <div className="flex flex-wrap items-center gap-2">
                     {isEditing ? (
                       <input
                         type="text"
                         value={editingTopicLabel}
                         onChange={(event) => setEditingTopicLabel(event.target.value)}
-                        className="min-w-52 flex-1 rounded-lg border border-violet-300/40 bg-slate-900 px-2 py-1 text-xs text-violet-50"
+                        className="min-w-52 flex-1 rounded-lg border border-blue-300/40 bg-slate-900 px-2 py-1 text-xs text-blue-50"
                       />
                     ) : (
-                      <span className="flex-1 text-xs font-semibold text-violet-100">{topic.label}</span>
+                      <span className="flex-1 text-xs font-semibold text-blue-100">{topic.label}</span>
                     )}
 
                     <button
@@ -261,7 +261,7 @@ export function AdminProjectProgressSection({
             const locked = lockedCount(progress, customTasks)
 
             return (
-              <article key={team._id} className="rounded-xl border border-white/20 bg-black/20 p-4">
+              <article key={team._id} className="rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <div>
                     <h3 className="text-sm font-bold text-white">
@@ -285,7 +285,7 @@ export function AdminProjectProgressSection({
                     const resetStatus = taskState?.resetRequest?.status || 'none'
 
                     return (
-                      <div key={`${team._id}-${task.key}`} className="rounded-lg border border-white/15 bg-slate-900/70 p-3">
+                      <div key={`${team._id}-${task.key}`} className="rounded-lg border border-blue-300/20 bg-slate-900/70 p-3">
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-xs font-semibold text-cyan-50">{task.label}</span>
                           <span className={`rounded px-2 py-0.5 text-[10px] font-semibold ${

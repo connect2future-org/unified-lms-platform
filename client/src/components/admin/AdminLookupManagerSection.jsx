@@ -47,7 +47,7 @@ function LookupGroup({
   }
 
   return (
-    <div className="rounded-xl border border-white/20 bg-black/20 p-4">
+    <div className="rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
       <h3 className="text-sm font-black uppercase tracking-wide text-cyan-100">{title}</h3>
 
       <form onSubmit={handleCreate} className="mt-3 flex gap-2">
@@ -140,7 +140,7 @@ export function AdminLookupManagerSection({
   onRefresh
 }) {
   return (
-    <section className="rounded-2xl border border-blue-300/30 bg-blue-900/20 p-4">
+    <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-lg font-black text-blue-100">Colleges & Departments</h2>
         <button
@@ -169,7 +169,7 @@ export function AdminLookupManagerSection({
       ) : null}
 
       {loading ? (
-        <div className="mt-4 rounded-lg border border-white/20 bg-black/20 px-3 py-3 text-sm text-cyan-100">
+        <div className="mt-4 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 px-3 py-3 text-sm text-cyan-100">
           Loading lookup data...
         </div>
       ) : (

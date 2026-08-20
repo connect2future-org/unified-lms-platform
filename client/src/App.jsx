@@ -108,26 +108,30 @@ function TopNav() {
     return null
   }
 
+  const getNavChipClass = ({ isActive }) => `nav-link-chip${isActive ? ' active' : ''}`
+
   return (
     <header className="top-nav">
       <div className="brand">LMS Platform</div>
       <nav>
-        <NavLink to="/landing" className="nav-link-chip">
+        <NavLink to="/landing" end className={getNavChipClass}>
           Home
         </NavLink>
         {isAdminUser ? (
           <>
-            <NavLink to="/admin" className="nav-link-chip">
+            <NavLink to="/admin" end className={getNavChipClass}>
               Tests
             </NavLink>
-            <NavLink to="/admin/teams" className="nav-link-chip">
+            <NavLink to="/admin/teams" end className={getNavChipClass}>
               Team Management
             </NavLink>
           </>
         ) : null}
-        <NavLink to="/register-team" className="nav-link-chip">
-          Team Register
-        </NavLink>
+        {!isAdminUser ? (
+          <NavLink to="/register-team" end className={getNavChipClass}>
+            Team Register
+          </NavLink>
+        ) : null}
 
         {isAuthenticated ? (
           <div className="nav-profile" ref={profileRef}>
@@ -165,7 +169,7 @@ function TopNav() {
             ) : null}
           </div>
         ) : (
-          <NavLink to="/login" className="nav-link-chip">
+          <NavLink to="/login" end className={getNavChipClass}>
             Login
           </NavLink>
         )}
