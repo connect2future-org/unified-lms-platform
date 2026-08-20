@@ -35,6 +35,7 @@ export const TestTakingPage = () => {
     college: ""
   });
   const dirtyRef = useRef(new Set());
+  const antiCheatEventTimesRef = useRef({});
 
   const isProfileComplete = (profile) => {
     return Boolean(
@@ -183,6 +184,13 @@ export const TestTakingPage = () => {
       return;
     }
 
+    const now = Date.now();
+    const lastLoggedAt = antiCheatEventTimesRef.current[event] || 0;
+    if (now - lastLoggedAt < 2000) {
+      return;
+    }
+    antiCheatEventTimesRef.current[event] = now;
+
     try {
       const response = await attemptService.logEvent(attempt._id, { event, metadata });
       if (response.autoSubmitted) {
@@ -257,7 +265,6 @@ export const TestTakingPage = () => {
     };
 
     const onBlur = () => logEvent("WINDOW_BLUR");
-    const onFocus = () => logEvent("WINDOW_FOCUS");
     const onFullscreen = () => {
       if (test.antiCheat?.requireFullscreen && !document.fullscreenElement) {
         logEvent("FULLSCREEN_EXIT");
@@ -266,7 +273,6 @@ export const TestTakingPage = () => {
 
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("blur", onBlur);
-    window.addEventListener("focus", onFocus);
     document.addEventListener("fullscreenchange", onFullscreen);
 
     const preventClipboard = (event, name) => {
@@ -291,7 +297,6 @@ export const TestTakingPage = () => {
     return () => {
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("blur", onBlur);
-      window.removeEventListener("focus", onFocus);
       document.removeEventListener("fullscreenchange", onFullscreen);
       document.removeEventListener("copy", onCopy);
       document.removeEventListener("paste", onPaste);

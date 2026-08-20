@@ -75,8 +75,8 @@ const finalizeAttempt = async (attempt, status = "SUBMITTED") => {
   return attempt;
 };
 
-const createAttemptForTest = async ({ test, user }) => {
-  const { questionOrder, optionOrders } = buildQuestionAndOptionOrder(test, test.questions);
+const createAttemptForTest = async ({ test, user, questionBank }) => {
+  const { questionOrder, optionOrders } = buildQuestionAndOptionOrder(test, questionBank);
   const startedAt = new Date();
   const expiresAt = new Date(startedAt.getTime() + test.durationMinutes * 60 * 1000);
 
@@ -106,6 +106,8 @@ const hasSavedProgress = (attempt) => {
   });
 };
 
+const isDuplicateKeyError = (error) => Number(error?.code) === 11000;
+
 export const startAttempt = asyncHandler(async (req, res) => {
   const { testId } = req.params;
   const candidate = await User.findById(req.user._id).select("_id name email role usn branch college");
@@ -124,7 +126,7 @@ export const startAttempt = asyncHandler(async (req, res) => {
     });
   }
 
-  const test = await Test.findById(testId).populate("questions");
+  const test = await Test.findById(testId).select("_id isPublished durationMinutes randomizeQuestions randomizeOptions questions");
 
   if (!test) {
     return res.status(404).json({ message: "Test not found" });
@@ -133,6 +135,10 @@ export const startAttempt = asyncHandler(async (req, res) => {
   if (!test.isPublished) {
     return res.status(400).json({ message: "Test is not published" });
   }
+
+  const questionBank = await Question.find({ _id: { $in: test.questions || [] } })
+    .select("_id type mcq.options.key")
+    .lean();
 
   const activeAttempt = await Attempt.findOne({
     userId: candidate._id,
@@ -146,10 +152,10 @@ export const startAttempt = asyncHandler(async (req, res) => {
       return res.json({ attempt: finalized });
     }
 
-    const isQuestionSetStale = Number(activeAttempt.questionOrder?.length || 0) !== Number(test.questions.length || 0);
+    const isQuestionSetStale = Number(activeAttempt.questionOrder?.length || 0) !== Number((test.questions || []).length || 0);
     if (isQuestionSetStale && !hasSavedProgress(activeAttempt)) {
       await Attempt.deleteOne({ _id: activeAttempt._id });
-      const freshAttempt = await createAttemptForTest({ test, user: candidate });
+      const freshAttempt = await createAttemptForTest({ test, user: candidate, questionBank });
       return res.status(201).json({
         attempt: freshAttempt,
         refreshed: true,
@@ -160,9 +166,24 @@ export const startAttempt = asyncHandler(async (req, res) => {
     return res.json({ attempt: activeAttempt });
   }
 
-  const attempt = await createAttemptForTest({ test, user: candidate });
+  try {
+    const attempt = await createAttemptForTest({ test, user: candidate, questionBank });
+    return res.status(201).json({ attempt });
+  } catch (error) {
+    if (isDuplicateKeyError(error)) {
+      const existingAttempt = await Attempt.findOne({
+        userId: candidate._id,
+        testId,
+        status: "IN_PROGRESS"
+      });
 
-  return res.status(201).json({ attempt });
+      if (existingAttempt) {
+        return res.json({ attempt: existingAttempt });
+      }
+    }
+
+    throw error;
+  }
 });
 
 export const getAttemptById = asyncHandler(async (req, res) => {
@@ -231,6 +252,22 @@ export const logCheatingEvent = asyncHandler(async (req, res) => {
   const ownership = assertAttemptOwnership(attempt, req.user);
   if (!ownership.ok) {
     return res.status(ownership.status).json({ message: ownership.message });
+  }
+
+  const duplicateWindowMs = 2000;
+  const latestLog = await CheatingLog.findOne({ attemptId: attempt._id })
+    .sort({ timestamp: -1 })
+    .select("event timestamp");
+
+  const latestTimestamp = latestLog?.timestamp ? new Date(latestLog.timestamp).getTime() : 0;
+  const isDuplicateBurst =
+    latestLog
+    && latestLog.event === event
+    && latestTimestamp
+    && (Date.now() - latestTimestamp) < duplicateWindowMs;
+
+  if (isDuplicateBurst) {
+    return res.json({ autoSubmitted: false, violationCount: attempt.violationCount, throttled: true });
   }
 
   await CheatingLog.create({

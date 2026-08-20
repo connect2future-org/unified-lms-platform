@@ -104,5 +104,12 @@ const attemptSchema = new mongoose.Schema(
 );
 
 attemptSchema.index({ userId: 1, testId: 1, createdAt: -1 });
+attemptSchema.index(
+  { userId: 1, testId: 1, status: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { status: "IN_PROGRESS" }
+  }
+);
 
 export const Attempt = mongoose.model("Attempt", attemptSchema);

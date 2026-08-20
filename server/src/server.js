@@ -9,6 +9,14 @@ import { ensureProjectPool } from './services/seedService.js'
 import { ensureTeamCredentials } from './services/teamAuthService.js'
 import { getLanIPv4Addresses } from './utils/network.js'
 
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled promise rejection:', reason)
+})
+
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught exception:', error)
+})
+
 const bootstrap = async () => {
   await connectDb()
   await ensureProjectPool()
