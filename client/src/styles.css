@@ -1,21 +1,21 @@
 :root {
-  --bg: #f5f7fa;
+  --bg: #edf3ff;
   --bg-alt: #ffffff;
-  --text: #0f1419;
-  --text-secondary: #5a6c7d;
-  --muted: #8b95a5;
-  --primary: #0066cc;
-  --primary-dark: #004fa8;
-  --primary-light: #1a7fff;
-  --accent: #ff6b35;
-  --accent-dark: #e55a2b;
-  --accent-light: #ff8555;
+  --text: #0f1b2d;
+  --text-secondary: #4d6280;
+  --muted: #7b8ea8;
+  --primary: #1d4ed8;
+  --primary-dark: #1e3a8a;
+  --primary-light: #3b82f6;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --accent-light: #60a5fa;
   --success: #10b981;
   --warning: #f59e0b;
   --error: #ef4444;
   --panel: #ffffff;
-  --border: #e5eaf0;
-  --border-light: #f0f4f8;
+  --border: #d9e4f5;
+  --border-light: #e8effb;
   --shadow-sm: 0 2px 4px rgba(15, 20, 25, 0.06);
   --shadow-md: 0 8px 16px rgba(15, 20, 25, 0.08);
   --shadow-lg: 0 16px 32px rgba(15, 20, 25, 0.1);
@@ -29,7 +29,7 @@ body {
   margin: 0;
   font-family: "Outfit", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text);
-  background: linear-gradient(135deg, var(--bg) 0%, #f0f6ff 50%, #faf5f0 100%);
+  background: radial-gradient(circle at 12% 12%, #f8fbff 0%, var(--bg) 45%, #e3edff 100%);
   min-height: 100vh;
 }
 
@@ -81,7 +81,7 @@ a:hover {
 }
 
 .nav-link-chip {
-  background: var(--bg);
+  background: #f8fbff;
   border: 2px solid var(--border);
   color: var(--text-secondary);
   border-radius: 8px;
@@ -93,31 +93,31 @@ a:hover {
 }
 
 .nav-link-chip:hover {
-  border-color: var(--primary);
+  border-color: var(--primary-light);
   color: var(--primary);
-  background: rgba(0, 102, 204, 0.05);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .nav-link-chip.active {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  border-color: var(--primary);
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+  border-color: var(--primary-dark);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(0, 102, 204, 0.3);
+  box-shadow: 0 8px 18px rgba(30, 58, 138, 0.25);
 }
 
 .nav-link-primary {
-  background: rgba(255, 107, 53, 0.1);
-  border-color: var(--accent);
+  background: rgba(37, 99, 235, 0.12);
+  border-color: var(--primary-light);
   color: var(--accent);
 }
 
 .nav-link-primary:hover {
-  background: rgba(255, 107, 53, 0.15);
+  background: rgba(37, 99, 235, 0.2);
   border-color: var(--accent-dark);
 }
 
 .user-pill {
-  background: linear-gradient(135deg, rgba(0, 102, 204, 0.1), rgba(16, 185, 129, 0.1));
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.12), rgba(59, 130, 246, 0.18));
   border: 1.5px solid var(--primary);
   color: var(--primary);
   padding: 0.4rem 1rem;

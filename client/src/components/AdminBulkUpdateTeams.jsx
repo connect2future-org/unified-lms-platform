@@ -222,7 +222,7 @@ const AdminBulkUpdateTeams = () => {
             type="button"
             onClick={handleUpdateSelected}
             disabled={submitting || activeOptions.length === 0}
-            className="rounded-lg border border-cyan-300/50 bg-cyan-500/20 px-3 py-2 text-xs font-bold text-cyan-100 disabled:opacity-50"
+            className="rounded-lg border border-blue-300/50 bg-blue-500/20 px-3 py-2 text-xs font-bold text-blue-100 disabled:opacity-50"
           >
             {submitting ? 'Updating...' : 'Update Selected'}
           </button>
@@ -230,7 +230,7 @@ const AdminBulkUpdateTeams = () => {
             type="button"
             onClick={handleUpdateAll}
             disabled={submitting || teams.length === 0 || activeOptions.length === 0}
-            className="rounded-lg border border-amber-300/50 bg-amber-500/20 px-3 py-2 text-xs font-bold text-amber-100 disabled:opacity-50"
+            className="rounded-lg border border-blue-300/50 bg-blue-500/20 px-3 py-2 text-xs font-bold text-blue-100 disabled:opacity-50"
           >
             {submitting ? 'Updating...' : 'Update All Records'}
           </button>
@@ -238,7 +238,7 @@ const AdminBulkUpdateTeams = () => {
       </div>
 
       <div className="mt-4 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-        <table className="bulk-update-table min-w-full text-left text-sm text-cyan-50">
+        <table className="bulk-update-table min-w-full text-left text-sm text-blue-50">
           <thead className="bg-slate-100 text-xs uppercase tracking-wide text-slate-900">
             <tr>
               <th className="px-3 py-2">
@@ -268,7 +268,7 @@ const AdminBulkUpdateTeams = () => {
         </table>
       </div>
 
-      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-cyan-100/90">
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-blue-100/90">
         <p>
           Showing {startItem}-{endItem} of {teams.length} records
         </p>

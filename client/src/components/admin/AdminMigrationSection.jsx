@@ -46,7 +46,7 @@ export function AdminMigrationSection({
       ) : null}
 
       {userMigrationMessage ? (
-        <div className="mt-3 rounded-lg border border-sky-300/40 bg-sky-900/30 px-3 py-2 text-sm text-sky-100">
+        <div className="mt-3 rounded-lg border border-blue-300/40 bg-blue-900/30 px-3 py-2 text-sm text-blue-100">
           {userMigrationMessage}
         </div>
       ) : null}
@@ -104,7 +104,7 @@ export function AdminMigrationSection({
               type="button"
               disabled={userMigrationLoading}
               onClick={onRunUserMigration}
-              className="rounded bg-sky-400 px-3 py-2 text-xs font-bold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded bg-blue-500 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               {userMigrationLoading ? 'Applying User Migration...' : 'Apply User Role/Auth Migration'}
             </button>
@@ -137,7 +137,7 @@ export function AdminMigrationSection({
               type="button"
               disabled={migrationLoading}
               onClick={() => onOpenWizard('missing-only')}
-              className="rounded bg-fuchsia-400 px-3 py-2 text-xs font-bold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded bg-blue-500 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               Open Migration Wizard (Missing Status)
             </button>
@@ -145,7 +145,7 @@ export function AdminMigrationSection({
               type="button"
               disabled={migrationLoading}
               onClick={() => onOpenWizard('pending-with-assigned')}
-              className="rounded bg-indigo-400 px-3 py-2 text-xs font-bold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded bg-blue-500 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               Open Migration Wizard (Pending + Assigned)
             </button>
@@ -153,7 +153,7 @@ export function AdminMigrationSection({
               type="button"
               disabled={migrationLoading}
               onClick={() => onOpenWizard('pending-all')}
-              className="rounded bg-amber-400 px-3 py-2 text-xs font-bold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded bg-blue-500 px-3 py-2 text-xs font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
             >
               Open Migration Wizard (Pending All)
             </button>
@@ -242,7 +242,7 @@ export function AdminMigrationSection({
                 type="button"
                 onClick={() => onRunMigration(migrationConfig)}
                 disabled={migrationLoading}
-                className="rounded-lg bg-fuchsia-400 px-4 py-2 text-sm font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {migrationLoading ? 'Applying...' : 'Apply Migration'}
               </button>

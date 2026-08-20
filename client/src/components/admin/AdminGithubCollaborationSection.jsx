@@ -16,8 +16,8 @@ export function AdminGithubCollaborationSection({
       </p>
 
       <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-        <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
-          <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
+        <table className="min-w-full divide-y divide-white/15 text-sm text-blue-50">
+          <thead className="bg-white/10 text-xs uppercase tracking-wide text-blue-100">
             <tr>
               <th className="px-3 py-3 text-left">Team</th>
               <th className="px-3 py-3 text-left">GitHub Repository</th>
@@ -29,7 +29,7 @@ export function AdminGithubCollaborationSection({
           <tbody className="divide-y divide-white/10">
             {githubTeams.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-cyan-100/80">
+                <td colSpan={5} className="px-3 py-6 text-center text-blue-100/80">
                   No approved teams available.
                 </td>
               </tr>
@@ -54,24 +54,24 @@ export function AdminGithubCollaborationSection({
                         href={team.githubRepoUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="break-all font-semibold text-sky-300 underline hover:text-sky-200"
+                        className="break-all font-semibold text-blue-300 underline hover:text-blue-200"
                       >
                         {team.githubRepoUrl}
                       </a>
                     ) : (
-                      <span className="text-cyan-100/70">Not submitted</span>
+                      <span className="text-blue-100/70">Not submitted</span>
                     )}
                   </td>
                   <td className="px-3 py-3 text-xs">
                     <span className={`rounded border px-2 py-1 font-semibold uppercase ${
                       isCollaborated
-                        ? 'border-emerald-300/40 bg-emerald-900/30 text-emerald-100'
-                        : 'border-amber-300/40 bg-amber-900/30 text-amber-100'
+                        ? 'border-blue-300/40 bg-blue-900/30 text-blue-100'
+                        : 'border-blue-300/40 bg-blue-900/30 text-blue-100'
                     }`}>
                       {isCollaborated ? 'Collaborated' : 'Pending'}
                     </span>
                   </td>
-                  <td className="px-3 py-3 text-xs text-cyan-100/90">
+                  <td className="px-3 py-3 text-xs text-blue-100/90">
                     <div>{team.collaborationMarkedBy || '-'}</div>
                     <div>
                       {team.collaborationMarkedAt
@@ -87,7 +87,7 @@ export function AdminGithubCollaborationSection({
                         onClick={() => onReviewGithubCollaboration(team, 'collaborated')}
                         className={`rounded px-2 py-1 text-[11px] font-bold ${
                           canMarkCollaborated
-                            ? 'bg-emerald-400 text-slate-900 hover:bg-emerald-300 ring-1 ring-emerald-200/60'
+                            ? 'bg-blue-500 text-white hover:bg-blue-400 ring-1 ring-blue-200/60'
                             : 'cursor-not-allowed bg-slate-700 text-slate-300 opacity-70'
                         }`}
                       >
@@ -99,7 +99,7 @@ export function AdminGithubCollaborationSection({
                         onClick={() => onReviewGithubCollaboration(team, 'pending')}
                         className={`rounded px-2 py-1 text-[11px] font-bold ${
                           canMarkPending
-                            ? 'bg-amber-400 text-slate-900 hover:bg-amber-300 ring-1 ring-amber-200/60'
+                            ? 'bg-blue-500 text-white hover:bg-blue-400 ring-1 ring-blue-200/60'
                             : 'cursor-not-allowed bg-slate-700 text-slate-300 opacity-70'
                         }`}
                       >
@@ -107,7 +107,7 @@ export function AdminGithubCollaborationSection({
                       </button>
                     </div>
                     {isCollaborated ? (
-                      <p className="mt-1 text-[10px] text-emerald-200/90">
+                      <p className="mt-1 text-[10px] text-blue-200/90">
                         Locked until team resubmits a different GitHub URL.
                       </p>
                     ) : null}

@@ -22,9 +22,9 @@ function FilterPills({ label, items, selected, onToggle }) {
 
   return (
     <div>
-      <p className="mb-1.5 text-xs font-semibold text-cyan-100/80">
+      <p className="mb-1.5 text-xs font-semibold text-blue-100/80">
         {label}{' '}
-        <span className="font-normal text-cyan-100/40">(empty = include all)</span>
+        <span className="font-normal text-blue-100/40">(empty = include all)</span>
       </p>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
@@ -34,8 +34,8 @@ function FilterPills({ label, items, selected, onToggle }) {
             onClick={() => onToggle(item)}
             className={`rounded-full px-2.5 py-1 text-xs font-medium transition ${
               selected.includes(item)
-                ? 'bg-violet-500 text-white'
-                : 'bg-white/10 text-cyan-100 hover:bg-white/20'
+                ? 'bg-blue-500 text-white'
+                : 'bg-white/10 text-blue-100 hover:bg-white/20'
             }`}
           >
             {item}
@@ -53,13 +53,13 @@ function FieldGroupPanel({ group, fields, selectedFields, onToggle, onToggleGrou
   return (
     <div className="rounded-xl border border-white/10 bg-white/5 p-3">
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-wide text-cyan-300">{group}</span>
+        <span className="text-xs font-bold uppercase tracking-wide text-blue-300">{group}</span>
         <div className="flex gap-2">
           {!allSelected && (
             <button
               type="button"
               onClick={() => onToggleGroup(true)}
-              className="text-[10px] text-cyan-400 underline hover:text-white"
+              className="text-[10px] text-blue-400 underline hover:text-white"
             >
               all
             </button>
@@ -68,7 +68,7 @@ function FieldGroupPanel({ group, fields, selectedFields, onToggle, onToggleGrou
             <button
               type="button"
               onClick={() => onToggleGroup(false)}
-              className="text-[10px] text-cyan-400/60 underline hover:text-white"
+              className="text-[10px] text-blue-400/60 underline hover:text-white"
             >
               none
             </button>
@@ -85,9 +85,9 @@ function FieldGroupPanel({ group, fields, selectedFields, onToggle, onToggleGrou
               type="checkbox"
               checked={selectedFields.has(field.key)}
               onChange={() => onToggle(field.key)}
-              className="h-3.5 w-3.5 accent-cyan-400"
+              className="h-3.5 w-3.5 accent-blue-400"
             />
-            <span className="text-xs text-cyan-50/90">{field.label}</span>
+            <span className="text-xs text-blue-50/90">{field.label}</span>
           </label>
         ))}
       </div>
@@ -282,14 +282,14 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
         <div className="sticky top-0 z-10 flex items-center justify-between border-b border-white/20 bg-slate-900/95 px-6 py-4">
           <div>
             <h2 className="text-lg font-black text-white">Export Teams to Excel</h2>
-            <p className="text-xs text-cyan-100/60">
+            <p className="text-xs text-blue-100/60">
               Filter, select columns, and group sheets as needed
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-full p-1 text-cyan-200/70 hover:bg-white/10 hover:text-white"
+            className="rounded-full p-1 text-blue-200/70 hover:bg-white/10 hover:text-white"
           >
             ✕
           </button>
@@ -297,8 +297,8 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
 
         <div className="space-y-6 p-6">
           {/* Export Mode */}
-          <section className="rounded-2xl border border-amber-300/20 bg-amber-900/10 p-4">
-            <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-amber-200">
+          <section className="rounded-2xl border border-blue-300/20 bg-blue-900/10 p-4">
+            <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-blue-200">
               Export Mode
             </h3>
             <div className="flex flex-wrap gap-2">
@@ -307,8 +307,8 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
                 onClick={() => setExportMode('custom')}
                 className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
                   exportMode === 'custom'
-                    ? 'bg-amber-500 text-slate-900'
-                    : 'bg-white/10 text-cyan-100 hover:bg-white/20'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/10 text-blue-100 hover:bg-white/20'
                 }`}
               >
                 Custom Fields
@@ -318,21 +318,21 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
                 onClick={() => setExportMode('styled-template')}
                 className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
                   exportMode === 'styled-template'
-                    ? 'bg-amber-500 text-slate-900'
-                    : 'bg-white/10 text-cyan-100 hover:bg-white/20'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white/10 text-blue-100 hover:bg-white/20'
                 }`}
               >
                 Styled Template
               </button>
             </div>
-            <p className="mt-2 text-xs text-cyan-100/60">
+            <p className="mt-2 text-xs text-blue-100/60">
               Styled Template uses your current data values and applies the sample-like Excel design.
             </p>
           </section>
 
           {/* Filters */}
-          <section className="space-y-3 rounded-2xl border border-violet-300/20 bg-violet-900/10 p-4">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-violet-200">
+          <section className="space-y-3 rounded-2xl border border-blue-300/20 bg-blue-900/10 p-4">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-blue-200">
               Filter Teams
             </h3>
             <FilterPills
@@ -354,13 +354,13 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
               onToggle={(v) => toggleFilterPill(setFilterBatchYears, v)}
             />
             {!allColleges.length && !allDepartments.length && !allBatchYears.length && (
-              <p className="text-xs text-cyan-100/40">No filter data available yet.</p>
+              <p className="text-xs text-blue-100/40">No filter data available yet.</p>
             )}
           </section>
 
           {exportMode === 'custom' ? (
-            <section className="rounded-2xl border border-cyan-300/20 bg-cyan-900/10 p-4">
-              <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-cyan-200">
+            <section className="rounded-2xl border border-blue-300/20 bg-blue-900/10 p-4">
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-blue-200">
                 Group Sheets By
               </h3>
               <div className="flex flex-wrap gap-2">
@@ -376,8 +376,8 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
                     onClick={() => setGroupBy(opt.value)}
                     className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
                       groupBy === opt.value
-                        ? 'bg-cyan-500 text-white'
-                        : 'bg-white/10 text-cyan-100 hover:bg-white/20'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-white/10 text-blue-100 hover:bg-white/20'
                     }`}
                   >
                     {opt.label}
@@ -388,23 +388,23 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
           ) : null}
 
           {exportMode === 'custom' ? (
-            <section className="rounded-2xl border border-emerald-300/20 bg-emerald-900/10 p-4">
+            <section className="rounded-2xl border border-blue-300/20 bg-blue-900/10 p-4">
               <div className="mb-3 flex items-center justify-between">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-200">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-200">
                   Select Columns / Fields
                 </h3>
                 <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => toggleAllFields(ALL_FIELD_KEYS, true)}
-                    className="text-xs text-emerald-300 underline hover:text-white"
+                    className="text-xs text-blue-300 underline hover:text-white"
                   >
                     Select All
                   </button>
                   <button
                     type="button"
                     onClick={() => toggleAllFields(ALL_FIELD_KEYS, false)}
-                    className="text-xs text-emerald-300/60 underline hover:text-white"
+                    className="text-xs text-blue-300/60 underline hover:text-white"
                   >
                     Clear All
                   </button>
@@ -426,37 +426,37 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
           ) : null}
 
           {exportMode === 'styled-template' ? (
-            <section className="rounded-2xl border border-emerald-300/20 bg-emerald-900/10 p-4">
+            <section className="rounded-2xl border border-blue-300/20 bg-blue-900/10 p-4">
               <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-emerald-200">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-blue-200">
                   Styled Fields and Common Merge Controls
                 </h3>
                 <div className="flex flex-wrap gap-3 text-xs">
                   <button
                     type="button"
                     onClick={() => setAllStyledFields(true)}
-                    className="text-emerald-300 underline hover:text-white"
+                    className="text-blue-300 underline hover:text-white"
                   >
                     Select All Fields
                   </button>
                   <button
                     type="button"
                     onClick={() => setAllStyledFields(false)}
-                    className="text-emerald-300/70 underline hover:text-white"
+                    className="text-blue-300/70 underline hover:text-white"
                   >
                     Clear Fields
                   </button>
                   <button
                     type="button"
                     onClick={() => setAllStyledCommon(true)}
-                    className="text-cyan-300 underline hover:text-white"
+                    className="text-blue-300 underline hover:text-white"
                   >
                     Mark All Selected as Common
                   </button>
                   <button
                     type="button"
                     onClick={() => setAllStyledCommon(false)}
-                    className="text-cyan-300/70 underline hover:text-white"
+                    className="text-blue-300/70 underline hover:text-white"
                   >
                     Clear Common Marks
                   </button>
@@ -473,23 +473,23 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
                       key={field.key}
                       className="grid grid-cols-[1fr_auto] items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2"
                     >
-                      <label className="flex cursor-pointer items-center gap-2 text-xs text-cyan-50/90">
+                      <label className="flex cursor-pointer items-center gap-2 text-xs text-blue-50/90">
                         <input
                           type="checkbox"
                           checked={included}
                           onChange={() => toggleStyledField(field.key)}
-                          className="h-3.5 w-3.5 accent-emerald-400"
+                          className="h-3.5 w-3.5 accent-blue-400"
                         />
                         <span>{field.header}</span>
                       </label>
 
-                      <label className="flex cursor-pointer items-center gap-2 text-xs text-cyan-100/80">
+                      <label className="flex cursor-pointer items-center gap-2 text-xs text-blue-100/80">
                         <input
                           type="checkbox"
                           checked={isCommon}
                           disabled={!included}
                           onChange={() => toggleStyledCommon(field.key)}
-                          className="h-3.5 w-3.5 accent-cyan-400 disabled:cursor-not-allowed disabled:opacity-50"
+                          className="h-3.5 w-3.5 accent-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
                         />
                         <span>Common (merge)</span>
                       </label>
@@ -501,12 +501,12 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
           ) : null}
 
           {/* Preview summary */}
-          <p className="text-xs text-cyan-100/60">
-            <span className="font-semibold text-cyan-100">{filteredTeams.length}</span> team
+          <p className="text-xs text-blue-100/60">
+            <span className="font-semibold text-blue-100">{filteredTeams.length}</span> team
             {filteredTeams.length !== 1 ? 's' : ''} matched &nbsp;·&nbsp;
             {exportMode === 'custom' ? (
               <>
-                <span className="font-semibold text-cyan-100">{selectedFields.size}</span> column
+                <span className="font-semibold text-blue-100">{selectedFields.size}</span> column
                 {selectedFields.size !== 1 ? 's' : ''} selected
                 {groupBy !== 'none' ? (
                   <>
@@ -516,9 +516,9 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
               </>
             ) : (
               <>
-                <span className="font-semibold text-cyan-100">{styledSelectedFields.size}</span> field
+                <span className="font-semibold text-blue-100">{styledSelectedFields.size}</span> field
                 {styledSelectedFields.size !== 1 ? 's' : ''} selected &nbsp;·&nbsp;
-                <span className="font-semibold text-cyan-100">{styledCommonFields.size}</span> marked as common (merged)
+                <span className="font-semibold text-blue-100">{styledCommonFields.size}</span> marked as common (merged)
               </>
             )}
           </p>
@@ -543,7 +543,7 @@ export function ExcelExportDialog({ isOpen, onClose, teams = [] }) {
               (exportMode === 'custom' && selectedFields.size === 0) ||
               (exportMode === 'styled-template' && styledSelectedFields.size === 0)
             }
-            className="rounded-lg bg-emerald-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-lg bg-blue-500 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {exportMode === 'styled-template' ? 'Download Styled Template' : 'Download Custom Excel'} ({filteredTeams.length})
           </button>

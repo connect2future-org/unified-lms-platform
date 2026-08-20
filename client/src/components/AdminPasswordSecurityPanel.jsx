@@ -60,14 +60,14 @@ export function AdminPasswordSecurityPanel() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-black text-white">Password Security Control</h2>
-          <p className="mt-1 text-sm text-cyan-100/90">
+          <p className="mt-1 text-sm text-blue-100/90">
             Review reset activity and force-reset passwords to default when needed.
           </p>
         </div>
         <button
           type="button"
           onClick={() => loadActivity({ showLoader: true })}
-          className="rounded-lg border border-cyan-200/60 bg-cyan-100/10 px-4 py-2 text-sm font-semibold text-cyan-100 hover:bg-cyan-100/20"
+          className="rounded-lg border border-blue-200/60 bg-blue-100/10 px-4 py-2 text-sm font-semibold text-blue-100 hover:bg-blue-100/20"
         >
           Refresh Activity
         </button>
@@ -85,13 +85,13 @@ export function AdminPasswordSecurityPanel() {
       ) : null}
 
       {loading ? (
-        <div className="mt-5 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 px-4 py-4 text-sm text-cyan-100">
+        <div className="mt-5 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 px-4 py-4 text-sm text-blue-100">
           Loading password activity...
         </div>
       ) : (
         <div className="mt-5 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-          <table className="min-w-full divide-y divide-white/15 text-left text-sm text-cyan-50">
-            <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
+          <table className="min-w-full divide-y divide-white/15 text-left text-sm text-blue-50">
+            <thead className="bg-white/10 text-xs uppercase tracking-wide text-blue-100">
               <tr>
                 <th className="px-3 py-3">Team</th>
                 <th className="px-3 py-3">Password State</th>
@@ -106,7 +106,7 @@ export function AdminPasswordSecurityPanel() {
                   <td className="px-3 py-3">
                     <div className="font-semibold text-white">{team.teamNumber}</div>
                     <div>{team.teamName}</div>
-                    <div className="text-xs text-cyan-100/80">{team.leadEmail}</div>
+                    <div className="text-xs text-blue-100/80">{team.leadEmail}</div>
                   </td>
                   <td className="px-3 py-3 text-xs">
                     <div>{team.isDefaultPassword ? 'Default' : 'Custom'}</div>
@@ -135,7 +135,7 @@ export function AdminPasswordSecurityPanel() {
                       type="button"
                       disabled={workingTeamId === team.id}
                       onClick={() => handleForceReset(team)}
-                      className="rounded-md bg-amber-400 px-3 py-1.5 text-xs font-bold text-slate-950 hover:bg-amber-300 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="rounded-md bg-blue-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {workingTeamId === team.id ? 'Resetting...' : 'Force Reset'}
                     </button>
@@ -152,7 +152,7 @@ export function AdminPasswordSecurityPanel() {
         title="Force Reset Team Password"
         message={confirmTeam ? `Force reset password for ${confirmTeam.teamName}?` : ''}
         confirmLabel="Force Reset"
-        confirmTone="amber"
+        confirmTone="rose"
         loading={Boolean(workingTeamId)}
         onCancel={() => setConfirmTeam(null)}
         onConfirm={runForceReset}

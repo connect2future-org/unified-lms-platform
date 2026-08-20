@@ -4,7 +4,7 @@ function PaginationControls({ page, totalPages, onChange }) {
   }
 
   return (
-    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-cyan-100/90">
+    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-blue-100/90">
       <button
         type="button"
         disabled={page <= 1}
@@ -45,8 +45,8 @@ export function AdminRevokeSection({
       </div>
 
       <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-        <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
-          <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
+        <table className="min-w-full divide-y divide-white/15 text-sm text-blue-50">
+          <thead className="bg-white/10 text-xs uppercase tracking-wide text-blue-100">
             <tr>
               <th className="px-3 py-3 text-left">Team</th>
               <th className="px-3 py-3 text-left">Lead</th>
@@ -62,7 +62,7 @@ export function AdminRevokeSection({
                 </td>
                 <td className="px-3 py-3">
                   <div className="font-semibold text-white">{team.leadName}</div>
-                  <div className="text-cyan-100/90">{team.leadEmail}</div>
+                  <div className="text-blue-100/90">{team.leadEmail}</div>
                 </td>
                 <td className="px-3 py-3">
                   <button

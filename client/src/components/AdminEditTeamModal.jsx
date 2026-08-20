@@ -38,7 +38,7 @@ export default function AdminEditTeamModal({ team, projects, onSave, onCancel })
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-cyan-400/30 bg-slate-900 p-6 shadow-2xl md:p-8">
+      <div className="max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-blue-400/30 bg-slate-900 p-6 shadow-2xl md:p-8">
         <h2 className="mb-4 text-2xl font-black text-white">Edit Team: {form.teamName}</h2>
         {error && (
           <div className="mb-3 rounded-lg border border-rose-400/50 bg-rose-900/40 px-3 py-2 text-sm text-rose-100">
@@ -58,7 +58,7 @@ export default function AdminEditTeamModal({ team, projects, onSave, onCancel })
               ['department', 'Department']
             ].map(([key, label]) => (
               <div key={key}>
-                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-cyan-200">
+                <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-200">
                   {label}
                 </label>
                 <input
@@ -68,19 +68,19 @@ export default function AdminEditTeamModal({ team, projects, onSave, onCancel })
                   autoCapitalize={key === 'leadUsn' || key === 'teamNumber' ? 'characters' : 'none'}
                   value={form[key]}
                   onChange={e => updateField(key, e.target.value)}
-                  className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30"
+                  className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/30"
                 />
               </div>
             ))}
             <div className="md:col-span-2">
-              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-cyan-200">
+              <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-200">
                 Assigned Project
               </label>
               <select
                 required
                 value={form.projectTitle}
                 onChange={(e) => updateField('projectTitle', e.target.value)}
-                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/30"
+                className="w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-slate-100 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/30"
               >
                 <option value="" disabled>
                   Select a project
@@ -97,7 +97,7 @@ export default function AdminEditTeamModal({ team, projects, onSave, onCancel })
           <div className="flex gap-3 pt-2">
             <button
               type="submit"
-              className="rounded-lg bg-cyan-500 px-4 py-2 font-bold text-slate-950 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-cyan-800 disabled:text-cyan-300"
+              className="rounded-lg bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-400 disabled:cursor-not-allowed disabled:bg-blue-900 disabled:text-blue-200"
               disabled={loading}
             >
               Save

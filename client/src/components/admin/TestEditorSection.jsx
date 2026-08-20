@@ -23,7 +23,7 @@ export const TestEditorSection = ({
   return (
     <div className="panel">
       <h2>Test & Question Editor</h2>
-      <div className="rounded-lg border border-sky-300/40 bg-sky-900/20 p-3" style={{ marginBottom: "1rem" }}>
+      <div className="rounded-lg border border-blue-300/40 bg-blue-900/20 p-3" style={{ marginBottom: "1rem" }}>
         <h3 style={{ marginBottom: "0.4rem" }}>User Role/Auth Migration</h3>
         <p className="muted" style={{ marginBottom: "0.6rem" }}>
           Run unified auth migration from LMS Test section (no delete, in-place upgrade).

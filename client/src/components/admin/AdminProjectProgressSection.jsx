@@ -133,7 +133,7 @@ export function AdminProjectProgressSection({
             type="button"
             disabled={topicPending || !onUnlockAllProgress}
             onClick={() => onUnlockAllProgress?.()}
-            className="rounded-lg border border-emerald-300/50 bg-emerald-900/30 px-3 py-1.5 text-xs font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg border border-blue-300/50 bg-blue-900/30 px-3 py-1.5 text-xs font-semibold text-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Unlock All Progress
           </button>
@@ -196,7 +196,7 @@ export function AdminProjectProgressSection({
                       onClick={() => onToggleTopicActive(topic)}
                       className={`rounded-full border px-2 py-1 text-[10px] font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
                         topic.active
-                          ? 'border-emerald-300/50 bg-emerald-900/30 text-emerald-100'
+                          ? 'border-blue-300/50 bg-blue-900/30 text-blue-100'
                           : 'border-slate-400/50 bg-slate-800 text-slate-200'
                       }`}
                     >
@@ -209,7 +209,7 @@ export function AdminProjectProgressSection({
                           type="button"
                           disabled={topicPending || !onUpdateTopicLabel}
                           onClick={() => handleSaveEditTopic(topic)}
-                          className="rounded-lg border border-cyan-300/40 bg-cyan-900/30 px-2 py-1 text-[10px] font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-60"
+                          className="rounded-lg border border-blue-300/40 bg-blue-900/30 px-2 py-1 text-[10px] font-semibold text-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           Save
                         </button>
@@ -227,7 +227,7 @@ export function AdminProjectProgressSection({
                         type="button"
                         disabled={topicPending}
                         onClick={() => handleStartEditTopic(topic)}
-                        className="rounded-lg border border-cyan-300/40 bg-cyan-900/30 px-2 py-1 text-[10px] font-semibold text-cyan-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        className="rounded-lg border border-blue-300/40 bg-blue-900/30 px-2 py-1 text-[10px] font-semibold text-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Edit
                       </button>
@@ -250,7 +250,7 @@ export function AdminProjectProgressSection({
       </div>
 
       {rows.length === 0 ? (
-        <div className="mt-3 rounded-lg border border-white/20 bg-black/20 px-3 py-3 text-sm text-cyan-100">
+        <div className="mt-3 rounded-lg border border-white/20 bg-black/20 px-3 py-3 text-sm text-blue-100">
           No approved teams available.
         </div>
       ) : (
@@ -267,9 +267,9 @@ export function AdminProjectProgressSection({
                     <h3 className="text-sm font-bold text-white">
                       {team.teamNumber} - {team.teamName}
                     </h3>
-                    <p className="text-xs text-cyan-100/90">Lead: {team.leadName}</p>
+                    <p className="text-xs text-blue-100/90">Lead: {team.leadName}</p>
                   </div>
-                  <div className="text-right text-xs text-cyan-100">
+                  <div className="text-right text-xs text-blue-100">
                     <div>Overall: <strong>{overall}%</strong></div>
                     <div>Locked: <strong>{locked}/{allTaskCount}</strong></div>
                   </div>
@@ -287,22 +287,22 @@ export function AdminProjectProgressSection({
                     return (
                       <div key={`${team._id}-${task.key}`} className="rounded-lg border border-blue-300/20 bg-slate-900/70 p-3">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-semibold text-cyan-50">{task.label}</span>
+                          <span className="text-xs font-semibold text-blue-50">{task.label}</span>
                           <span className={`rounded px-2 py-0.5 text-[10px] font-semibold ${
                             isLocked
-                              ? 'border border-emerald-300/40 bg-emerald-900/30 text-emerald-100'
-                              : 'border border-amber-300/40 bg-amber-900/30 text-amber-100'
+                                ? 'border border-blue-300/40 bg-blue-900/30 text-blue-100'
+                                : 'border border-slate-400/50 bg-slate-800 text-slate-200'
                           }`}>
                             {isLocked ? 'Locked' : 'Editable'}
                           </span>
                         </div>
                         <div className="mt-2 h-2 w-full rounded-full bg-slate-700">
-                          <div className="h-2 rounded-full bg-cyan-400" style={{ width: `${value}%` }} />
+                          <div className="h-2 rounded-full bg-blue-400" style={{ width: `${value}%` }} />
                         </div>
-                        <p className="mt-2 text-xs text-cyan-100">{value}%</p>
+                        <p className="mt-2 text-xs text-blue-100">{value}%</p>
 
                         {resetStatus === 'pending' ? (
-                          <div className="mt-2 rounded border border-amber-300/40 bg-amber-900/30 px-2 py-1 text-[10px] text-amber-100">
+                          <div className="mt-2 rounded border border-blue-300/40 bg-blue-900/30 px-2 py-1 text-[10px] text-blue-100">
                             Reset request pending
                           </div>
                         ) : null}
@@ -318,7 +318,7 @@ export function AdminProjectProgressSection({
                                 taskKey: task.key,
                                 action: 'approve'
                               })}
-                              className="rounded border border-emerald-300/40 bg-emerald-900/30 px-2 py-1 text-[10px] font-semibold text-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
+                              className="rounded border border-blue-300/40 bg-blue-900/30 px-2 py-1 text-[10px] font-semibold text-blue-100 disabled:cursor-not-allowed disabled:opacity-60"
                             >
                               Approve Reset
                             </button>

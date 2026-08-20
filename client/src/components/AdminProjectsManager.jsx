@@ -138,7 +138,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
   return (
     <section className="mt-6 rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4 md:p-6">
       <h2 className="text-xl font-black text-white">Project Management</h2>
-      <p className="mt-1 text-sm text-cyan-100/90">
+      <p className="mt-1 text-sm text-blue-100/90">
         Add projects manually, upload from Excel/PDF, and reconcile past assignment mismatch caused by direct DB deletes.
       </p>
 
@@ -155,7 +155,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
 
       <div className="mt-5 grid gap-6 lg:grid-cols-2">
         <form onSubmit={handleManualSubmit} className="space-y-3 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-cyan-100">Manual Add</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-blue-100">Manual Add</h3>
           <input
             required
             value={form.title}
@@ -197,27 +197,27 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
           <button
             type="submit"
             disabled={loading}
-            className="rounded-lg bg-cyan-500 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-cyan-400 disabled:cursor-not-allowed disabled:opacity-60"
+            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
             Add Project
           </button>
         </form>
 
         <div className="space-y-4 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-cyan-100">Bulk Upload</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-blue-100">Bulk Upload</h3>
           <input
             type="file"
             accept=".xlsx,.pdf"
             onChange={(event) => setFile(event.target.files?.[0] || null)}
             className="block w-full rounded-lg border border-white/20 bg-slate-900 px-3 py-2 text-sm text-slate-100"
           />
-          <p className="text-xs text-cyan-100/80">
+          <p className="text-xs text-blue-100/80">
             Excel headers accepted: title/project title, description/desc, difficulty/level, domain/category, technologies/tech stack.
           </p>
-          <p className="text-xs text-cyan-100/80">
+          <p className="text-xs text-blue-100/80">
             PDF: one project per line in format title | description | difficulty | domain | tech1,tech2.
           </p>
-          <p className="text-xs text-cyan-100/80">
+          <p className="text-xs text-blue-100/80">
             Tip: Keep one project per row and avoid blank separator rows.
           </p>
           <div className="flex flex-wrap gap-2">
@@ -225,7 +225,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
               type="button"
               disabled={loading}
               onClick={handleDownloadTemplate}
-              className="rounded-lg border border-cyan-300/40 bg-cyan-900/30 px-4 py-2 text-sm font-bold text-cyan-100 hover:bg-cyan-800/50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg border border-blue-300/40 bg-blue-900/30 px-4 py-2 text-sm font-bold text-blue-100 hover:bg-blue-800/50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Download Template
             </button>
@@ -233,7 +233,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
               type="button"
               disabled={loading}
               onClick={handlePreview}
-              className="rounded-lg border border-indigo-300/40 bg-indigo-900/30 px-4 py-2 text-sm font-bold text-indigo-100 hover:bg-indigo-800/50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg border border-blue-300/40 bg-blue-900/30 px-4 py-2 text-sm font-bold text-blue-100 hover:bg-blue-800/50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Preview File
             </button>
@@ -241,7 +241,7 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
               type="button"
               disabled={loading}
               onClick={handleUpload}
-              className="rounded-lg bg-indigo-500 px-4 py-2 text-sm font-bold text-white hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-bold text-white hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Upload File
             </button>
@@ -249,14 +249,14 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
               type="button"
               disabled={loading}
               onClick={handleReconcile}
-              className="rounded-lg border border-amber-300/40 bg-amber-900/30 px-4 py-2 text-sm font-bold text-amber-100 hover:bg-amber-800/50 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg border border-blue-300/40 bg-blue-900/30 px-4 py-2 text-sm font-bold text-blue-100 hover:bg-blue-800/50 disabled:cursor-not-allowed disabled:opacity-60"
             >
               Reconcile Assignments
             </button>
           </div>
 
           {preview && (
-            <div className="rounded-lg border border-white/15 bg-black/30 p-3 text-xs text-cyan-100">
+            <div className="rounded-lg border border-white/15 bg-black/30 p-3 text-xs text-blue-100">
               <div>Valid rows: {preview.validCount}</div>
               <div>Invalid rows: {preview.invalidCount}</div>
               <div>Total rows: {preview.totalRows}</div>
@@ -312,20 +312,20 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
 
       <div className="mt-6 rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-bold uppercase tracking-wide text-cyan-100">
+          <h3 className="text-sm font-bold uppercase tracking-wide text-blue-100">
             Populated Projects (Row by Row)
           </h3>
-          <span className="text-xs text-cyan-100/80">Total Loaded: {projects.length}</span>
+          <span className="text-xs text-blue-100/80">Total Loaded: {projects.length}</span>
         </div>
 
         {!projects.length ? (
-          <div className="mt-3 rounded-lg border border-dashed border-white/20 bg-black/20 px-3 py-3 text-xs text-cyan-100/80">
+          <div className="mt-3 rounded-lg border border-dashed border-white/20 bg-black/20 px-3 py-3 text-xs text-blue-100/80">
             No projects available yet.
           </div>
         ) : (
           <div className="mt-3 max-h-80 overflow-auto rounded-lg border border-white/15">
-            <table className="min-w-full divide-y divide-white/15 text-left text-xs text-cyan-50">
-              <thead className="bg-white/10 uppercase tracking-wide text-cyan-100">
+            <table className="min-w-full divide-y divide-white/15 text-left text-xs text-blue-50">
+              <thead className="bg-white/10 uppercase tracking-wide text-blue-100">
                 <tr>
                   <th className="px-3 py-2">Row</th>
                   <th className="px-3 py-2">Title</th>
@@ -338,9 +338,9 @@ export function AdminProjectsManager({ onProjectsChanged, projects = [] }) {
               <tbody className="divide-y divide-white/10 bg-black/10">
                 {projects.map((project, index) => (
                   <tr key={project._id || `${project.title}-${index}`} className="align-top">
-                    <td className="px-3 py-2 font-semibold text-cyan-100">{index + 1}</td>
+                    <td className="px-3 py-2 font-semibold text-blue-100">{index + 1}</td>
                     <td className="px-3 py-2 font-semibold text-white">{project.title || '-'}</td>
-                    <td className="px-3 py-2 text-cyan-50/90">{project.description || '-'}</td>
+                    <td className="px-3 py-2 text-blue-50/90">{project.description || '-'}</td>
                     <td className="px-3 py-2">{project.difficulty || '-'}</td>
                     <td className="px-3 py-2">{project.domain || '-'}</td>
                     <td className="px-3 py-2">

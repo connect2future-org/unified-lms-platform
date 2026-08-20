@@ -48,7 +48,7 @@ function LookupGroup({
 
   return (
     <div className="rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
-      <h3 className="text-sm font-black uppercase tracking-wide text-cyan-100">{title}</h3>
+      <h3 className="text-sm font-black uppercase tracking-wide text-blue-100">{title}</h3>
 
       <form onSubmit={handleCreate} className="mt-3 flex gap-2">
         <input
@@ -60,7 +60,7 @@ function LookupGroup({
         <button
           type="submit"
           disabled={pending}
-          className="rounded-lg bg-cyan-400 px-3 py-2 text-xs font-black text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+          className="rounded-lg bg-blue-500 px-3 py-2 text-xs font-black text-white disabled:cursor-not-allowed disabled:opacity-60"
         >
           Add
         </button>
@@ -68,7 +68,7 @@ function LookupGroup({
 
       <div className="mt-3 max-h-72 space-y-2 overflow-y-auto pr-1">
         {items.length === 0 ? (
-          <p className="text-xs text-cyan-100/80">No entries.</p>
+          <p className="text-xs text-blue-100/80">No entries.</p>
         ) : items.map((item) => {
           const isEditing = editingId === item._id
           return (
@@ -84,7 +84,7 @@ function LookupGroup({
                     type="button"
                     disabled={pending}
                     onClick={saveEditing}
-                    className="rounded bg-emerald-400 px-2 py-1 text-[11px] font-bold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                    className="rounded bg-blue-500 px-2 py-1 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     Save
                   </button>
@@ -105,7 +105,7 @@ function LookupGroup({
                       type="button"
                       disabled={pending}
                       onClick={() => startEditing(item)}
-                      className="rounded bg-amber-300 px-2 py-1 text-[11px] font-bold text-slate-900 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="rounded bg-blue-500 px-2 py-1 text-[11px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       Edit
                     </button>
@@ -169,7 +169,7 @@ export function AdminLookupManagerSection({
       ) : null}
 
       {loading ? (
-        <div className="mt-4 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 px-3 py-3 text-sm text-cyan-100">
+        <div className="mt-4 rounded-lg border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25 px-3 py-3 text-sm text-blue-100">
           Loading lookup data...
         </div>
       ) : (

@@ -165,7 +165,7 @@ const AdminTeamsPage = () => {
     notePlaceholder: '',
     requireNote: false,
     confirmLabel: 'Confirm',
-    confirmTone: 'cyan',
+    confirmTone: 'blue',
     onConfirm: null
   })
 
@@ -621,11 +621,11 @@ const AdminTeamsPage = () => {
 
   return (
     <PageShell>
-      <section className="admin-teams-page rounded-3xl border border-slate-700 bg-slate-900 p-6 shadow-2xl md:p-8">
+      <section className="admin-teams-page rounded-3xl border border-blue-300/30 bg-gradient-to-br from-slate-950 to-blue-950/90 p-6 shadow-2xl md:p-8">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-3xl font-black text-white md:text-4xl">Admin Team Management</h1>
-            <p className="mt-2 text-sm text-cyan-50/90 md:text-base">
+            <p className="mt-2 text-sm text-blue-100/90 md:text-base">
               Edit team details and member records without creating duplicate entries.
             </p>
           </div>
@@ -633,7 +633,7 @@ const AdminTeamsPage = () => {
             <button
               type="button"
               onClick={() => setShowExportDialog(true)}
-              className="rounded-lg border border-emerald-400/70 bg-emerald-500/80 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-400"
+              className="rounded-lg border border-blue-300/70 bg-blue-500 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-400"
             >
               Export Excel
             </button>
@@ -644,7 +644,7 @@ const AdminTeamsPage = () => {
                 fetchProjects()
                 fetchLookupCatalog()
               }}
-              className="rounded-lg border border-cyan-300/70 bg-cyan-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-cyan-300"
+              className="rounded-lg border border-blue-200/60 bg-blue-100/10 px-4 py-2 text-sm font-semibold text-blue-100 hover:bg-blue-100/20"
             >
               Refresh
             </button>
@@ -658,7 +658,7 @@ const AdminTeamsPage = () => {
         )}
 
         {loading ? (
-          <div className="mt-6 rounded-xl border border-white/20 bg-black/20 px-4 py-5 text-cyan-100">
+          <div className="mt-6 rounded-xl border border-white/20 bg-black/20 px-4 py-5 text-blue-100">
             Loading teams...
           </div>
         ) : (
@@ -732,9 +732,9 @@ const AdminTeamsPage = () => {
             ) : null}
 
             {activeFlow === FLOW_TABS.projects ? (
-              <section className="rounded-2xl border border-amber-300/30 bg-amber-900/20 p-4">
-                <h2 className="text-lg font-black text-amber-100">Project Management</h2>
-                <p className="mt-1 text-xs text-amber-100/90">
+              <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
+                <h2 className="text-lg font-black text-blue-100">Project Management</h2>
+                <p className="mt-1 text-xs text-blue-100/90">
                   Add projects manually, bulk upload, and reconcile assignments in one focused workflow.
                 </p>
                 <div className="mt-4">
@@ -763,9 +763,9 @@ const AdminTeamsPage = () => {
             ) : null}
 
             {activeFlow === FLOW_TABS.security ? (
-              <section className="rounded-2xl border border-emerald-300/30 bg-emerald-900/20 p-4">
-                <h2 className="text-lg font-black text-emerald-100">Password Security Control</h2>
-                <p className="mt-1 text-xs text-emerald-100/90">
+              <section className="rounded-2xl border border-blue-300/30 bg-gradient-to-br from-blue-950/45 to-blue-800/25 p-4">
+                <h2 className="text-lg font-black text-blue-100">Password Security Control</h2>
+                <p className="mt-1 text-xs text-blue-100/90">
                   Review OTP/reset activity and force reset passwords using a dedicated security view.
                 </p>
                 <div className="mt-4">

@@ -29,7 +29,7 @@ export function MemberFields({ members, setMembers }) {
         <button
           type="button"
           onClick={addMember}
-          className="rounded-lg bg-cyan-400 px-3 py-1.5 text-xs font-bold text-slate-900 hover:bg-cyan-300"
+          className="rounded-lg bg-blue-500 px-3 py-1.5 text-xs font-bold text-white hover:bg-blue-400"
         >
           Add Member
         </button>

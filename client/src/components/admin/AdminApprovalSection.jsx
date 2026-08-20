@@ -4,7 +4,7 @@ function PaginationControls({ page, totalPages, onChange }) {
   }
 
   return (
-    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-cyan-100/90">
+    <div className="mt-3 flex items-center justify-end gap-2 text-xs text-blue-100/90">
       <button
         type="button"
         disabled={page <= 1}
@@ -65,8 +65,8 @@ export function AdminApprovalSection({
         </p>
 
         <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-          <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
-            <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
+          <table className="min-w-full divide-y divide-white/15 text-sm text-blue-50">
+            <thead className="bg-white/10 text-xs uppercase tracking-wide text-blue-100">
               <tr>
                 <th className="px-3 py-3 text-left">Team</th>
                 <th className="px-3 py-3 text-left">Lead</th>
@@ -77,7 +77,7 @@ export function AdminApprovalSection({
             <tbody className="divide-y divide-white/10">
               {registrationApprovalTeams.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-cyan-100/80">
+                  <td colSpan={4} className="px-3 py-6 text-center text-blue-100/80">
                     No pending team registrations.
                   </td>
                 </tr>
@@ -88,7 +88,7 @@ export function AdminApprovalSection({
                     <td className="px-3 py-3">
                       <div className="font-semibold text-white">{team.teamNumber}</div>
                       <div>{team.teamName}</div>
-                      <div className="text-xs text-cyan-100/90">{team.college}</div>
+                      <div className="text-xs text-blue-100/90">{team.college}</div>
                     </td>
                     <td className="px-3 py-3 text-xs">
                       <div className="font-semibold text-white">{team.leadName}</div>
@@ -97,13 +97,13 @@ export function AdminApprovalSection({
                     </td>
                     <td className="px-3 py-3 text-xs">
                       {warnings.length === 0 ? (
-                        <span className="rounded border border-emerald-300/40 bg-emerald-900/30 px-2 py-1 text-emerald-100">
+                        <span className="rounded border border-blue-300/40 bg-blue-900/30 px-2 py-1 text-blue-100">
                           No duplicate signal
                         </span>
                       ) : (
                         <div className="space-y-1">
                           {warnings.map((warning) => (
-                            <div key={`${team._id}-${warning}`} className="rounded border border-amber-300/40 bg-amber-900/30 px-2 py-1 text-amber-100">
+                            <div key={`${team._id}-${warning}`} className="rounded border border-blue-300/40 bg-blue-900/30 px-2 py-1 text-blue-100">
                               {warning}
                             </div>
                           ))}
@@ -147,8 +147,8 @@ export function AdminApprovalSection({
         </p>
 
         <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-          <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
-            <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
+          <table className="min-w-full divide-y divide-white/15 text-sm text-blue-50">
+            <thead className="bg-white/10 text-xs uppercase tracking-wide text-blue-100">
               <tr>
                 <th className="px-3 py-3 text-left">Team</th>
                 <th className="px-3 py-3 text-left">Request</th>
@@ -159,7 +159,7 @@ export function AdminApprovalSection({
             <tbody className="divide-y divide-white/10">
               {approvalPagination.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-cyan-100/80">
+                  <td colSpan={4} className="px-3 py-6 text-center text-blue-100/80">
                     No pending profile update requests.
                   </td>
                 </tr>
@@ -171,7 +171,7 @@ export function AdminApprovalSection({
                     <td className="px-3 py-3">
                       <div className="font-semibold text-white">{team.teamNumber}</div>
                       <div>{team.teamName}</div>
-                      <div className="text-xs text-cyan-100/90">{team.leadEmail}</div>
+                      <div className="text-xs text-blue-100/90">{team.leadEmail}</div>
                     </td>
                     <td className="px-3 py-3 text-xs">
                       <div>Status: <span className="font-semibold uppercase">{team.profileUpdateRequest?.status}</span></div>
@@ -240,8 +240,8 @@ export function AdminApprovalSection({
         </p>
 
         <div className="mt-3 overflow-x-auto rounded-xl border border-blue-300/25 bg-gradient-to-br from-blue-950/45 to-blue-800/25">
-          <table className="min-w-full divide-y divide-white/15 text-sm text-cyan-50">
-            <thead className="bg-white/10 text-xs uppercase tracking-wide text-cyan-100">
+          <table className="min-w-full divide-y divide-white/15 text-sm text-blue-50">
+            <thead className="bg-white/10 text-xs uppercase tracking-wide text-blue-100">
               <tr>
                 <th className="px-3 py-3 text-left">Team</th>
                 <th className="px-3 py-3 text-left">Idea</th>
@@ -252,7 +252,7 @@ export function AdminApprovalSection({
             <tbody className="divide-y divide-white/10">
               {ideaApprovalPagination.rows.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-3 py-6 text-center text-cyan-100/80">
+                  <td colSpan={4} className="px-3 py-6 text-center text-blue-100/80">
                     No pending custom project ideas.
                   </td>
                 </tr>
@@ -261,18 +261,18 @@ export function AdminApprovalSection({
                   <td className="px-3 py-3">
                     <div className="font-semibold text-white">{team.teamNumber}</div>
                     <div>{team.teamName}</div>
-                    <div className="text-xs text-cyan-100/90">{team.leadEmail}</div>
+                    <div className="text-xs text-blue-100/90">{team.leadEmail}</div>
                   </td>
                   <td className="px-3 py-3 text-xs">
                     <div className="font-semibold text-blue-100">{team.customProjectIdea?.title || '-'}</div>
-                    <div className="mt-1 text-cyan-100/90">{team.customProjectIdea?.description || '-'}</div>
-                    <div className="mt-1 text-cyan-100/80">
+                    <div className="mt-1 text-blue-100/90">{team.customProjectIdea?.description || '-'}</div>
+                    <div className="mt-1 text-blue-100/80">
                       {(team.customProjectIdea?.domain || '-')}
                       {' | '}
                       {(team.customProjectIdea?.difficulty || '-')}
                     </div>
                   </td>
-                  <td className="px-3 py-3 text-xs text-cyan-100/90">
+                  <td className="px-3 py-3 text-xs text-blue-100/90">
                     {Array.isArray(team.customProjectIdea?.technologies)
                       ? team.customProjectIdea.technologies.join(', ')
                       : '-'}

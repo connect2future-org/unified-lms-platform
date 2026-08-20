@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 
 const toneClassByType = {
-  cyan: 'bg-cyan-400 text-slate-900 hover:bg-cyan-300',
+  blue: 'bg-blue-500 text-white hover:bg-blue-400',
+  cyan: 'bg-blue-500 text-white hover:bg-blue-400',
   emerald: 'bg-emerald-400 text-slate-900 hover:bg-emerald-300',
   rose: 'bg-rose-500 text-white hover:bg-rose-400',
-  amber: 'bg-amber-400 text-slate-900 hover:bg-amber-300'
+  amber: 'bg-blue-500 text-white hover:bg-blue-400'
 }
 
 export function ActionDialog({
@@ -16,7 +17,7 @@ export function ActionDialog({
   noteLabel = '',
   notePlaceholder = '',
   requireNote = false,
-  confirmTone = 'cyan',
+  confirmTone = 'blue',
   loading = false,
   onConfirm,
   onCancel
@@ -45,17 +46,17 @@ export function ActionDialog({
     onConfirm?.(note)
   }
 
-  const confirmToneClass = toneClassByType[confirmTone] || toneClassByType.cyan
+  const confirmToneClass = toneClassByType[confirmTone] || toneClassByType.blue
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-2xl border border-white/20 bg-slate-900 p-6 shadow-2xl">
         <h3 className="text-xl font-black text-white">{title}</h3>
-        <p className="mt-2 text-sm text-cyan-50/90">{message}</p>
+        <p className="mt-2 text-sm text-blue-50/90">{message}</p>
 
         {noteLabel ? (
           <div className="mt-4">
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-cyan-100">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wider text-blue-100">
               {noteLabel}
             </label>
             <textarea
