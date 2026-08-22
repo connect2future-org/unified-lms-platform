@@ -160,6 +160,24 @@ Use the same root commands:
 Only expose the backend runtime port (`PORT`, default `5000`).
 Do not deploy frontend and backend as separate services.
 
+## Hostinger Deployment Guardrails
+
+To avoid `ECONNREFUSED` or proxy errors in production, choose one model and keep it consistent:
+
+1. Single service (recommended)
+   - Deploy this monorepo as one Node app.
+   - Use `npm run build` and `npm start`.
+   - Keep `VITE_API_BASE_URL` empty so the client uses same-origin `/api`.
+
+2. Split frontend and backend services
+   - Deploy backend API separately and make sure it is reachable publicly.
+   - Set `VITE_API_BASE_URL` on the frontend build environment to your API base, for example `https://api.example.com/api`.
+   - Set `CORS_ORIGIN` on backend to the frontend origin.
+
+Notes:
+- `VITE_PROXY_TARGET` is for local Vite development only.
+- Production does not use Vite dev proxy.
+
 ## Netlify Note
 
 This architecture is intentionally optimized for Node-first hosts (Render, Railway, VPS, Azure App Service, Docker) where one Express process serves both frontend and backend. Netlify is frontend-first and is not the target deployment model for this unified backend-serving setup.

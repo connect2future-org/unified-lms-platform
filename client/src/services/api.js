@@ -29,6 +29,12 @@ const TEAM_TOKEN_KEY = 'team_auth_token'
 const TEAM_PROFILE_KEY = 'team_auth_profile'
 
 const getApiBaseUrl = () => {
+  const explicitBaseUrl = String(import.meta.env.VITE_API_BASE_URL || '').trim()
+
+  if (explicitBaseUrl) {
+    return explicitBaseUrl.replace(/\/$/, '')
+  }
+
   return '/api'
 }
 
