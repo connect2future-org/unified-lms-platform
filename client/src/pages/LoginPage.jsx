@@ -22,6 +22,7 @@ export const LoginPage = () => {
   const [loginType, setLoginType] = useState(initialRole);
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -124,11 +125,19 @@ export const LoginPage = () => {
             <input
               id="password"
               placeholder="Enter your password"
-              type="password"
+              type={showPassword ? "text" : "password"}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
             />
+            <label style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", marginTop: "0.5rem", fontWeight: 500, color: "var(--text-secondary)" }}>
+              <input
+                type="checkbox"
+                checked={showPassword}
+                onChange={(e) => setShowPassword(e.target.checked)}
+              />
+              Show password
+            </label>
           </div>
           {error ? <p className="error-text">{error}</p> : null}
           <button className="btn" disabled={loading}>

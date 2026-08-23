@@ -474,6 +474,21 @@ export const getTests = asyncHandler(async (req, res) => {
 
   if (req.user.role === "admin") {
     filter.createdBy = req.user._id;
+  } else if (req.user.role === "candidate") {
+    if (!req.user.linkedAdmin) {
+      return res.json({
+        items: [],
+        pagination: {
+          page,
+          limit,
+          total: 0,
+          totalPages: 0
+        }
+      });
+    }
+
+    filter.isPublished = true;
+    filter.createdBy = req.user.linkedAdmin;
   } else {
     filter.isPublished = true;
   }
@@ -522,6 +537,13 @@ export const getTestById = asyncHandler(async (req, res) => {
 
   if (req.user.role === "candidate" && !test.isPublished) {
     return res.status(403).json({ message: "Test not published" });
+  }
+
+  if (
+    req.user.role === "candidate"
+    && (!req.user.linkedAdmin || String(test.createdBy) !== String(req.user.linkedAdmin))
+  ) {
+    return res.status(403).json({ message: "This test is not assigned to your admin" });
   }
 
   if (req.user.role === "admin" && String(test.createdBy) !== String(req.user._id)) {

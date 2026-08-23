@@ -11,7 +11,7 @@ export const requireAuth = async (req, res, next) => {
     }
 
     const payload = verifyToken(token);
-    const user = await User.findById(payload.userId).select("_id name email role");
+    const user = await User.findById(payload.userId).select("_id name email role linkedAdmin linkedSuperAdmin");
 
     if (!user) {
       return res.status(401).json({ message: "Invalid token user" });

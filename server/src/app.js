@@ -119,6 +119,12 @@ export const createApp = () => {
   if (existsSync(clientDistPath)) {
     app.use(express.static(clientDistPath))
     app.get(/^(?!\/api(\/|$)).*/, (req, res) => {
+      // Do not rewrite static asset requests to index.html.
+      if (req.path.startsWith('/assets/') || path.extname(req.path)) {
+        res.status(404).end()
+        return
+      }
+
       res.sendFile(path.join(clientDistPath, 'index.html'))
     })
   }

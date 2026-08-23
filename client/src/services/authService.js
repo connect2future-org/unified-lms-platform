@@ -36,5 +36,11 @@ export const authService = {
   },
   createManagedAdmin(payload) {
     return api.post("/auth/super-admin/admins", payload).then((res) => res.data);
+  },
+  updateManagedAdminCredentials(adminId, payload) {
+    return api.patch(`/auth/super-admin/admins/${adminId}`, payload).then((res) => res.data);
+  },
+  resetManagedAdminPassword(adminId) {
+    return api.post(`/auth/super-admin/admins/${adminId}/reset-password`).then((res) => res.data);
   }
 };

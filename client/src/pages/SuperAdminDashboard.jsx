@@ -10,6 +10,9 @@ export const SuperAdminDashboard = () => {
   const [status, setStatus] = useState("");
   const [csvFile, setCsvFile] = useState(null);
   const [adminForm, setAdminForm] = useState({ name: "", email: "", password: "" });
+  const [editingAdminId, setEditingAdminId] = useState("");
+  const [editForm, setEditForm] = useState({ name: "", email: "", password: "" });
+  const [temporaryPasswords, setTemporaryPasswords] = useState({});
 
   const loadAdmins = async () => {
     const response = await authService.listManagedAdmins();
@@ -45,6 +48,68 @@ export const SuperAdminDashboard = () => {
       await loadAdmins();
     } catch (error) {
       setStatus(error.response?.data?.message || "Failed to create admin.");
+    }
+  };
+
+  const startEditAdmin = (admin) => {
+    setEditingAdminId(admin._id);
+    setEditForm({
+      name: admin.name || "",
+      email: admin.email || "",
+      password: ""
+    });
+    setStatus("");
+  };
+
+  const cancelEditAdmin = () => {
+    setEditingAdminId("");
+    setEditForm({ name: "", email: "", password: "" });
+  };
+
+  const saveAdminCredentials = async (adminId) => {
+    setStatus("");
+
+    const payload = {};
+    if (editForm.name.trim()) {
+      payload.name = editForm.name.trim();
+    }
+    if (editForm.email.trim()) {
+      payload.email = editForm.email.trim();
+    }
+    if (editForm.password.trim()) {
+      payload.password = editForm.password;
+    }
+
+    if (!payload.name && !payload.email && !payload.password) {
+      setStatus("Provide at least one value to update.");
+      return;
+    }
+
+    try {
+      await authService.updateManagedAdminCredentials(adminId, payload);
+      setStatus("Admin credentials updated successfully.");
+      cancelEditAdmin();
+      await loadAdmins();
+    } catch (error) {
+      setStatus(error.response?.data?.message || "Failed to update admin credentials.");
+    }
+  };
+
+  const resetAdminPassword = async (admin) => {
+    setStatus("");
+    try {
+      const response = await authService.resetManagedAdminPassword(admin._id);
+      const tempPassword = response?.temporaryPassword || "";
+
+      setTemporaryPasswords((prev) => ({
+        ...prev,
+        [admin._id]: tempPassword
+      }));
+
+      setStatus(`Temporary password reset for ${admin.name}. Share it securely and ask admin to change it after login.`);
+      await loadAdmins();
+    } catch (error) {
+      setStatus(error.response?.data?.message || "Failed to reset admin password.");
     }
   };
 
@@ -85,7 +150,7 @@ export const SuperAdminDashboard = () => {
       </div>
 
       <div className="panel">
-        <h3>Managed Admins</h3>
+        <h3>All Admins</h3>
         <div className="table-wrap">
           <table>
             <thead>
@@ -93,15 +158,69 @@ export const SuperAdminDashboard = () => {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Code</th>
+                <th>Manage</th>
+                <th>Temp Password</th>
                 <th>Select</th>
               </tr>
             </thead>
             <tbody>
               {admins.map((admin) => (
                 <tr key={admin._id}>
-                  <td>{admin.name}</td>
-                  <td>{admin.email}</td>
+                  <td>
+                    {editingAdminId === admin._id ? (
+                      <input
+                        value={editForm.name}
+                        onChange={(e) => setEditForm((p) => ({ ...p, name: e.target.value }))}
+                        placeholder="Admin name"
+                      />
+                    ) : (
+                      admin.name
+                    )}
+                  </td>
+                  <td>
+                    {editingAdminId === admin._id ? (
+                      <input
+                        value={editForm.email}
+                        onChange={(e) => setEditForm((p) => ({ ...p, email: e.target.value }))}
+                        placeholder="Admin email"
+                      />
+                    ) : (
+                      admin.email
+                    )}
+                  </td>
                   <td>{admin.adminCode}</td>
+                  <td>
+                    {editingAdminId === admin._id ? (
+                      <div className="form-grid">
+                        <input
+                          type="password"
+                          value={editForm.password}
+                          onChange={(e) => setEditForm((p) => ({ ...p, password: e.target.value }))}
+                          placeholder="New password (optional)"
+                        />
+                        <button className="btn" onClick={() => saveAdminCredentials(admin._id)}>
+                          Save
+                        </button>
+                        <button className="btn btn-ghost" onClick={cancelEditAdmin}>
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <button className="btn btn-ghost" onClick={() => startEditAdmin(admin)}>
+                        Edit Credentials
+                      </button>
+                    )}
+                  </td>
+                  <td>
+                    <div className="form-grid">
+                      <button className="btn btn-ghost" onClick={() => resetAdminPassword(admin)}>
+                        Reset Password
+                      </button>
+                      {temporaryPasswords[admin._id] ? (
+                        <small className="muted">{temporaryPasswords[admin._id]}</small>
+                      ) : null}
+                    </div>
+                  </td>
                   <td>
                     <button className="btn btn-ghost" onClick={() => setSelectedAdminId(admin._id)}>
                       {selectedAdminId === admin._id ? "Selected" : "Select"}

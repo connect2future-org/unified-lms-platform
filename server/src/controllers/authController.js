@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { parse } from 'csv-parse/sync'
 import { asyncHandler } from '../middleware/asyncHandler.js'
 import { env } from '../config/env.js'
@@ -829,13 +830,121 @@ export const createManagedAdmin = asyncHandler(async (req, res) => {
   })
 })
 
+export const updateManagedAdminCredentials = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'super-admin') {
+    throw new ApiError(403, 'Forbidden')
+  }
+
+  const adminId = String(req.params.adminId || '').trim()
+  if (!adminId) {
+    throw new ApiError(400, 'Admin id is required')
+  }
+
+  const admin = await User.findOne({ _id: adminId, role: 'admin' }).select('+password')
+  if (!admin) {
+    throw new ApiError(404, 'Admin not found')
+  }
+
+  const nextName = typeof req.body?.name === 'string' ? req.body.name.trim() : ''
+  const nextEmail = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : ''
+  const nextPassword = typeof req.body?.password === 'string' ? req.body.password : ''
+
+  const hasNameUpdate = Boolean(nextName)
+  const hasEmailUpdate = Boolean(nextEmail)
+  const hasPasswordUpdate = Boolean(nextPassword)
+
+  if (!hasNameUpdate && !hasEmailUpdate && !hasPasswordUpdate) {
+    throw new ApiError(400, 'At least one credential field is required: name, email, or password')
+  }
+
+  if (hasEmailUpdate) {
+    const existingEmailOwner = await User.findOne({ email: nextEmail, _id: { $ne: admin._id } }).select('_id')
+    if (existingEmailOwner) {
+      throw new ApiError(409, 'Email already exists')
+    }
+  }
+
+  if (hasPasswordUpdate && String(nextPassword).length < 8) {
+    throw new ApiError(400, 'Password must be at least 8 characters long')
+  }
+
+  if (hasNameUpdate) {
+    admin.name = nextName
+  }
+
+  if (hasEmailUpdate) {
+    admin.email = nextEmail
+  }
+
+  if (hasPasswordUpdate) {
+    admin.password = nextPassword
+  }
+
+  await admin.save()
+
+  res.json({
+    message: 'Admin credentials updated successfully',
+    admin: {
+      id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      adminCode: admin.adminCode,
+      linkedSuperAdmin: admin.linkedSuperAdmin
+    }
+  })
+})
+
+const generateTemporaryPassword = () => {
+  const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%'
+  const bytes = crypto.randomBytes(14)
+  let value = ''
+
+  for (const byte of bytes) {
+    value += alphabet[byte % alphabet.length]
+  }
+
+  return value
+}
+
+export const resetManagedAdminPassword = asyncHandler(async (req, res) => {
+  if (req.user.role !== 'super-admin') {
+    throw new ApiError(403, 'Forbidden')
+  }
+
+  const adminId = String(req.params.adminId || '').trim()
+  if (!adminId) {
+    throw new ApiError(400, 'Admin id is required')
+  }
+
+  const admin = await User.findOne({ _id: adminId, role: 'admin' }).select('+password')
+  if (!admin) {
+    throw new ApiError(404, 'Admin not found')
+  }
+
+  const temporaryPassword = generateTemporaryPassword()
+  admin.password = temporaryPassword
+  await admin.save()
+
+  res.json({
+    message: 'Temporary password generated and applied successfully',
+    admin: {
+      id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      adminCode: admin.adminCode,
+      linkedSuperAdmin: admin.linkedSuperAdmin
+    },
+    temporaryPassword
+  })
+})
+
 export const listManagedAdmins = asyncHandler(async (req, res) => {
   if (req.user.role !== 'super-admin') {
     throw new ApiError(403, 'Forbidden')
   }
 
-  const admins = await User.find({ role: 'admin', linkedSuperAdmin: req.user._id })
-    .select('_id name email adminCode createdAt')
+  const admins = await User.find({ role: 'admin' })
+    .select('_id name email adminCode linkedSuperAdmin createdAt')
     .sort({ createdAt: -1 })
 
   res.json({ items: admins })

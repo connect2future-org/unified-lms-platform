@@ -110,10 +110,14 @@ const isDuplicateKeyError = (error) => Number(error?.code) === 11000;
 
 export const startAttempt = asyncHandler(async (req, res) => {
   const { testId } = req.params;
-  const candidate = await User.findById(req.user._id).select("_id name email role usn branch college");
+  const candidate = await User.findById(req.user._id).select("_id name email role usn branch college linkedAdmin");
 
   if (!candidate || candidate.role !== "candidate") {
     return res.status(403).json({ message: "Forbidden" });
+  }
+
+  if (!candidate.linkedAdmin) {
+    return res.status(403).json({ message: "No admin mapping found for this account" });
   }
 
   const missingFields = getMissingCandidateProfileFields(candidate);
@@ -126,7 +130,7 @@ export const startAttempt = asyncHandler(async (req, res) => {
     });
   }
 
-  const test = await Test.findById(testId).select("_id isPublished durationMinutes randomizeQuestions randomizeOptions questions");
+  const test = await Test.findById(testId).select("_id isPublished createdBy durationMinutes randomizeQuestions randomizeOptions questions");
 
   if (!test) {
     return res.status(404).json({ message: "Test not found" });
@@ -134,6 +138,10 @@ export const startAttempt = asyncHandler(async (req, res) => {
 
   if (!test.isPublished) {
     return res.status(400).json({ message: "Test is not published" });
+  }
+
+  if (String(test.createdBy) !== String(candidate.linkedAdmin)) {
+    return res.status(403).json({ message: "This test is not assigned to your admin" });
   }
 
   const questionBank = await Question.find({ _id: { $in: test.questions || [] } })
