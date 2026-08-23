@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { ActivitySection } from "../components/admin/ActivitySection";
 import { OverviewSection } from "../components/admin/OverviewSection";
+import { SchoolClassSection } from "../components/admin/SchoolClassSection";
 import { StudentsSection } from "../components/admin/StudentsSection";
 import { TestEditorSection } from "../components/admin/TestEditorSection";
 import { analyticsService } from "../services/analyticsService";
 import { authService } from "../services/authService";
+import { schoolService } from "../services/schoolService";
 import { testService } from "../services/testService";
 
 const initialQuestionDraft = {
@@ -30,6 +32,7 @@ const tabs = [
   { id: "overview", label: "Overview" },
   { id: "tests", label: "Test & Question Editor" },
   { id: "students", label: "Student Registry" },
+  { id: "schoolClass", label: "School & Class" },
   { id: "activity", label: "Live Activity" }
 ];
 
@@ -48,6 +51,20 @@ export const AdminDashboard = () => {
   const [userMigrationSummary, setUserMigrationSummary] = useState(null);
   const [userMigrationLoading, setUserMigrationLoading] = useState(false);
   const [userMigrationMessage, setUserMigrationMessage] = useState("");
+  const [schools, setSchools] = useState([]);
+  const [selectedSchoolId, setSelectedSchoolId] = useState("");
+  const [schoolTeachers, setSchoolTeachers] = useState([]);
+  const [schoolStudents, setSchoolStudents] = useState([]);
+  const [schoolDataLoading, setSchoolDataLoading] = useState(false);
+  const [gradeFilter, setGradeFilter] = useState("");
+  const [schoolForm, setSchoolForm] = useState({ schoolId: "", name: "" });
+  const [teacherAssignForm, setTeacherAssignForm] = useState({ teacherEmail: "" });
+  const [studentForm, setStudentForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    grade: ""
+  });
 
   const [form, setForm] = useState({
     title: "",
@@ -103,6 +120,35 @@ export const AdminDashboard = () => {
     setActivity(activityRes.items || []);
   };
 
+  const loadSchools = async () => {
+    const response = await schoolService.listSchools();
+    const nextSchools = response.items || [];
+    setSchools(nextSchools);
+    if (!selectedSchoolId && nextSchools.length) {
+      setSelectedSchoolId(nextSchools[0]._id);
+    }
+  };
+
+  const loadSchoolContext = async (schoolId, grade) => {
+    if (!schoolId) {
+      setSchoolTeachers([]);
+      setSchoolStudents([]);
+      return;
+    }
+
+    setSchoolDataLoading(true);
+    try {
+      const [teachersResponse, studentsResponse] = await Promise.all([
+        schoolService.listTeachersBySchool(schoolId),
+        schoolService.listStudentsBySchool(schoolId, grade ? { grade } : {})
+      ]);
+      setSchoolTeachers(teachersResponse.items || []);
+      setSchoolStudents(studentsResponse.items || []);
+    } finally {
+      setSchoolDataLoading(false);
+    }
+  };
+
   const loadUserMigrationSummary = async () => {
     const summaryRes = await authService.getUserUnifiedAuthMigrationSummary();
     setUserMigrationSummary(summaryRes?.summary || null);
@@ -129,7 +175,7 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      await Promise.all([loadOverview(), loadStudents(), loadActivity(), loadUserMigrationSummary()]);
+      await Promise.all([loadOverview(), loadStudents(), loadActivity(), loadUserMigrationSummary(), loadSchools()]);
     } finally {
       setLoading(false);
     }
@@ -138,6 +184,10 @@ export const AdminDashboard = () => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    loadSchoolContext(selectedSchoolId, gradeFilter);
+  }, [selectedSchoolId, gradeFilter]);
 
   const createTestSkeleton = async () => {
     setStatusMessage("");
@@ -345,6 +395,81 @@ export const AdminDashboard = () => {
     setStatusMessage("Registration code regenerated.");
   };
 
+  const createSchool = async () => {
+    setStatusMessage("");
+    try {
+      await schoolService.createSchool({
+        schoolId: schoolForm.schoolId,
+        name: schoolForm.name
+      });
+      setSchoolForm({ schoolId: "", name: "" });
+      setStatusMessage("School created successfully.");
+      await loadSchools();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to create school.");
+    }
+  };
+
+  const assignTeacherToSchool = async () => {
+    if (!selectedSchoolId) {
+      setStatusMessage("Select a school first.");
+      return;
+    }
+
+    try {
+      await schoolService.assignTeacherToSchool({
+        schoolId: selectedSchoolId,
+        teacherEmail: teacherAssignForm.teacherEmail
+      });
+      setTeacherAssignForm({ teacherEmail: "" });
+      setStatusMessage("Teacher assigned to school.");
+      await loadSchoolContext(selectedSchoolId, gradeFilter);
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to assign teacher.");
+    }
+  };
+
+  const enrollStudentInSchool = async () => {
+    if (!selectedSchoolId) {
+      setStatusMessage("Select a school first.");
+      return;
+    }
+
+    try {
+      await schoolService.enrollStudent({
+        schoolId: selectedSchoolId,
+        name: studentForm.name,
+        email: studentForm.email,
+        password: studentForm.password,
+        grade: Number(studentForm.grade)
+      });
+      setStudentForm({ name: "", email: "", password: "", grade: "" });
+      setStatusMessage("Student enrolled successfully.");
+      await loadSchoolContext(selectedSchoolId, gradeFilter);
+      await loadStudents();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to enroll student.");
+    }
+  };
+
+  const updateStudentGrade = async (student, nextGrade) => {
+    if (!nextGrade) {
+      return;
+    }
+
+    try {
+      await schoolService.updateStudentEnrollment(student._id, {
+        schoolId: selectedSchoolId,
+        grade: Number(nextGrade)
+      });
+      setStatusMessage(`Updated grade for ${student.name}.`);
+      await loadSchoolContext(selectedSchoolId, gradeFilter);
+      await loadStudents();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to update student grade.");
+    }
+  };
+
   const runUserMigration = async () => {
     setUserMigrationLoading(true);
     setUserMigrationMessage("");
@@ -431,6 +556,29 @@ export const AdminDashboard = () => {
           importStudentsCsv={importStudentsCsv}
           students={students}
           exportFinalDataExcel={exportFinalDataExcel}
+        />
+      ) : null}
+
+      {activeTab === "schoolClass" ? (
+        <SchoolClassSection
+          schools={schools}
+          selectedSchoolId={selectedSchoolId}
+          setSelectedSchoolId={setSelectedSchoolId}
+          teachers={schoolTeachers}
+          students={schoolStudents}
+          gradeFilter={gradeFilter}
+          setGradeFilter={setGradeFilter}
+          schoolForm={schoolForm}
+          setSchoolForm={setSchoolForm}
+          createSchool={createSchool}
+          teacherAssignForm={teacherAssignForm}
+          setTeacherAssignForm={setTeacherAssignForm}
+          assignTeacherToSchool={assignTeacherToSchool}
+          studentForm={studentForm}
+          setStudentForm={setStudentForm}
+          enrollStudent={enrollStudentInSchool}
+          updateStudentGrade={updateStudentGrade}
+          loading={schoolDataLoading}
         />
       ) : null}
 

@@ -15,6 +15,7 @@ import teamRoutes from './routes/teamRoutes.js'
 import projectRoutes from './routes/projectRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import lookupRoutes from './routes/lookupRoutes.js'
+import schoolRoutes from './routes/schoolRoutes.js'
 import { errorHandler, notFound } from './middleware/errorHandler.js'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -106,6 +107,7 @@ export const createApp = () => {
   app.use('/api/teams', teamRoutes)
   app.use('/api/projects', projectRoutes)
   app.use('/api/lookups', lookupRoutes)
+  app.use('/api/schools', schoolRoutes)
 
   app.use('/api/v1/auth', authRoutes)
   app.use('/api/v1/tests', testRoutes)
@@ -115,6 +117,7 @@ export const createApp = () => {
   app.use('/api/v1/teams', teamRoutes)
   app.use('/api/v1/projects', projectRoutes)
   app.use('/api/v1/lookups', lookupRoutes)
+  app.use('/api/v1/schools', schoolRoutes)
 
   if (existsSync(clientDistPath)) {
     app.use(express.static(clientDistPath))

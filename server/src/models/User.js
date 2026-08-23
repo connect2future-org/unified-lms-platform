@@ -43,6 +43,19 @@ const userSchema = new mongoose.Schema(
       ref: "User",
       index: true
     },
+    schoolId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "School",
+      index: true,
+      default: null
+    },
+    grade: {
+      type: Number,
+      min: 1,
+      max: 12,
+      default: null,
+      index: true
+    },
     usn: {
       type: String,
       trim: true,
@@ -62,7 +75,7 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.index({ role: 1, linkedAdmin: 1, linkedSuperAdmin: 1, createdAt: -1 });
+userSchema.index({ role: 1, linkedAdmin: 1, linkedSuperAdmin: 1, schoolId: 1, grade: 1, createdAt: -1 });
 
 userSchema.pre("save", async function hashPassword() {
   if (!this.isModified("password")) {

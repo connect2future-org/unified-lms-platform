@@ -548,6 +548,8 @@ const toUserAuthResponse = (user) => {
       usn: user.usn,
       branch: user.branch,
       college: user.college,
+      schoolId: user.schoolId,
+      grade: user.grade,
       adminCode: user.adminCode,
       linkedAdmin: user.linkedAdmin,
       linkedSuperAdmin: user.linkedSuperAdmin
@@ -682,7 +684,7 @@ export const me = asyncHandler(async (req, res) => {
 
   if (payload?.userId) {
     const user = await User.findById(payload.userId).select(
-      '_id name email role usn branch college adminCode linkedAdmin linkedSuperAdmin'
+      '_id name email role usn branch college schoolId grade adminCode linkedAdmin linkedSuperAdmin'
     )
 
     if (!user) {
@@ -698,6 +700,8 @@ export const me = asyncHandler(async (req, res) => {
         usn: user.usn,
         branch: user.branch,
         college: user.college,
+        schoolId: user.schoolId,
+        grade: user.grade,
         adminCode: user.adminCode,
         linkedAdmin: user.linkedAdmin,
         linkedSuperAdmin: user.linkedSuperAdmin
@@ -775,7 +779,7 @@ export const listAdminStudents = asyncHandler(async (req, res) => {
   }
 
   const [items, total] = await Promise.all([
-    User.find(filter).select('_id name email usn branch college createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit),
+    User.find(filter).select('_id name email usn branch college schoolId grade linkedAdmin createdAt').sort({ createdAt: -1 }).skip(skip).limit(limit),
     User.countDocuments(filter)
   ])
 
@@ -1054,6 +1058,8 @@ export const updateCandidateProfile = asyncHandler(async (req, res) => {
       usn: user.usn,
       branch: user.branch,
       college: user.college,
+      schoolId: user.schoolId,
+      grade: user.grade,
       linkedAdmin: user.linkedAdmin,
       linkedSuperAdmin: user.linkedSuperAdmin
     }

@@ -29,7 +29,7 @@ export const requireAdminAuth = async (req, res, next) => {
   try {
     const payload = jwt.verify(token, env.jwtSecret)
     if (payload?.userId) {
-      const user = await User.findById(payload.userId).select('_id name email role')
+      const user = await User.findById(payload.userId).select('_id name email role linkedAdmin linkedSuperAdmin schoolId grade')
       if (!user) {
         throw new ApiError(401, 'Invalid token user')
       }
@@ -41,7 +41,11 @@ export const requireAdminAuth = async (req, res, next) => {
       req.admin = {
         id: user._id,
         username: user.email || user.name,
-        role: user.role
+        role: user.role,
+        linkedAdmin: user.linkedAdmin,
+        linkedSuperAdmin: user.linkedSuperAdmin,
+        schoolId: user.schoolId,
+        grade: user.grade
       }
 
       next()
@@ -62,13 +66,17 @@ export const requireAdminAuth = async (req, res, next) => {
           { email: usernameRegex },
           { name: usernameRegex }
         ]
-      }).select('_id name email role')
+      }).select('_id name email role linkedAdmin linkedSuperAdmin schoolId grade')
 
       if (mappedAdminUser) {
         req.admin = {
           id: mappedAdminUser._id,
           username: mappedAdminUser.email || mappedAdminUser.name,
-          role: mappedAdminUser.role
+          role: mappedAdminUser.role,
+          linkedAdmin: mappedAdminUser.linkedAdmin,
+          linkedSuperAdmin: mappedAdminUser.linkedSuperAdmin,
+          schoolId: mappedAdminUser.schoolId,
+          grade: mappedAdminUser.grade
         }
 
         next()
@@ -133,7 +141,11 @@ export const adminToUserCompat = (req, res, next) => {
       role: req.admin.role,
       email: req.admin.username,
       name: req.admin.username,
-      authType: isPlatformAdmin ? 'platform-admin' : 'user'
+      authType: isPlatformAdmin ? 'platform-admin' : 'user',
+      linkedAdmin: req.admin.linkedAdmin,
+      linkedSuperAdmin: req.admin.linkedSuperAdmin,
+      schoolId: req.admin.schoolId,
+      grade: req.admin.grade
     }
     req.isPlatformAdmin = isPlatformAdmin
   }
