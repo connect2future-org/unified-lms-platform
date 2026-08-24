@@ -4,16 +4,19 @@ import { useAuth } from '../../context/AuthContext'
 import { ROLES } from '../../shared/constants/roles'
 import { LandingPage } from '../../pages/LandingPage'
 import { RegistrationPage } from '../../pages/RegistrationPage'
-import { TeamLoginPage } from '../../modules/team'
+import { TeamLoginPage } from '../../pages/TeamLoginPage'
 import { SuccessPage } from '../../pages/SuccessPage'
 import { NotFoundPage } from '../../pages/NotFoundPage'
 import { DashboardPage } from '../../pages/DashboardPage'
 import { LoginPage } from '../../pages/LoginPage'
 import { SignupPage } from '../../pages/SignupPage'
-import { TeamDashboardPage } from '../../modules/team'
-import { CandidateDashboard, TestTakingPage } from '../../modules/student'
-import { AdminDashboard, AdminTeamsPage, StudentDetailPage as AdminStudentDetail } from '../../modules/admin'
-import { SuperAdminDashboard, StudentDetailPage as SuperAdminStudentDetail } from '../../modules/super-admin'
+import { TeamDashboardPage } from '../../pages/TeamDashboardPage'
+import { CandidateDashboard } from '../../pages/CandidateDashboard'
+import { TestTakingPage } from '../../pages/TestTakingPage'
+import { AdminDashboard } from '../../pages/AdminDashboard'
+import AdminTeamsPage from '../../pages/AdminTeamsPage'
+import { StudentDetailPage } from '../../pages/StudentDetailPage'
+import { SuperAdminDashboard } from '../../pages/SuperAdminDashboard'
 import { RoleTestFlowsPage } from '../../pages/RoleTestFlowsPage'
 
 function RootRedirect() {
@@ -109,7 +112,7 @@ export function AppRouter() {
         path="/admin/students/:studentId"
         element={
           <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
-            <AdminStudentDetail />
+            <StudentDetailPage />
           </ProtectedRoute>
         }
       />
@@ -126,7 +129,7 @@ export function AppRouter() {
         path="/super-admin/students/:studentId"
         element={
           <ProtectedRoute allowedRoles={[ROLES.SUPER_ADMIN]}>
-            <SuperAdminStudentDetail />
+            <StudentDetailPage />
           </ProtectedRoute>
         }
       />

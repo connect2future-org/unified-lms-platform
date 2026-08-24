@@ -5,7 +5,7 @@ import {
   getAdminRegistrationLookups,
   getRegistrationLookups,
   updateRegistrationLookup
-} from '../modules/admin/index.js'
+} from '../controllers/admin/lookupController.js'
 import { requireAdminAuth } from '../middleware/auth.js'
 
 const router = Router()

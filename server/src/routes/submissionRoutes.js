@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { runCode, submitCode } from "../modules/student/index.js";
+import { runCode, submitCode } from "../controllers/student/submissionController.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 
 export const submissionRoutes = Router();

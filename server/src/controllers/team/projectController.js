@@ -1,7 +1,7 @@
-import { Project } from '../models/Project.js'
-import { asyncHandler } from '../middleware/asyncHandler.js'
-import { ApiError } from '../utils/apiError.js'
-import { getProjectStats } from '../services/projectService.js'
+import { Project } from '../../models/Project.js'
+import { asyncHandler } from '../../middleware/asyncHandler.js'
+import { ApiError } from '../../utils/apiError.js'
+import { getProjectStats } from '../../services/projectService.js'
 import ExcelJS from 'exceljs'
 import { PDFParse } from 'pdf-parse'
 

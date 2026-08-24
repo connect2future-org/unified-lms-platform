@@ -1,4 +1,4 @@
-import { uploadProjectFile } from '../middleware/upload.js'
+import { uploadProjectFile } from '../../middleware/upload.js'
 import ExcelJS from 'exceljs'
 // Helpers for bulk custom project idea upload/preview (Excel/PDF)
 const parseCustomIdeaUploadFile = async (file) => {
@@ -118,14 +118,14 @@ export const uploadTeamCustomIdeaBulk = asyncHandler(async (req, res) => {
     invalidRows: preview.invalidRows.slice(0, 50)
   })
 })
-import { Team } from '../models/Team.js'
-import { Project } from '../models/Project.js'
-import { RegistrationLookup } from '../models/RegistrationLookup.js'
-import { asyncHandler } from '../middleware/asyncHandler.js'
-import { ApiError } from '../utils/apiError.js'
-import { getNextTeamNumber } from '../services/teamNumberService.js'
-import { assignRandomProject, getProjectStats } from '../services/projectService.js'
-import { createDefaultTeamPassword, hashPassword } from '../utils/password.js'
+import { Team } from '../../models/Team.js'
+import { Project } from '../../models/Project.js'
+import { RegistrationLookup } from '../../models/RegistrationLookup.js'
+import { asyncHandler } from '../../middleware/asyncHandler.js'
+import { ApiError } from '../../utils/apiError.js'
+import { getNextTeamNumber } from '../../services/teamNumberService.js'
+import { assignRandomProject, getProjectStats } from '../../services/projectService.js'
+import { createDefaultTeamPassword, hashPassword } from '../../utils/password.js'
 
 const isEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
 const isPhone = (value) => /^\+?[0-9]{10,15}$/.test(value)

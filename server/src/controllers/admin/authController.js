@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken'
 import crypto from 'crypto'
 import { parse } from 'csv-parse/sync'
-import { asyncHandler } from '../middleware/asyncHandler.js'
-import { env } from '../config/env.js'
-import { ApiError } from '../utils/apiError.js'
-import { Team } from '../models/Team.js'
-import { User } from '../models/User.js'
-import { signToken } from '../services/tokenService.js'
+import { asyncHandler } from '../../middleware/asyncHandler.js'
+import { env } from '../../config/env.js'
+import { ApiError } from '../../utils/apiError.js'
+import { Team } from '../../models/Team.js'
+import { User } from '../../models/User.js'
+import { signToken } from '../../services/tokenService.js'
 import {
   createDefaultTeamPassword,
   generateOtp,
@@ -14,9 +14,9 @@ import {
   hashOtp,
   hashPassword,
   verifyPassword
-} from '../utils/password.js'
-import { sendPasswordResetOtpEmail } from '../services/mailService.js'
-import { migrateUsersForUnifiedAuth } from '../services/userMigrationService.js'
+} from '../../utils/password.js'
+import { sendPasswordResetOtpEmail } from '../../services/mailService.js'
+import { migrateUsersForUnifiedAuth } from '../../services/userMigrationService.js'
 
 const MIN_PASSWORD_LENGTH = 8
 

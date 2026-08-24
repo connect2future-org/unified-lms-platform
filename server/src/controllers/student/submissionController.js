@@ -1,7 +1,7 @@
-import { Attempt } from "../models/Attempt.js";
-import { Question } from "../models/Question.js";
-import { executeCodeAgainstCases } from "../services/judge0Service.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { Attempt } from "../../models/Attempt.js";
+import { Question } from "../../models/Question.js";
+import { executeCodeAgainstCases } from "../../services/judge0Service.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 
 const ensureAttemptWritable = (attempt, reqUser) => {
   if (!attempt) {

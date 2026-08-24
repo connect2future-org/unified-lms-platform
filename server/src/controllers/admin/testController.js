@@ -1,11 +1,11 @@
 import mongoose from "mongoose";
 import { parse } from "csv-parse/sync";
 import ExcelJS from "exceljs";
-import { Attempt } from "../models/Attempt.js";
-import { CheatingLog } from "../models/CheatingLog.js";
-import { Question } from "../models/Question.js";
-import { Test } from "../models/Test.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { Attempt } from "../../models/Attempt.js";
+import { CheatingLog } from "../../models/CheatingLog.js";
+import { Question } from "../../models/Question.js";
+import { Test } from "../../models/Test.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 
 const SUPPORTED_IMPORT_EXTENSIONS = [".csv", ".xlsx"];
 

@@ -1,9 +1,9 @@
-import { asyncHandler } from '../middleware/asyncHandler.js'
+import { asyncHandler } from '../../middleware/asyncHandler.js'
 import ExcelJS from 'exceljs'
 import { parse } from 'csv-parse/sync'
-import { School } from '../models/School.js'
-import { User } from '../models/User.js'
-import { ApiError } from '../utils/apiError.js'
+import { School } from '../../models/School.js'
+import { User } from '../../models/User.js'
+import { ApiError } from '../../utils/apiError.js'
 
 const normalizeSchoolIdCode = (value) => String(value || '').trim().toUpperCase()
 const normalizeName = (value) => String(value || '').trim()

@@ -10,7 +10,7 @@ import {
   updateSchool,
   updateStudentEnrollment,
   downloadStudentImportTemplate
-} from '../modules/teacher/index.js'
+} from '../controllers/teacher/schoolController.js'
 import { adminToUserCompat, requireAdminAuth, requireAdminRole, requireLmsAdmin } from '../middleware/auth.js'
 import { uploadSchoolStudentFile } from '../middleware/upload.js'
 

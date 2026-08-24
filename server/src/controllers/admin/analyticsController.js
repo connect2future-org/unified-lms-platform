@@ -1,8 +1,8 @@
-import { Attempt } from "../models/Attempt.js";
-import { CheatingLog } from "../models/CheatingLog.js";
-import { Test } from "../models/Test.js";
-import { User } from "../models/User.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { Attempt } from "../../models/Attempt.js";
+import { CheatingLog } from "../../models/CheatingLog.js";
+import { Test } from "../../models/Test.js";
+import { User } from "../../models/User.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 import ExcelJS from "exceljs";
 
 const resolveAdminScope = async (requestUser) => {

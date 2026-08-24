@@ -1,6 +1,6 @@
-import { RegistrationLookup } from '../models/RegistrationLookup.js'
-import { asyncHandler } from '../middleware/asyncHandler.js'
-import { ApiError } from '../utils/apiError.js'
+import { RegistrationLookup } from '../../models/RegistrationLookup.js'
+import { asyncHandler } from '../../middleware/asyncHandler.js'
+import { ApiError } from '../../utils/apiError.js'
 
 const LOOKUP_TYPE_ALIAS_MAP = {
   college: 'college',

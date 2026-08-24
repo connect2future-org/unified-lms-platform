@@ -1,12 +1,12 @@
-import { Attempt } from "../models/Attempt.js";
-import { CheatingLog } from "../models/CheatingLog.js";
-import { Question } from "../models/Question.js";
-import { Test } from "../models/Test.js";
-import { User } from "../models/User.js";
-import { env } from "../config/env.js";
-import { calculateAttemptScore } from "../services/scoringService.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { shuffleArray } from "../utils/randomization.js";
+import { Attempt } from "../../models/Attempt.js";
+import { CheatingLog } from "../../models/CheatingLog.js";
+import { Question } from "../../models/Question.js";
+import { Test } from "../../models/Test.js";
+import { User } from "../../models/User.js";
+import { env } from "../../config/env.js";
+import { calculateAttemptScore } from "../../services/scoringService.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { shuffleArray } from "../../utils/randomization.js";
 
 const getMissingCandidateProfileFields = (user) => {
   const missingFields = [];
