@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { exportAdminFinalDataExcel, getAdminActivity, getAdminAnalytics, getStudentDetail } from "../controllers/analyticsController.js";
+import { exportAdminFinalDataExcel, getAdminActivity, getAdminAnalytics, getStudentDetail } from "../modules/admin/index.js";
 import { requireAdminAuth, requireAdminRole, adminToUserCompat, requireLmsAdmin } from "../middleware/auth.js";
 
 export const analyticsRoutes = Router();

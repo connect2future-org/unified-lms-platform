@@ -26,10 +26,10 @@ import {
   bulkUpdateTeams,
   toggleProgressStatus,
   unlockAllTeamsProgress
-} from '../controllers/teamController.js'
+} from '../modules/team/index.js'
 import { uploadProjectFile } from '../middleware/upload.js'
 import { requireAdminAuth, requireTeamAuth } from '../middleware/auth.js'
-import { unlockAllProgress, deleteTeamProgress } from '../controllers/teamController.js'
+import { unlockAllProgress, deleteTeamProgress } from '../modules/team/index.js'
 
 const router = Router()
 

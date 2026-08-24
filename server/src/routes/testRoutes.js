@@ -12,7 +12,7 @@ import {
   setPublishStatus,
   updateQuestionInTest,
   updateTest
-} from "../controllers/testController.js";
+} from "../modules/admin/index.js";
 import { requireAdminAuth, requireAdminRole, adminToUserCompat, requireLmsAdmin } from "../middleware/auth.js";
 import { requireAuth } from "../middleware/authMiddleware.js";
 import { uploadTestImportFile } from "../middleware/upload.js";

@@ -6,7 +6,7 @@ import {
   getProjects,
   getProjectSummary,
   previewProjectsUpload
-} from '../controllers/projectController.js'
+} from '../modules/team/index.js'
 import { requireAdminAuth } from '../middleware/auth.js'
 import { uploadProjectFile } from '../middleware/upload.js'
 

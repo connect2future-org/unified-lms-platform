@@ -55,6 +55,8 @@ export const AdminDashboard = () => {
   const [selectedSchoolId, setSelectedSchoolId] = useState("");
   const [schoolTeachers, setSchoolTeachers] = useState([]);
   const [schoolStudents, setSchoolStudents] = useState([]);
+  const [schoolStudentFile, setSchoolStudentFile] = useState(null);
+  const [schoolStudentImporting, setSchoolStudentImporting] = useState(false);
   const [schoolDataLoading, setSchoolDataLoading] = useState(false);
   const [gradeFilter, setGradeFilter] = useState("");
   const [schoolForm, setSchoolForm] = useState({ schoolId: "", name: "" });
@@ -452,6 +454,39 @@ export const AdminDashboard = () => {
     }
   };
 
+  const importStudentsInSchool = async () => {
+    if (!selectedSchoolId) {
+      setStatusMessage("Select a school first.");
+      return;
+    }
+    if (!schoolStudentFile) {
+      setStatusMessage("Please choose a CSV or Excel file.");
+      return;
+    }
+
+    setSchoolStudentImporting(true);
+    try {
+      const result = await schoolService.importStudents(selectedSchoolId, schoolStudentFile);
+      const errorMessage = result.errors?.length ? ` ${result.errors.length} row(s) need attention.` : "";
+      setStatusMessage(`Students imported: ${result.imported}, skipped: ${result.skipped}.${errorMessage}`);
+      setSchoolStudentFile(null);
+      await loadSchoolContext(selectedSchoolId, gradeFilter);
+      await loadStudents();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Student file import failed.");
+    } finally {
+      setSchoolStudentImporting(false);
+    }
+  };
+
+  const downloadStudentImportTemplate = async () => {
+    try {
+      await schoolService.downloadStudentImportTemplate();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to download student template.");
+    }
+  };
+
   const updateStudentGrade = async (student, nextGrade) => {
     if (!nextGrade) {
       return;
@@ -578,6 +613,11 @@ export const AdminDashboard = () => {
           setStudentForm={setStudentForm}
           enrollStudent={enrollStudentInSchool}
           updateStudentGrade={updateStudentGrade}
+          schoolStudentFile={schoolStudentFile}
+          setSchoolStudentFile={setSchoolStudentFile}
+          importStudents={importStudentsInSchool}
+          downloadStudentImportTemplate={downloadStudentImportTemplate}
+          importing={schoolStudentImporting}
           loading={schoolDataLoading}
         />
       ) : null}

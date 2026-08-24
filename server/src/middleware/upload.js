@@ -10,3 +10,4 @@ const uploader = multer({
 
 export const uploadProjectFile = uploader
 export const uploadTestImportFile = uploader
+export const uploadSchoolStudentFile = uploader

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 
 const gradeOptions = Array.from({ length: 12 }, (_, index) => index + 1)
 
@@ -20,6 +20,11 @@ export const SchoolClassSection = ({
   setStudentForm,
   enrollStudent,
   updateStudentGrade,
+  schoolStudentFile,
+  setSchoolStudentFile,
+  importStudents,
+  downloadStudentImportTemplate,
+  importing,
   loading
 }) => {
   const selectedSchool = useMemo(
@@ -109,6 +114,24 @@ export const SchoolClassSection = ({
 
       <div className="panel">
         <h2>Students and Grades (1-12)</h2>
+        <div className="form-grid import-panel">
+          <div>
+            <strong>School student import</strong>
+            <p className="muted">Use the site template. Every row needs name, email and grade.</p>
+          </div>
+          <input
+            type="file"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            onChange={(event) => setSchoolStudentFile(event.target.files?.[0] || null)}
+            disabled={!selectedSchoolId || importing}
+          />
+          <button className="btn" onClick={importStudents} disabled={!selectedSchoolId || !schoolStudentFile || importing}>
+            {importing ? 'Importing...' : 'Load Students'}
+          </button>
+          <button className="btn btn-ghost" onClick={downloadStudentImportTemplate}>
+            Download Template
+          </button>
+        </div>
         <div className="form-grid">
           <input
             placeholder="Student name"

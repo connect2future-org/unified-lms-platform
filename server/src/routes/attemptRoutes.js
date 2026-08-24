@@ -6,7 +6,7 @@ import {
   saveAnswer,
   startAttempt,
   submitAttempt
-} from "../controllers/attemptController.js";
+} from "../modules/student/index.js";
 import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 
 export const attemptRoutes = Router();
