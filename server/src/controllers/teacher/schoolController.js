@@ -1,4 +1,5 @@
 import { asyncHandler } from '../../middleware/asyncHandler.js'
+import bcrypt from 'bcryptjs'
 import ExcelJS from 'exceljs'
 import { parse } from 'csv-parse/sync'
 import { School } from '../../models/School.js'
@@ -322,17 +323,39 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
       skipped += 1
       continue
     }
-    let student = await User.findOne({ email })
-    if (!student) {
-      student = await User.create({
-        name, email, password, role: 'candidate', linkedAdmin: linkedAdminId,
-        schoolId: school._id, grade,
-        sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
-        usn: String(row.usn || '').trim(), branch: String(row.branch || '').trim(), college: String(row.college || '').trim()
-      })
+    const passwordHash = await bcrypt.hash(password, 10)
+    let studentResult
+    try {
+      studentResult = await User.updateOne(
+        { email, schoolId: school._id },
+        {
+          $set: {
+            name,
+            role: 'candidate',
+            grade,
+            password: passwordHash,
+            linkedAdmin: linkedAdminId,
+            sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
+            usn: String(row.usn || '').trim(),
+            branch: String(row.branch || '').trim(),
+            college: String(row.college || '').trim()
+          }
+        },
+        { upsert: true }
+      )
+    } catch (error) {
+      if (error?.code === 11000) {
+        errors.push({ row: index + 2, message: 'email already belongs to a different school' })
+        skipped += 1
+        continue
+      }
+      throw error
+    }
+    const student = await User.findOne({ email })
+    if (studentResult.upsertedCount) {
       imported += 1
-    } else if (String(student.schoolId || '') !== String(school._id)) {
-      errors.push({ row: index + 2, message: 'email already belongs to a different school' })
+    } else if (!student) {
+      errors.push({ row: index + 2, message: 'student could not be loaded after upsert' })
       skipped += 1
       continue
     }
@@ -379,11 +402,13 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
       summary.skipped += 1
       continue
     }
-    let school = await School.findOne({ schoolId })
-    if (!school) {
-      school = await School.create({ schoolId, name })
-      summary.schoolsCreated += 1
-    }
+    const schoolResult = await School.updateOne(
+      { schoolId },
+      { $set: { name } },
+      { upsert: true }
+    )
+    if (schoolResult.upsertedCount) summary.schoolsCreated += 1
+    const school = await School.findOne({ schoolId })
     schoolByCode.set(schoolId, school)
   }
 
@@ -400,23 +425,41 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
         summary.skipped += 1
         continue
       }
-      let user = await User.findOne({ email })
-      if (!user) {
-        user = await User.create({
-          name,
-          email,
-          password: String(row.password || '').trim() || 'C2F@12345',
-          role,
-          schoolId: school._id,
-          grade: role === 'candidate' ? parseOptionalGrade(row.grade) : null,
-          sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
-          usn: String(row.usn || '').trim(),
-          branch: String(row.branch || '').trim(),
-          college: String(row.college || '').trim()
-        })
+      const password = String(row.password || '').trim() || 'C2F@12345'
+      const passwordHash = await bcrypt.hash(password, 10)
+      let userResult
+      try {
+        userResult = await User.updateOne(
+        { email, schoolId: school._id },
+        {
+          $set: {
+            name,
+            schoolId: school._id,
+            role,
+            linkedAdmin: req.user.role === 'admin' ? req.user._id : null,
+            grade: role === 'candidate' ? parseOptionalGrade(row.grade) : null,
+            sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
+            usn: String(row.usn || '').trim(),
+            branch: String(row.branch || '').trim(),
+            college: String(row.college || '').trim(),
+            password: passwordHash
+          }
+        },
+        { upsert: true }
+        )
+      } catch (error) {
+        if (error?.code === 11000) {
+          summary.errors.push({ sheet: sheetName, row: index + 2, message: 'email already belongs to another school' })
+          summary.skipped += 1
+          continue
+        }
+        throw error
+      }
+      const user = await User.findOne({ email })
+      if (userResult.upsertedCount) {
         if (role === 'candidate') summary.studentsCreated += 1
         else summary.teachersCreated += 1
-      } else if (String(user.schoolId || '') !== String(school._id)) {
+      } else if (!user) {
         summary.errors.push({ sheet: sheetName, row: index + 2, message: 'email already belongs to another school' })
         summary.skipped += 1
         continue
@@ -440,13 +483,16 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
       summary.skipped += 1
       continue
     }
-    let classRecord = sourcedId
-      ? await Class.findOne({ schoolId: school._id, sourcedId })
-      : await Class.findOne({ schoolId: school._id, title })
-    if (!classRecord) {
-      classRecord = await Class.create({ schoolId: school._id, title, sourcedId: sourcedId || undefined, subject: normalizeName(row.subject) || null, period: normalizeName(row.period) || null })
-      summary.classesCreated += 1
-    }
+    const classFilter = sourcedId
+      ? { schoolId: school._id, sourcedId }
+      : { schoolId: school._id, title }
+    const classResult = await Class.updateOne(
+      classFilter,
+      { $set: { title, sourcedId: sourcedId || undefined, subject: normalizeName(row.subject) || null, period: normalizeName(row.period) || null, status: String(row.status || 'active').toLowerCase() === 'inactive' ? 'inactive' : 'active' } },
+      { upsert: true }
+    )
+    if (classResult.upsertedCount) summary.classesCreated += 1
+    const classRecord = await Class.findOne(classFilter)
     if (sourcedId) classesBySourceId.set(`${school.schoolId}:${sourcedId}`, classRecord)
   }
 
