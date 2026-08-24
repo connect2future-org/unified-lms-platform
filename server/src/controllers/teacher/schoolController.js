@@ -10,6 +10,11 @@ import { ApiError } from '../../utils/apiError.js'
 const normalizeSchoolIdCode = (value) => String(value || '').trim().toUpperCase()
 const normalizeName = (value) => String(value || '').trim()
 const normalizeClassName = (value) => normalizeName(value)
+const normalizeImportHeader = (value) => String(value || '')
+  .replace(/^\uFEFF/, '')
+  .trim()
+  .toLowerCase()
+  .replace(/[\s-]+/g, '_')
 
 const findOrCreateClass = async (school, row) => {
   const title = normalizeClassName(row.class || row.class_name || row.classname || row.class_title)
@@ -36,14 +41,24 @@ const parseImportRows = async (file) => {
     throw new ApiError(400, 'Only CSV and XLSX files are supported')
   }
   if (!/\.xlsx$/i.test(file.originalname || '')) {
-    return parse(file.buffer.toString('utf8'), { columns: true, skip_empty_lines: true, trim: true })
+    const content = file.buffer.toString('utf8')
+    const firstLine = content.split(/\r?\n/, 1)[0] || ''
+    const delimiter = firstLine.includes('\t') ? '\t' : ','
+    return parse(content, {
+      columns: (headers) => headers.map(normalizeImportHeader),
+      delimiter,
+      bom: true,
+      skip_empty_lines: true,
+      trim: true,
+      relax_column_count: true
+    })
   }
 
   const workbook = new ExcelJS.Workbook()
   await workbook.xlsx.load(file.buffer)
   const worksheet = workbook.worksheets[0]
   if (!worksheet) return []
-  const headers = worksheet.getRow(1).values.slice(1).map((value) => String(value || '').trim().toLowerCase())
+  const headers = worksheet.getRow(1).values.slice(1).map(normalizeImportHeader)
   return worksheet.values.slice(1).filter(Boolean).map((values) => Object.fromEntries(
     headers.map((header, index) => [header, values[index + 1] ?? ''])
   ))
@@ -195,7 +210,7 @@ export const listStudentsBySchool = asyncHandler(async (req, res) => {
 export const downloadStudentImportTemplate = asyncHandler(async (_req, res) => {
   res.type('text/csv')
   res.attachment('school-student-import-template.csv')
-  res.send('school_id,name,email,password,grade,class,usn,branch,college\nSCH-001,Example Student,student@example.com,C2F@12345,5,5-A,,,\n')
+  res.send('school_id,name,email,password,grade,class,usn,branch,college,sourced_id,class_sourced_id,enrollment_sourced_id\nC2F-001,Example Student,student@example.com,C2F@12345,5,5-A,,,,C2F-STUDENT-001,C2F-CLASS-005,C2F-CLASS-005-STUDENT-001\n')
 })
 
 export const importStudentsBySchool = asyncHandler(async (req, res) => {

@@ -116,8 +116,8 @@ export const SchoolClassSection = ({
         <h2>Students and Grades (1-12)</h2>
         <div className="form-grid import-panel">
           <div>
-            <strong>School student import</strong>
-            <p className="muted">Use the site template. Every row needs name, email and grade.</p>
+            <strong>C2F school roster import</strong>
+            <p className="muted">Use the C2F template. Each row links a student to a school and class.</p>
           </div>
           <input
             type="file"

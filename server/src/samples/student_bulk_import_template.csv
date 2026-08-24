@@ -1,5 +1,5 @@
-school_id,sourced_id,name,email,password,grade,class,class_sourced_id,enrollment_sourced_id,usn,branch,college
-SCH-001,ISP000051,Aarav Sharma,aarav.sharma@example.com,C2F@12345,5,5-A,CLASS005,CLASS005-ISP000051-STUDENT,,,
-SCH-001,ISP000052,Diya Nair,diya.nair@example.com,C2F@12345,5,5-A,CLASS005,CLASS005-ISP000052-STUDENT,,,
-SCH-001,ISP000053,Rohan Iyer,rohan.iyer@example.com,C2F@12345,6,6-B,CLASS006,CLASS006-ISP000053-STUDENT,,,
-SCH-001,ISP000054,Meera Patel,meera.patel@example.com,C2F@12345,6,6-B,CLASS006,CLASS006-ISP000054-STUDENT,,,
+school_id,name,email,password,grade,class,usn,branch,college,sourced_id,class_sourced_id,enrollment_sourced_id
+C2F-001,Aarav Sharma,aarav.sharma@example.com,C2F@12345,5,5-A,,,,C2F-STUDENT-001,C2F-CLASS-005,C2F-CLASS-005-STUDENT-001
+C2F-001,Diya Nair,diya.nair@example.com,C2F@12345,5,5-A,,,,C2F-STUDENT-002,C2F-CLASS-005,C2F-CLASS-005-STUDENT-002
+C2F-001,Rohan Iyer,rohan.iyer@example.com,C2F@12345,6,6-B,,,,C2F-STUDENT-003,C2F-CLASS-006,C2F-CLASS-006-STUDENT-003
+C2F-001,Meera Patel,meera.patel@example.com,C2F@12345,6,6-B,,,,C2F-STUDENT-004,C2F-CLASS-006,C2F-CLASS-006-STUDENT-004
