@@ -146,8 +146,11 @@ const resolveSchoolForScopedAdmin = async (req, schoolId) => {
   return School.findById(schoolId)
 }
 
-export const listSchools = asyncHandler(async (_req, res) => {
-  const schools = await School.find({}).sort({ name: 1 }).select('_id schoolId name createdAt updatedAt')
+export const listSchools = asyncHandler(async (req, res) => {
+  const filter = req.user.role === 'admin'
+    ? { _id: (await User.findById(req.user._id).select('schoolId'))?.schoolId || null }
+    : {}
+  const schools = await School.find(filter).sort({ name: 1 }).select('_id schoolId name createdAt updatedAt')
   res.json({ items: schools })
 })
 
@@ -230,6 +233,8 @@ export const listStudentsBySchool = asyncHandler(async (req, res) => {
   }
 
   const grade = parseOptionalGrade(req.query.grade)
+  const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
+  const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 100, 1), 100)
   const filter = {
     role: 'candidate',
     schoolId: school._id
@@ -239,9 +244,14 @@ export const listStudentsBySchool = asyncHandler(async (req, res) => {
     filter.grade = grade
   }
 
-  const students = await User.find(filter)
+  const [students, total] = await Promise.all([
+    User.find(filter)
     .select('_id name email usn branch college linkedAdmin schoolId grade sourcedId createdAt')
     .sort({ createdAt: -1 })
+    .skip((page - 1) * limit)
+    .limit(limit),
+    User.countDocuments(filter)
+  ])
   const enrollments = await Enrollment.find({
     userId: { $in: students.map((student) => student._id) },
     role: 'student',
@@ -258,6 +268,10 @@ export const listStudentsBySchool = asyncHandler(async (req, res) => {
   res.json({
     school,
     grade,
+    page,
+    limit,
+    total,
+    totalPages: Math.ceil(total / limit),
     items: students.map((student) => ({
       ...student.toObject(),
       classes: classesByStudent.get(String(student._id)) || []

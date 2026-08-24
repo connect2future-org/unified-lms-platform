@@ -148,7 +148,7 @@ export const AdminDashboard = () => {
       const [teachersResponse, classesResponse, studentsResponse] = await Promise.all([
         schoolService.listTeachersBySchool(schoolId),
         schoolService.listClassesBySchool(schoolId),
-        schoolService.listStudentsBySchool(schoolId, grade ? { grade } : {})
+        schoolService.listStudentsBySchool(schoolId, grade ? { grade, page: 1, limit: 100 } : { page: 1, limit: 100 })
       ]);
       setSchoolTeachers(teachersResponse.items || []);
       setSchoolClasses(classesResponse.items || []);
