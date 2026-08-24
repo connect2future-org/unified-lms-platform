@@ -17,6 +17,24 @@ const normalizeImportHeader = (value) => String(value || '')
   .toLowerCase()
   .replace(/[\s-]+/g, '_')
 
+const worksheetRows = (worksheet) => {
+  const values = worksheet?.values
+  return Array.isArray(values) ? values : []
+}
+
+const worksheetHeaders = (worksheet) => {
+  const values = worksheet?.getRow(1)?.values
+  return Array.isArray(values) ? values.slice(1).map(normalizeImportHeader).filter(Boolean) : []
+}
+
+const rowsFromWorksheet = (worksheet) => {
+  const headers = worksheetHeaders(worksheet)
+  if (!headers.length) return []
+  return worksheetRows(worksheet).slice(1).filter(Array.isArray).map((values) => Object.fromEntries(
+    headers.map((header, index) => [header, values[index + 1] ?? ''])
+  ))
+}
+
 const findOrCreateClass = async (school, row) => {
   const title = normalizeClassName(row.class || row.class_name || row.classname || row.class_title)
   if (!title) return null
@@ -46,10 +64,7 @@ const readWorkbookSheets = async (file) => {
   await workbook.xlsx.load(file.buffer)
   const sheets = new Map()
   for (const worksheet of workbook.worksheets) {
-    const headers = worksheet.getRow(1).values.slice(1).map(normalizeImportHeader)
-    const rows = worksheet.values.slice(1).filter(Boolean).map((values) => Object.fromEntries(
-      headers.map((header, index) => [header, values[index + 1] ?? ''])
-    ))
+    const rows = rowsFromWorksheet(worksheet)
     sheets.set(normalizeImportHeader(worksheet.name), rows)
   }
   return sheets
@@ -106,10 +121,7 @@ const parseImportRows = async (file) => {
   await workbook.xlsx.load(file.buffer)
   const worksheet = workbook.worksheets[0]
   if (!worksheet) return []
-  const headers = worksheet.getRow(1).values.slice(1).map(normalizeImportHeader)
-  return worksheet.values.slice(1).filter(Boolean).map((values) => Object.fromEntries(
-    headers.map((header, index) => [header, values[index + 1] ?? ''])
-  ))
+  return rowsFromWorksheet(worksheet)
 }
 
 const parseOptionalGrade = (value) => {
@@ -395,6 +407,7 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
 
 export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
   if (!req.file) throw new ApiError(400, 'XLSX roster workbook is required')
+  console.info(`[roster-import] received ${req.file.originalname} (${req.file.size} bytes)`)
   const sheets = await readRosterSheets(req.file)
   const schools = sheets.get('schools') || []
   const teachers = sheets.get('teachers') || []
