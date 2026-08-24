@@ -60,6 +60,7 @@ export const AdminDashboard = () => {
   const [schoolStudentImporting, setSchoolStudentImporting] = useState(false);
   const [rosterFile, setRosterFile] = useState(null);
   const [rosterImporting, setRosterImporting] = useState(false);
+  const [rosterChunkSize, setRosterChunkSize] = useState(10000);
   const [schoolDataLoading, setSchoolDataLoading] = useState(false);
   const [gradeFilter, setGradeFilter] = useState("");
   const [schoolForm, setSchoolForm] = useState({ schoolId: "", name: "" });
@@ -499,7 +500,9 @@ export const AdminDashboard = () => {
     }
     setRosterImporting(true);
     try {
-      const result = await schoolService.importRoster(rosterFile);
+      const result = await schoolService.importRoster(rosterFile, rosterChunkSize, (progress) => {
+        setStatusMessage(`Importing roster chunk ${progress.current} of ${progress.total}...`);
+      });
       setStatusMessage(
         `Roster imported: ${result.schoolsCreated} schools, ${result.teachersCreated} teachers, ` +
         `${result.studentsCreated} students, ${result.classesCreated} classes, ` +
@@ -661,6 +664,8 @@ export const AdminDashboard = () => {
           importRoster={importC2FRoster}
           downloadRosterTemplate={downloadRosterTemplate}
           rosterImporting={rosterImporting}
+          rosterChunkSize={rosterChunkSize}
+          setRosterChunkSize={setRosterChunkSize}
         />
       ) : null}
 

@@ -30,12 +30,50 @@ export const schoolService = {
       headers: { 'Content-Type': 'multipart/form-data' }
     }).then((res) => res.data)
   },
-  importRoster(file) {
-    const formData = new FormData()
-    formData.append('file', file)
-    return api.post('/schools/roster/import', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    }).then((res) => res.data)
+  async importRoster(file, chunkSize = 10000, onProgress) {
+    const contentType = String(file.type || '').toLowerCase()
+    const isCsv = /\.csv$/i.test(file.name || '') || contentType.includes('csv') || contentType.includes('text')
+    if (!isCsv) {
+      const formData = new FormData()
+      formData.append('file', file)
+      return api.post('/schools/roster/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }).then((res) => res.data)
+    }
+
+    const text = await file.text()
+    const records = []
+    let start = 0
+    let quoted = false
+    for (let index = 0; index < text.length; index += 1) {
+      if (text[index] === '"') {
+        if (quoted && text[index + 1] === '"') index += 1
+        else quoted = !quoted
+      } else if (!quoted && (text[index] === '\n' || text[index] === '\r')) {
+        records.push(text.slice(start, index))
+        if (text[index] === '\r' && text[index + 1] === '\n') index += 1
+        start = index + 1
+      }
+    }
+    if (start < text.length) records.push(text.slice(start))
+    const header = records.shift()
+    if (!header || !records.length) throw new Error('The CSV file has no data rows.')
+
+    const total = Math.ceil(records.length / chunkSize)
+    const summary = { schoolsCreated: 0, teachersCreated: 0, studentsCreated: 0, classesCreated: 0, enrollmentsCreated: 0, skipped: 0, errors: [] }
+    for (let offset = 0; offset < records.length; offset += chunkSize) {
+      const current = Math.floor(offset / chunkSize) + 1
+      const chunk = new Blob([`${header}\n${records.slice(offset, offset + chunkSize).join('\n')}\n`], { type: 'text/csv' })
+      const formData = new FormData()
+      formData.append('file', chunk, `${file.name}.part-${current}.csv`)
+      const result = await api.post('/schools/roster/import', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      }).then((res) => res.data)
+      for (const key of ['schoolsCreated', 'teachersCreated', 'studentsCreated', 'classesCreated', 'enrollmentsCreated', 'skipped']) summary[key] += result[key] || 0
+      summary.errors.push(...(result.errors || []).map((error) => ({ ...error, chunk: current })))
+      onProgress?.({ current, total })
+    }
+    return summary
   },
   downloadRosterTemplate() {
     return api.get('/schools/roster/import/template', { responseType: 'blob' }).then((response) => {

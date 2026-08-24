@@ -32,6 +32,8 @@ export const SchoolClassSection = ({
   importRoster,
   downloadRosterTemplate,
   rosterImporting
+  , rosterChunkSize
+  , setRosterChunkSize
 }) => {
   const selectedSchool = useMemo(
     () => schools.find((entry) => entry._id === selectedSchoolId) || null,
@@ -56,6 +58,15 @@ export const SchoolClassSection = ({
           <button className="btn btn-ghost" onClick={downloadRosterTemplate} disabled={rosterImporting}>
             Download Excel Template
           </button>
+          <label>
+            CSV chunk size
+            <select value={rosterChunkSize} onChange={(event) => setRosterChunkSize(Number(event.target.value))} disabled={rosterImporting}>
+              <option value={1000}>1,000 rows</option>
+              <option value={5000}>5,000 rows</option>
+              <option value={10000}>10,000 rows</option>
+              <option value={25000}>25,000 rows</option>
+            </select>
+          </label>
           <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Use XLSX sheets or a flat CSV with school_id, name, email, grade, and class.'}</p>
         </div>
       </div>
