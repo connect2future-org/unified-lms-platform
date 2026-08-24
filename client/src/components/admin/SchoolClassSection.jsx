@@ -68,6 +68,7 @@ export const SchoolClassSection = ({
             </select>
           </label>
           <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Use XLSX sheets or a flat CSV with school_id, name, email, grade, and class.'}</p>
+          <p className="muted">Chunk failures show the HTTP status and failed chunk number here.</p>
         </div>
       </div>
 

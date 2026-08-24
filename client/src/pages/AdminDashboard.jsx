@@ -501,7 +501,7 @@ export const AdminDashboard = () => {
     setRosterImporting(true);
     try {
       const result = await schoolService.importRoster(rosterFile, rosterChunkSize, (progress) => {
-        setStatusMessage(`Importing roster chunk ${progress.current} of ${progress.total}...`);
+        setStatusMessage(`${progress.state === "completed" ? "Completed" : "Uploading"} roster chunk ${progress.current} of ${progress.total}...`);
       });
       setStatusMessage(
         `Roster imported: ${result.schoolsCreated} schools, ${result.teachersCreated} teachers, ` +
@@ -513,7 +513,15 @@ export const AdminDashboard = () => {
       if (selectedSchoolId) await loadSchoolContext(selectedSchoolId, gradeFilter);
       await loadStudents();
     } catch (error) {
-      setStatusMessage(error.response?.data?.message || "C2F roster import failed.");
+      const responseBody = error.response?.data;
+      const serverMessage = typeof responseBody === "string"
+        ? `HTTP ${error.response?.status || "error"}: ${responseBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240)}`
+        : responseBody?.message;
+      const chunk = error.importChunk;
+      setStatusMessage(
+        `${serverMessage || error.message || "C2F roster import failed."}` +
+        `${chunk ? ` Failed at chunk ${chunk.current}/${chunk.total} (${chunk.rows} rows).` : ""}`
+      );
     } finally {
       setRosterImporting(false);
     }

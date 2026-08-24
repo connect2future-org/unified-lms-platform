@@ -63,15 +63,22 @@ export const schoolService = {
     const summary = { schoolsCreated: 0, teachersCreated: 0, studentsCreated: 0, classesCreated: 0, enrollmentsCreated: 0, skipped: 0, errors: [] }
     for (let offset = 0; offset < records.length; offset += chunkSize) {
       const current = Math.floor(offset / chunkSize) + 1
+      onProgress?.({ current, total, state: 'uploading' })
       const chunk = new Blob([`${header}\n${records.slice(offset, offset + chunkSize).join('\n')}\n`], { type: 'text/csv' })
       const formData = new FormData()
       formData.append('file', chunk, `${file.name}.part-${current}.csv`)
-      const result = await api.post('/schools/roster/import', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      }).then((res) => res.data)
+      let result
+      try {
+        result = await api.post('/schools/roster/import', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        }).then((res) => res.data)
+      } catch (error) {
+        error.importChunk = { current, total, rows: Math.min(chunkSize, records.length - offset) }
+        throw error
+      }
       for (const key of ['schoolsCreated', 'teachersCreated', 'studentsCreated', 'classesCreated', 'enrollmentsCreated', 'skipped']) summary[key] += result[key] || 0
       summary.errors.push(...(result.errors || []).map((error) => ({ ...error, chunk: current })))
-      onProgress?.({ current, total })
+      onProgress?.({ current, total, state: 'completed' })
     }
     return summary
   },
