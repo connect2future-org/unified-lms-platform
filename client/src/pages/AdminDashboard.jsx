@@ -65,7 +65,8 @@ export const AdminDashboard = () => {
     name: "",
     email: "",
     password: "",
-    grade: ""
+    grade: "",
+    className: ""
   });
 
   const [form, setForm] = useState({
@@ -443,9 +444,10 @@ export const AdminDashboard = () => {
         name: studentForm.name,
         email: studentForm.email,
         password: studentForm.password,
-        grade: Number(studentForm.grade)
+        grade: Number(studentForm.grade),
+        className: studentForm.className
       });
-      setStudentForm({ name: "", email: "", password: "", grade: "" });
+      setStudentForm({ name: "", email: "", password: "", grade: "", className: "" });
       setStatusMessage("Student enrolled successfully.");
       await loadSchoolContext(selectedSchoolId, gradeFilter);
       await loadStudents();

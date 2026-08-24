@@ -3,10 +3,33 @@ import ExcelJS from 'exceljs'
 import { parse } from 'csv-parse/sync'
 import { School } from '../../models/School.js'
 import { User } from '../../models/User.js'
+import { Class } from '../../models/Class.js'
+import { Enrollment } from '../../models/Enrollment.js'
 import { ApiError } from '../../utils/apiError.js'
 
 const normalizeSchoolIdCode = (value) => String(value || '').trim().toUpperCase()
 const normalizeName = (value) => String(value || '').trim()
+const normalizeClassName = (value) => normalizeName(value)
+
+const findOrCreateClass = async (school, row) => {
+  const title = normalizeClassName(row.class || row.class_name || row.classname || row.class_title)
+  if (!title) return null
+
+  const sourcedId = normalizeName(row.class_sourced_id || row.classid || row.class_id)
+  const filter = sourcedId
+    ? { schoolId: school._id, $or: [{ sourcedId }, { title }] }
+    : { schoolId: school._id, title }
+  const existing = await Class.findOne(filter)
+  if (existing) return existing
+
+  return Class.create({
+    schoolId: school._id,
+    title,
+    subject: normalizeName(row.subject) || null,
+    period: normalizeName(row.period) || null,
+    sourcedId: sourcedId || undefined
+  })
+}
 
 const parseImportRows = async (file) => {
   if (!/\.(csv|xlsx)$/i.test(file.originalname || '')) {
@@ -144,20 +167,35 @@ export const listStudentsBySchool = asyncHandler(async (req, res) => {
   }
 
   const students = await User.find(filter)
-    .select('_id name email usn branch college linkedAdmin schoolId grade createdAt')
+    .select('_id name email usn branch college linkedAdmin schoolId grade sourcedId createdAt')
     .sort({ createdAt: -1 })
+  const enrollments = await Enrollment.find({
+    userId: { $in: students.map((student) => student._id) },
+    role: 'student',
+    status: 'active'
+  }).populate('classId', 'title subject period status sourcedId schoolId')
+  const classesByStudent = new Map()
+  for (const enrollment of enrollments) {
+    if (!enrollment.classId) continue
+    const classes = classesByStudent.get(String(enrollment.userId)) || []
+    classes.push(enrollment.classId)
+    classesByStudent.set(String(enrollment.userId), classes)
+  }
 
   res.json({
     school,
     grade,
-    items: students
+    items: students.map((student) => ({
+      ...student.toObject(),
+      classes: classesByStudent.get(String(student._id)) || []
+    }))
   })
 })
 
 export const downloadStudentImportTemplate = asyncHandler(async (_req, res) => {
   res.type('text/csv')
   res.attachment('school-student-import-template.csv')
-  res.send('name,email,password,grade,usn,branch,college\nExample Student,student@example.com,C2F@12345,5,,,\n')
+  res.send('school_id,name,email,password,grade,class,usn,branch,college\nSCH-001,Example Student,student@example.com,C2F@12345,5,5-A,,,\n')
 })
 
 export const importStudentsBySchool = asyncHandler(async (req, res) => {
@@ -177,6 +215,7 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
     const name = normalizeName(row.name)
     const email = String(row.email || '').trim().toLowerCase()
     const password = String(row.password || '').trim() || 'C2F@12345'
+    const rowSchoolId = normalizeSchoolIdCode(row.school_id || row.schoolid)
     let grade
     try { grade = parseOptionalGrade(row.grade) } catch (error) {
       errors.push({ row: index + 2, message: error.message })
@@ -188,14 +227,34 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
       skipped += 1
       continue
     }
-    if (await User.exists({ email })) { skipped += 1; continue }
+    if (rowSchoolId && rowSchoolId !== school.schoolId) {
+      errors.push({ row: index + 2, message: `school_id must match selected school (${school.schoolId})` })
+      skipped += 1
+      continue
+    }
+    let student = await User.findOne({ email })
+    if (!student) {
+      student = await User.create({
+        name, email, password, role: 'candidate', linkedAdmin: linkedAdminId,
+        schoolId: school._id, grade,
+        sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
+        usn: String(row.usn || '').trim(), branch: String(row.branch || '').trim(), college: String(row.college || '').trim()
+      })
+      imported += 1
+    } else if (String(student.schoolId || '') !== String(school._id)) {
+      errors.push({ row: index + 2, message: 'email already belongs to a different school' })
+      skipped += 1
+      continue
+    }
 
-    await User.create({
-      name, email, password, role: 'candidate', linkedAdmin: linkedAdminId,
-      schoolId: school._id, grade,
-      usn: String(row.usn || '').trim(), branch: String(row.branch || '').trim(), college: String(row.college || '').trim()
-    })
-    imported += 1
+    const classRecord = await findOrCreateClass(school, row)
+    if (classRecord) {
+      await Enrollment.updateOne(
+        { classId: classRecord._id, userId: student._id, role: 'student' },
+        { $set: { status: 'active', sourcedId: normalizeName(row.enrollment_sourced_id || row.enrollment_id) || undefined } },
+        { upsert: true }
+      )
+    }
   }
 
   res.status(201).json({ imported, skipped, errors, school: { _id: school._id, schoolId: school.schoolId, name: school.name } })
@@ -280,6 +339,10 @@ export const enrollStudent = asyncHandler(async (req, res) => {
     branch: String(req.body?.branch || '').trim(),
     college: String(req.body?.college || '').trim()
   })
+  const classRecord = await findOrCreateClass(school, { class: req.body?.className || req.body?.class })
+  if (classRecord) {
+    await Enrollment.create({ classId: classRecord._id, userId: student._id, role: 'student' })
+  }
 
   res.status(201).json({
     message: 'Student enrolled successfully',
@@ -290,6 +353,7 @@ export const enrollStudent = asyncHandler(async (req, res) => {
       role: student.role,
       schoolId: student.schoolId,
       grade: student.grade,
+      classes: classRecord ? [classRecord] : [],
       linkedAdmin: student.linkedAdmin
     }
   })
@@ -320,6 +384,22 @@ export const updateStudentEnrollment = asyncHandler(async (req, res) => {
     throw new ApiError(400, 'grade is required')
   }
 
+  let classRecord = null
+  if (req.body?.className !== undefined || req.body?.class !== undefined) {
+    await Enrollment.updateMany(
+      { userId: student._id, role: 'student', status: 'active' },
+      { $set: { status: 'inactive' } }
+    )
+    classRecord = await findOrCreateClass(school, { class: req.body?.className || req.body?.class })
+    if (classRecord) {
+      await Enrollment.updateOne(
+        { classId: classRecord._id, userId: student._id, role: 'student' },
+        { $set: { status: 'active' } },
+        { upsert: true }
+      )
+    }
+  }
+
   student.schoolId = school._id
   student.grade = nextGrade
   await student.save()
@@ -332,6 +412,7 @@ export const updateStudentEnrollment = asyncHandler(async (req, res) => {
       email: student.email,
       schoolId: student.schoolId,
       grade: student.grade,
+      classes: classRecord ? [classRecord] : [],
       linkedAdmin: student.linkedAdmin
     }
   })

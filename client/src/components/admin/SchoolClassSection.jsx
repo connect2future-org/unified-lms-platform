@@ -160,6 +160,11 @@ export const SchoolClassSection = ({
               </option>
             ))}
           </select>
+          <input
+            placeholder="Class (for example 5-A)"
+            value={studentForm.className}
+            onChange={(event) => setStudentForm((prev) => ({ ...prev, className: event.target.value }))}
+          />
           <button className="btn" onClick={enrollStudent} disabled={!selectedSchoolId}>
             Enroll Student in Selected School
           </button>
@@ -188,6 +193,7 @@ export const SchoolClassSection = ({
                 <th>Name</th>
                 <th>Email</th>
                 <th>Grade</th>
+                <th>Class</th>
                 <th>Update Grade</th>
               </tr>
             </thead>
@@ -197,6 +203,7 @@ export const SchoolClassSection = ({
                   <td>{student.name}</td>
                   <td>{student.email}</td>
                   <td>{student.grade || '-'}</td>
+                  <td>{student.classes?.map((studentClass) => studentClass.title).join(', ') || '-'}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                       <select
@@ -216,7 +223,7 @@ export const SchoolClassSection = ({
               ))}
               {!students.length ? (
                 <tr>
-                  <td colSpan={4}>{selectedSchool ? 'No students found for this school/grade.' : 'Select a school to view students.'}</td>
+                  <td colSpan={5}>{selectedSchool ? 'No students found for this school/grade.' : 'Select a school to view students.'}</td>
                 </tr>
               ) : null}
             </tbody>
