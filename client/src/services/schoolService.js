@@ -13,6 +13,9 @@ export const schoolService = {
   listTeachersBySchool(schoolId) {
     return api.get(`/schools/${schoolId}/teachers`).then((res) => res.data)
   },
+  listClassesBySchool(schoolId) {
+    return api.get(`/schools/${schoolId}/classes`).then((res) => res.data)
+  },
   assignTeacherToSchool(payload) {
     return api.patch('/schools/teachers/assign-school', payload).then((res) => res.data)
   },
@@ -26,6 +29,25 @@ export const schoolService = {
     return api.post('/schools/students/import', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     }).then((res) => res.data)
+  },
+  importRoster(file) {
+    const formData = new FormData()
+    formData.append('file', file)
+    return api.post('/schools/roster/import', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    }).then((res) => res.data)
+  },
+  downloadRosterTemplate() {
+    return api.get('/schools/roster/import/template', { responseType: 'blob' }).then((response) => {
+      const blobUrl = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = 'c2f-school-roster-template.xlsx'
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      window.URL.revokeObjectURL(blobUrl)
+    })
   },
   downloadStudentImportTemplate() {
     return api.get('/schools/students/import/template', { responseType: 'blob' }).then((response) => {

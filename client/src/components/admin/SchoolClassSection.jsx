@@ -7,6 +7,7 @@ export const SchoolClassSection = ({
   selectedSchoolId,
   setSelectedSchoolId,
   teachers,
+  classes,
   students,
   gradeFilter,
   setGradeFilter,
@@ -25,7 +26,12 @@ export const SchoolClassSection = ({
   importStudents,
   downloadStudentImportTemplate,
   importing,
-  loading
+  loading,
+  rosterFile,
+  setRosterFile,
+  importRoster,
+  downloadRosterTemplate,
+  rosterImporting
 }) => {
   const selectedSchool = useMemo(
     () => schools.find((entry) => entry._id === selectedSchoolId) || null,
@@ -34,6 +40,26 @@ export const SchoolClassSection = ({
 
   return (
     <>
+      <div className="panel">
+        <h2>Complete C2F Roster Workbook</h2>
+        <p className="muted">Import one Excel workbook to populate schools, teachers, students, classes, and enrolments.</p>
+        <div className="form-grid import-panel">
+          <input
+            type="file"
+            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            onChange={(event) => setRosterFile(event.target.files?.[0] || null)}
+            disabled={rosterImporting}
+          />
+          <button className="btn" onClick={importRoster} disabled={!rosterFile || rosterImporting}>
+            {rosterImporting ? 'Importing roster...' : 'Import Complete Roster'}
+          </button>
+          <button className="btn btn-ghost" onClick={downloadRosterTemplate} disabled={rosterImporting}>
+            Download Excel Template
+          </button>
+          <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Required sheets: Schools, Teachers, Students, Classes, Enrollments.'}</p>
+        </div>
+      </div>
+
       <div className="panel">
         <h2>Schools</h2>
         <div className="form-grid">
@@ -123,8 +149,12 @@ export const SchoolClassSection = ({
             type="file"
             accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={(event) => setSchoolStudentFile(event.target.files?.[0] || null)}
-            disabled={!selectedSchoolId || importing}
+            disabled={importing}
           />
+          <p className="muted">
+            {schoolStudentFile ? `Selected: ${schoolStudentFile.name}` : 'Choose a CSV or Excel file first.'}
+            {!selectedSchoolId ? ' Select a school before loading it.' : ''}
+          </p>
           <button className="btn" onClick={importStudents} disabled={!selectedSchoolId || !schoolStudentFile || importing}>
             {importing ? 'Importing...' : 'Load Students'}
           </button>
@@ -160,11 +190,17 @@ export const SchoolClassSection = ({
               </option>
             ))}
           </select>
-          <input
-            placeholder="Class (for example 5-A)"
+          <select
             value={studentForm.className}
             onChange={(event) => setStudentForm((prev) => ({ ...prev, className: event.target.value }))}
-          />
+          >
+            <option value="">Select Class</option>
+            {classes.map((schoolClass) => (
+              <option key={schoolClass._id} value={schoolClass.title}>
+                {schoolClass.title}
+              </option>
+            ))}
+          </select>
           <button className="btn" onClick={enrollStudent} disabled={!selectedSchoolId}>
             Enroll Student in Selected School
           </button>

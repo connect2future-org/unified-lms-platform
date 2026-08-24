@@ -54,9 +54,12 @@ export const AdminDashboard = () => {
   const [schools, setSchools] = useState([]);
   const [selectedSchoolId, setSelectedSchoolId] = useState("");
   const [schoolTeachers, setSchoolTeachers] = useState([]);
+  const [schoolClasses, setSchoolClasses] = useState([]);
   const [schoolStudents, setSchoolStudents] = useState([]);
   const [schoolStudentFile, setSchoolStudentFile] = useState(null);
   const [schoolStudentImporting, setSchoolStudentImporting] = useState(false);
+  const [rosterFile, setRosterFile] = useState(null);
+  const [rosterImporting, setRosterImporting] = useState(false);
   const [schoolDataLoading, setSchoolDataLoading] = useState(false);
   const [gradeFilter, setGradeFilter] = useState("");
   const [schoolForm, setSchoolForm] = useState({ schoolId: "", name: "" });
@@ -135,17 +138,20 @@ export const AdminDashboard = () => {
   const loadSchoolContext = async (schoolId, grade) => {
     if (!schoolId) {
       setSchoolTeachers([]);
+      setSchoolClasses([]);
       setSchoolStudents([]);
       return;
     }
 
     setSchoolDataLoading(true);
     try {
-      const [teachersResponse, studentsResponse] = await Promise.all([
+      const [teachersResponse, classesResponse, studentsResponse] = await Promise.all([
         schoolService.listTeachersBySchool(schoolId),
+        schoolService.listClassesBySchool(schoolId),
         schoolService.listStudentsBySchool(schoolId, grade ? { grade } : {})
       ]);
       setSchoolTeachers(teachersResponse.items || []);
+      setSchoolClasses(classesResponse.items || []);
       setSchoolStudents(studentsResponse.items || []);
     } finally {
       setSchoolDataLoading(false);
@@ -392,12 +398,6 @@ export const AdminDashboard = () => {
     setStatusMessage("Question deleted.");
   };
 
-  const regenerateCode = async () => {
-    const response = await authService.regenerateAdminRegistration();
-    setRegistration(response);
-    setStatusMessage("Registration code regenerated.");
-  };
-
   const createSchool = async () => {
     setStatusMessage("");
     try {
@@ -470,7 +470,10 @@ export const AdminDashboard = () => {
     try {
       const result = await schoolService.importStudents(selectedSchoolId, schoolStudentFile);
       const errorMessage = result.errors?.length ? ` ${result.errors.length} row(s) need attention.` : "";
-      setStatusMessage(`Students imported: ${result.imported}, skipped: ${result.skipped}.${errorMessage}`);
+      setStatusMessage(
+        `Students created: ${result.imported}, classes created: ${result.classesCreated || 0}, ` +
+        `enrolments created or restored: ${result.enrollmentsCreated || 0}, skipped: ${result.skipped}.${errorMessage}`
+      );
       setSchoolStudentFile(null);
       await loadSchoolContext(selectedSchoolId, gradeFilter);
       await loadStudents();
@@ -486,6 +489,38 @@ export const AdminDashboard = () => {
       await schoolService.downloadStudentImportTemplate();
     } catch (error) {
       setStatusMessage(error.response?.data?.message || "Failed to download student template.");
+    }
+  };
+
+  const importC2FRoster = async () => {
+    if (!rosterFile) {
+      setStatusMessage("Please choose the C2F roster Excel workbook.");
+      return;
+    }
+    setRosterImporting(true);
+    try {
+      const result = await schoolService.importRoster(rosterFile);
+      setStatusMessage(
+        `Roster imported: ${result.schoolsCreated} schools, ${result.teachersCreated} teachers, ` +
+        `${result.studentsCreated} students, ${result.classesCreated} classes, ` +
+        `${result.enrollmentsCreated} enrolments. Skipped: ${result.skipped}.`
+      );
+      setRosterFile(null);
+      await loadSchools();
+      if (selectedSchoolId) await loadSchoolContext(selectedSchoolId, gradeFilter);
+      await loadStudents();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "C2F roster import failed.");
+    } finally {
+      setRosterImporting(false);
+    }
+  };
+
+  const downloadRosterTemplate = async () => {
+    try {
+      await schoolService.downloadRosterTemplate();
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Failed to download C2F roster template.");
     }
   };
 
@@ -588,7 +623,6 @@ export const AdminDashboard = () => {
       {activeTab === "students" ? (
         <StudentsSection
           registration={registration}
-          regenerateCode={regenerateCode}
           setStudentCsvFile={setStudentCsvFile}
           importStudentsCsv={importStudentsCsv}
           students={students}
@@ -602,6 +636,7 @@ export const AdminDashboard = () => {
           selectedSchoolId={selectedSchoolId}
           setSelectedSchoolId={setSelectedSchoolId}
           teachers={schoolTeachers}
+          classes={schoolClasses}
           students={schoolStudents}
           gradeFilter={gradeFilter}
           setGradeFilter={setGradeFilter}
@@ -621,6 +656,11 @@ export const AdminDashboard = () => {
           downloadStudentImportTemplate={downloadStudentImportTemplate}
           importing={schoolStudentImporting}
           loading={schoolDataLoading}
+          rosterFile={rosterFile}
+          setRosterFile={setRosterFile}
+          importRoster={importC2FRoster}
+          downloadRosterTemplate={downloadRosterTemplate}
+          rosterImporting={rosterImporting}
         />
       ) : null}
 

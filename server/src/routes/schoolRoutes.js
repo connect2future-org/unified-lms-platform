@@ -5,11 +5,14 @@ import {
   enrollStudent,
   listSchools,
   listStudentsBySchool,
+  listClassesBySchool,
   importStudentsBySchool,
+  importC2FRosterWorkbook,
   listTeachersBySchool,
   updateSchool,
   updateStudentEnrollment,
-  downloadStudentImportTemplate
+  downloadStudentImportTemplate,
+  downloadC2FRosterTemplate
 } from '../controllers/teacher/schoolController.js'
 import { adminToUserCompat, requireAdminAuth, requireAdminRole, requireLmsAdmin } from '../middleware/auth.js'
 import { uploadSchoolStudentFile } from '../middleware/upload.js'
@@ -29,8 +32,11 @@ router.get('/:schoolId/teachers', listTeachersBySchool)
 router.patch('/teachers/assign-school', assignTeacherToSchool)
 
 router.get('/:schoolId/students', listStudentsBySchool)
+router.get('/:schoolId/classes', listClassesBySchool)
 router.get('/students/import/template', downloadStudentImportTemplate)
+router.get('/roster/import/template', downloadC2FRosterTemplate)
 router.post('/students/import', uploadSchoolStudentFile.single('file'), importStudentsBySchool)
+router.post('/roster/import', uploadSchoolStudentFile.single('file'), importC2FRosterWorkbook)
 router.post('/students/enroll', enrollStudent)
 router.patch('/students/:studentId/enrollment', updateStudentEnrollment)
 

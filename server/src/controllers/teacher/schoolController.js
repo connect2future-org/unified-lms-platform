@@ -36,6 +36,24 @@ const findOrCreateClass = async (school, row) => {
   })
 }
 
+const readWorkbookSheets = async (file) => {
+  if (!/\.xlsx$/i.test(file.originalname || '')) {
+    throw new ApiError(400, 'The complete C2F roster must be an XLSX workbook')
+  }
+
+  const workbook = new ExcelJS.Workbook()
+  await workbook.xlsx.load(file.buffer)
+  const sheets = new Map()
+  for (const worksheet of workbook.worksheets) {
+    const headers = worksheet.getRow(1).values.slice(1).map(normalizeImportHeader)
+    const rows = worksheet.values.slice(1).filter(Boolean).map((values) => Object.fromEntries(
+      headers.map((header, index) => [header, values[index + 1] ?? ''])
+    ))
+    sheets.set(normalizeImportHeader(worksheet.name), rows)
+  }
+  return sheets
+}
+
 const parseImportRows = async (file) => {
   if (!/\.(csv|xlsx)$/i.test(file.originalname || '')) {
     throw new ApiError(400, 'Only CSV and XLSX files are supported')
@@ -165,6 +183,16 @@ export const listTeachersBySchool = asyncHandler(async (req, res) => {
   })
 })
 
+export const listClassesBySchool = asyncHandler(async (req, res) => {
+  const school = await resolveSchoolForScopedAdmin(req, req.params.schoolId)
+  if (!school) throw new ApiError(404, 'School not found')
+
+  const classes = await Class.find({ schoolId: school._id, status: 'active' })
+    .select('_id title subject period sourcedId schoolId')
+    .sort({ title: 1 })
+  res.json({ school, items: classes })
+})
+
 export const listStudentsBySchool = asyncHandler(async (req, res) => {
   const school = await resolveSchoolForScopedAdmin(req, req.params.schoolId)
   if (!school) {
@@ -213,6 +241,22 @@ export const downloadStudentImportTemplate = asyncHandler(async (_req, res) => {
   res.send('school_id,name,email,password,grade,class,usn,branch,college,sourced_id,class_sourced_id,enrollment_sourced_id\nC2F-001,Example Student,student@example.com,C2F@12345,5,5-A,,,,C2F-STUDENT-001,C2F-CLASS-005,C2F-CLASS-005-STUDENT-001\n')
 })
 
+export const downloadC2FRosterTemplate = asyncHandler(async (_req, res) => {
+  const workbook = new ExcelJS.Workbook()
+  const sheets = {
+    Schools: [['school_id', 'name'], ['C2F-001', 'C2F Example School']],
+    Teachers: [['school_id', 'sourced_id', 'name', 'email', 'password'], ['C2F-001', 'C2F-TEACHER-001', 'Example Teacher', 'teacher@example.com', 'C2F@12345']],
+    Students: [['school_id', 'sourced_id', 'name', 'email', 'password', 'grade', 'usn', 'branch', 'college'], ['C2F-001', 'C2F-STUDENT-001', 'Example Student', 'student@example.com', 'C2F@12345', 5, '', '', '']],
+    Classes: [['school_id', 'class_sourced_id', 'title', 'subject', 'period'], ['C2F-001', 'C2F-CLASS-005', 'Grade 5 - A', 'English', '',]],
+    Enrollments: [['school_id', 'class_sourced_id', 'user_sourced_id', 'email', 'role', 'status', 'enrollment_sourced_id'], ['C2F-001', 'C2F-CLASS-005', 'C2F-STUDENT-001', 'student@example.com', 'student', 'active', 'C2F-ENROLMENT-001'], ['C2F-001', 'C2F-CLASS-005', 'C2F-TEACHER-001', 'teacher@example.com', 'teacher', 'active', 'C2F-ENROLMENT-002']]
+  }
+  for (const [name, rows] of Object.entries(sheets)) workbook.addWorksheet(name).addRows(rows)
+  res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+  res.attachment('c2f-school-roster-template.xlsx')
+  await workbook.xlsx.write(res)
+  res.end()
+})
+
 export const importStudentsBySchool = asyncHandler(async (req, res) => {
   const school = await resolveSchoolForScopedAdmin(req, req.body?.schoolId)
   if (!school) throw new ApiError(404, 'School not found')
@@ -222,6 +266,8 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
   if (!rows.length) throw new ApiError(400, 'File has no student rows')
   let imported = 0
   let skipped = 0
+  let classesCreated = 0
+  let enrollmentsCreated = 0
   const errors = []
   const linkedAdminId = req.user.role === 'admin' ? req.user._id : String(req.body?.linkedAdminId || '').trim() || null
 
@@ -262,17 +308,139 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
       continue
     }
 
+    const classTitle = normalizeClassName(row.class || row.class_name || row.classname || row.class_title)
+    const classRecordBefore = classTitle
+      ? await Class.findOne({ schoolId: school._id, title: classTitle })
+      : null
     const classRecord = await findOrCreateClass(school, row)
+    if (classRecord && !classRecordBefore) classesCreated += 1
     if (classRecord) {
-      await Enrollment.updateOne(
+      const enrollmentResult = await Enrollment.updateOne(
         { classId: classRecord._id, userId: student._id, role: 'student' },
         { $set: { status: 'active', sourcedId: normalizeName(row.enrollment_sourced_id || row.enrollment_id) || undefined } },
         { upsert: true }
       )
+      if (enrollmentResult.upsertedCount) enrollmentsCreated += 1
     }
   }
 
-  res.status(201).json({ imported, skipped, errors, school: { _id: school._id, schoolId: school.schoolId, name: school.name } })
+  res.status(201).json({ imported, skipped, classesCreated, enrollmentsCreated, errors, school: { _id: school._id, schoolId: school.schoolId, name: school.name } })
+})
+
+export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
+  if (!req.file) throw new ApiError(400, 'XLSX roster workbook is required')
+  const sheets = await readWorkbookSheets(req.file)
+  const schools = sheets.get('schools') || []
+  const teachers = sheets.get('teachers') || []
+  const students = sheets.get('students') || []
+  const classes = sheets.get('classes') || []
+  const enrollments = sheets.get('enrollments') || []
+  if (!schools.length || !students.length || !classes.length || !enrollments.length) {
+    throw new ApiError(400, 'Workbook must contain Schools, Students, Classes, and Enrollments sheets')
+  }
+
+  const summary = { schoolsCreated: 0, teachersCreated: 0, studentsCreated: 0, classesCreated: 0, enrollmentsCreated: 0, skipped: 0, errors: [] }
+  const schoolByCode = new Map()
+  for (let index = 0; index < schools.length; index += 1) {
+    const row = schools[index]
+    const schoolId = normalizeSchoolIdCode(row.school_id || row.schoolid)
+    const name = normalizeName(row.name || row.school_name)
+    if (!schoolId || !name) {
+      summary.errors.push({ sheet: 'Schools', row: index + 2, message: 'school_id and name are required' })
+      summary.skipped += 1
+      continue
+    }
+    let school = await School.findOne({ schoolId })
+    if (!school) {
+      school = await School.create({ schoolId, name })
+      summary.schoolsCreated += 1
+    }
+    schoolByCode.set(schoolId, school)
+  }
+
+  const usersBySourceId = new Map()
+  const usersByEmail = new Map()
+  const importUsers = async (rows, role, sheetName) => {
+    for (let index = 0; index < rows.length; index += 1) {
+      const row = rows[index]
+      const school = schoolByCode.get(normalizeSchoolIdCode(row.school_id || row.schoolid))
+      const email = String(row.email || '').trim().toLowerCase()
+      const name = normalizeName(row.name || row.full_name)
+      if (!school || !email || !name) {
+        summary.errors.push({ sheet: sheetName, row: index + 2, message: 'school_id, name, and email are required' })
+        summary.skipped += 1
+        continue
+      }
+      let user = await User.findOne({ email })
+      if (!user) {
+        user = await User.create({
+          name,
+          email,
+          password: String(row.password || '').trim() || 'C2F@12345',
+          role,
+          schoolId: school._id,
+          grade: role === 'candidate' ? parseOptionalGrade(row.grade) : null,
+          sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
+          usn: String(row.usn || '').trim(),
+          branch: String(row.branch || '').trim(),
+          college: String(row.college || '').trim()
+        })
+        if (role === 'candidate') summary.studentsCreated += 1
+        else summary.teachersCreated += 1
+      } else if (String(user.schoolId || '') !== String(school._id)) {
+        summary.errors.push({ sheet: sheetName, row: index + 2, message: 'email already belongs to another school' })
+        summary.skipped += 1
+        continue
+      }
+      const sourcedId = normalizeName(row.sourced_id || row.userid || row.user_sourced_id)
+      if (sourcedId) usersBySourceId.set(`${school.schoolId}:${sourcedId}`, user)
+      usersByEmail.set(`${school.schoolId}:${email}`, user)
+    }
+  }
+  await importUsers(teachers, 'admin', 'Teachers')
+  await importUsers(students, 'candidate', 'Students')
+
+  const classesBySourceId = new Map()
+  for (let index = 0; index < classes.length; index += 1) {
+    const row = classes[index]
+    const school = schoolByCode.get(normalizeSchoolIdCode(row.school_id || row.schoolid))
+    const title = normalizeName(row.title || row.class || row.class_name)
+    const sourcedId = normalizeName(row.class_sourced_id || row.sourced_id || row.classid)
+    if (!school || !title) {
+      summary.errors.push({ sheet: 'Classes', row: index + 2, message: 'school_id and title are required' })
+      summary.skipped += 1
+      continue
+    }
+    let classRecord = sourcedId
+      ? await Class.findOne({ schoolId: school._id, sourcedId })
+      : await Class.findOne({ schoolId: school._id, title })
+    if (!classRecord) {
+      classRecord = await Class.create({ schoolId: school._id, title, sourcedId: sourcedId || undefined, subject: normalizeName(row.subject) || null, period: normalizeName(row.period) || null })
+      summary.classesCreated += 1
+    }
+    if (sourcedId) classesBySourceId.set(`${school.schoolId}:${sourcedId}`, classRecord)
+  }
+
+  for (let index = 0; index < enrollments.length; index += 1) {
+    const row = enrollments[index]
+    const schoolCode = normalizeSchoolIdCode(row.school_id || row.schoolid)
+    const classRecord = classesBySourceId.get(`${schoolCode}:${normalizeName(row.class_sourced_id || row.classid)}`)
+    const user = usersBySourceId.get(`${schoolCode}:${normalizeName(row.user_sourced_id || row.sourced_id)}`)
+      || usersByEmail.get(`${schoolCode}:${String(row.email || '').trim().toLowerCase()}`)
+    if (!classRecord || !user) {
+      summary.errors.push({ sheet: 'Enrollments', row: index + 2, message: 'class_sourced_id and user_sourced_id/email must match imported records' })
+      summary.skipped += 1
+      continue
+    }
+    const result = await Enrollment.updateOne(
+      { classId: classRecord._id, userId: user._id, role: row.role === 'teacher' ? 'teacher' : 'student' },
+      { $set: { status: String(row.status || 'active').toLowerCase() === 'inactive' ? 'inactive' : 'active', sourcedId: normalizeName(row.enrollment_sourced_id || row.sourced_id) || undefined } },
+      { upsert: true }
+    )
+    if (result.upsertedCount) summary.enrollmentsCreated += 1
+  }
+
+  res.status(201).json(summary)
 })
 
 export const assignTeacherToSchool = asyncHandler(async (req, res) => {
