@@ -46,7 +46,7 @@ export const SchoolClassSection = ({
         <div className="form-grid import-panel">
           <input
             type="file"
-            accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             onChange={(event) => setRosterFile(event.target.files?.[0] || null)}
             disabled={rosterImporting}
           />
@@ -56,7 +56,7 @@ export const SchoolClassSection = ({
           <button className="btn btn-ghost" onClick={downloadRosterTemplate} disabled={rosterImporting}>
             Download Excel Template
           </button>
-          <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Required sheets: Schools, Teachers, Students, Classes, Enrollments.'}</p>
+          <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Use XLSX sheets or a flat CSV with school_id, name, email, grade, and class.'}</p>
         </div>
       </div>
 

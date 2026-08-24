@@ -54,6 +54,35 @@ const readWorkbookSheets = async (file) => {
   return sheets
 }
 
+const readRosterSheets = async (file) => {
+  if (/\.xlsx$/i.test(file.originalname || '')) return readWorkbookSheets(file)
+
+  const rows = await parseImportRows(file)
+  const schools = new Map()
+  const students = []
+  const classes = new Map()
+  const enrollments = []
+  for (const row of rows) {
+    const schoolId = normalizeSchoolIdCode(row.school_id || row.schoolid)
+    const classTitle = normalizeName(row.class || row.class_name || row.class_title)
+    const classSourcedId = normalizeName(row.class_sourced_id || row.classid || row.class_id) || `${schoolId}-${classTitle}`
+    const userSourcedId = normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || String(row.email || '').trim().toLowerCase()
+    if (schoolId) schools.set(schoolId, { school_id: schoolId, name: normalizeName(row.school_name || row.school) || schoolId })
+    students.push({ ...row, sourced_id: userSourcedId })
+    if (schoolId && classTitle) {
+      classes.set(`${schoolId}:${classSourcedId}`, { school_id: schoolId, class_sourced_id: classSourcedId, title: classTitle, subject: row.subject, period: row.period })
+      enrollments.push({ school_id: schoolId, class_sourced_id: classSourcedId, user_sourced_id: userSourcedId, email: row.email, role: 'student', status: 'active', enrollment_sourced_id: row.enrollment_sourced_id })
+    }
+  }
+  return new Map([
+    ['schools', [...schools.values()]],
+    ['teachers', []],
+    ['students', students],
+    ['classes', [...classes.values()]],
+    ['enrollments', enrollments]
+  ])
+}
+
 const parseImportRows = async (file) => {
   if (!/\.(csv|xlsx)$/i.test(file.originalname || '')) {
     throw new ApiError(400, 'Only CSV and XLSX files are supported')
@@ -329,7 +358,7 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
 
 export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
   if (!req.file) throw new ApiError(400, 'XLSX roster workbook is required')
-  const sheets = await readWorkbookSheets(req.file)
+  const sheets = await readRosterSheets(req.file)
   const schools = sheets.get('schools') || []
   const teachers = sheets.get('teachers') || []
   const students = sheets.get('students') || []
