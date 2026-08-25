@@ -14,15 +14,15 @@ import {
   downloadStudentImportTemplate,
   downloadC2FRosterTemplate
 } from '../controllers/teacher/schoolController.js'
-import { adminToUserCompat, requireAdminAuth, requireAdminRole, requireLmsAdmin } from '../middleware/auth.js'
+import { requireAdminRole, requireLmsAdmin } from '../middleware/auth.js'
+import { requireSchoolManagementAuth } from '../middleware/schoolManagementAuth.js'
 import { uploadSchoolStudentFile } from '../middleware/upload.js'
 
 const router = Router()
 
-router.use(requireAdminAuth)
-router.use(adminToUserCompat)
+router.use(requireSchoolManagementAuth)
 router.use(requireLmsAdmin)
-router.use(requireAdminRole('admin', 'super-admin'))
+router.use(requireAdminRole('admin', 'teacher', 'super-admin'))
 
 router.get('/', listSchools)
 router.post('/', createSchool)

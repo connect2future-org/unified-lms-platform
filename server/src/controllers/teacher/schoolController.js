@@ -163,7 +163,7 @@ const resolveSchoolForScopedAdmin = async (req, schoolId) => {
   }
 
   const admin = await User.findById(req.user._id).select('_id role schoolId')
-  if (!admin || admin.role !== 'admin') {
+  if (!admin || !['admin', 'teacher'].includes(admin.role)) {
     throw new ApiError(403, 'Admin access required')
   }
 
@@ -175,7 +175,7 @@ const resolveSchoolForScopedAdmin = async (req, schoolId) => {
 }
 
 export const listSchools = asyncHandler(async (req, res) => {
-  const filter = req.user.role === 'admin'
+  const filter = ['admin', 'teacher'].includes(req.user.role)
     ? { _id: (await User.findById(req.user._id).select('schoolId'))?.schoolId || null }
     : {}
   const schools = await School.find(filter).sort({ name: 1 }).select('_id schoolId name createdAt updatedAt')

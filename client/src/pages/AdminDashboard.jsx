@@ -153,6 +153,15 @@ export const AdminDashboard = () => {
       setSchoolTeachers(teachersResponse.items || []);
       setSchoolClasses(classesResponse.items || []);
       setSchoolStudents(studentsResponse.items || []);
+    } catch (error) {
+      const responseBody = error.response?.data;
+      const message = typeof responseBody === "string"
+        ? `HTTP ${error.response?.status || "error"}: ${responseBody.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 240)}`
+        : responseBody?.message || error.message || "Unable to load school, class, or student data.";
+      setStatusMessage(message);
+      setSchoolTeachers([]);
+      setSchoolClasses([]);
+      setSchoolStudents([]);
     } finally {
       setSchoolDataLoading(false);
     }

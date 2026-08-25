@@ -3,7 +3,7 @@ import { migrateUsersForUnifiedAuth } from '../services/userMigrationService.js'
 
 const isDryRun = process.argv.includes('--dry-run')
 
-const migrateUsersForUnifiedAuth = async () => {
+const runUsersForUnifiedAuthMigration = async () => {
   await connectDb()
   const stats = await migrateUsersForUnifiedAuth({ dryRun: isDryRun })
 
@@ -15,7 +15,7 @@ const migrateUsersForUnifiedAuth = async () => {
   }
 }
 
-migrateUsersForUnifiedAuth()
+runUsersForUnifiedAuthMigration()
   .then(() => {
     process.exit(0)
   })
