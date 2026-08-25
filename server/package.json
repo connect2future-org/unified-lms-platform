@@ -8,6 +8,7 @@
     "start": "node src/server.js",
     "test": "node --experimental-vm-modules ../node_modules/jest/bin/jest.js",
     "seed": "node src/utils/seedProjects.js",
+    "migrate:school-teachers": "node src/utils/migrateSchoolAdminsToTeachers.js",
     "migrate:users:unified-auth:dry": "node src/utils/migrateUsersForUnifiedAuth.js --dry-run",
     "migrate:users:unified-auth": "node src/utils/migrateUsersForUnifiedAuth.js",
     "build": "node --check src/server.js && node --check src/app.js && node --check src/controllers/admin/authController.js && node --check src/controllers/team/projectController.js && node --check src/controllers/team/teamController.js && node --check src/controllers/teacher/schoolController.js"

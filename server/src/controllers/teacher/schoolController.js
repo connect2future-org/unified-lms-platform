@@ -234,7 +234,7 @@ export const listTeachersBySchool = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'School not found')
   }
 
-  const teachers = await User.find({ role: 'admin', schoolId: school._id })
+  const teachers = await User.find({ role: { $in: ['teacher', 'admin'] }, schoolId: school._id })
     .select('_id name email role schoolId linkedSuperAdmin createdAt')
     .sort({ createdAt: -1 })
 
@@ -509,7 +509,7 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
       usersByEmail.set(`${school.schoolId}:${email}`, user)
     }
   }
-  await importUsers(teachers, 'admin', 'Teachers')
+  await importUsers(teachers, 'teacher', 'Teachers')
   await importUsers(students, 'candidate', 'Students')
 
   const classesBySourceId = new Map()
@@ -571,7 +571,7 @@ export const assignTeacherToSchool = asyncHandler(async (req, res) => {
   }
 
   const teacher = await User.findOne({
-    role: 'admin',
+    role: { $in: ['admin', 'teacher'] },
     ...(teacherId ? { _id: teacherId } : { email: teacherEmail })
   })
 
@@ -579,6 +579,7 @@ export const assignTeacherToSchool = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'Teacher (admin user) not found')
   }
 
+  teacher.role = 'teacher'
   teacher.schoolId = school._id
   await teacher.save()
 
@@ -619,7 +620,7 @@ export const enrollStudent = asyncHandler(async (req, res) => {
     : String(req.body?.linkedAdminId || '').trim() || null
 
   if (req.user.role === 'super-admin' && linkedAdminId) {
-    const linkedAdmin = await User.findOne({ _id: linkedAdminId, role: 'admin' }).select('_id')
+    const linkedAdmin = await User.findOne({ _id: linkedAdminId, role: { $in: ['admin', 'teacher'] } }).select('_id')
     if (!linkedAdmin) {
       throw new ApiError(400, 'linkedAdminId must reference an existing admin user')
     }

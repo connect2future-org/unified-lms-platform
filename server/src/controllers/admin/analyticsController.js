@@ -2,6 +2,7 @@ import { Attempt } from "../../models/Attempt.js";
 import { CheatingLog } from "../../models/CheatingLog.js";
 import { Test } from "../../models/Test.js";
 import { User } from "../../models/User.js";
+import { Enrollment } from "../../models/Enrollment.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import ExcelJS from "exceljs";
 
@@ -150,12 +151,18 @@ export const getStudentDetail = asyncHandler(async (req, res) => {
   const student = await User.findOne({
     _id: studentId,
     role: "candidate",
-    linkedAdmin: { $in: adminIds }
-  }).populate("linkedAdmin", "_id name email");
+    $or: [
+      { linkedAdmin: { $in: adminIds } },
+      ...(req.user.schoolId ? [{ schoolId: req.user.schoolId }] : [])
+    ]
+  }).populate("linkedAdmin", "_id name email").populate("schoolId", "_id schoolId name");
 
   if (!student) {
     return res.status(404).json({ message: "Student not found in your scope" });
   }
+
+  const enrolments = await Enrollment.find({ userId: student._id, role: "student", status: "active" })
+    .populate("classId", "_id title subject period status sourcedId schoolId");
 
   const attempts = await Attempt.find({ userId: student._id })
     .populate("testId", "title")
@@ -183,7 +190,17 @@ export const getStudentDetail = asyncHandler(async (req, res) => {
       id: student._id,
       name: student.name,
       email: student.email,
-      linkedAdmin: student.linkedAdmin
+      linkedAdmin: student.linkedAdmin,
+      school: student.schoolId,
+      grade: student.grade,
+      sourcedId: student.sourcedId,
+      classes: enrolments.filter((enrolment) => enrolment.classId).map((enrolment) => ({
+        enrollmentId: enrolment._id,
+        sourcedId: enrolment.sourcedId,
+        role: enrolment.role,
+        status: enrolment.status,
+        class: enrolment.classId
+      }))
     },
     attemptsTimeline: attempts.map((attempt) => ({
       attemptId: attempt._id,

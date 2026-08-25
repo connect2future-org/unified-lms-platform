@@ -27,6 +27,38 @@ export const StudentDetailPage = () => {
       <div className="panel">
         <h2>{data.student.name}</h2>
         <p className="muted">{data.student.email}</p>
+        <p><strong>School:</strong> {data.student.school?.name || data.student.school?.schoolId || "Not assigned"}</p>
+        <p><strong>Grade:</strong> {data.student.grade || "Not assigned"}</p>
+        <p><strong>Classes:</strong> {data.student.classes?.length || 0}</p>
+      </div>
+
+      <div className="panel">
+        <h3>School, Classes and Enrolments</h3>
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>School</th>
+                <th>Class</th>
+                <th>Subject</th>
+                <th>Enrolment Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(data.student.classes || []).map((enrolment) => (
+                <tr key={String(enrolment.enrollmentId)}>
+                  <td>{data.student.school?.name || data.student.school?.schoolId || "-"}</td>
+                  <td>{enrolment.class?.title || "-"}</td>
+                  <td>{enrolment.class?.subject || "-"}</td>
+                  <td>{enrolment.status}</td>
+                </tr>
+              ))}
+              {!data.student.classes?.length ? (
+                <tr><td colSpan={4}>No class enrolments found.</td></tr>
+              ) : null}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <div className="panel">
