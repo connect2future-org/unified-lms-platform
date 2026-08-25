@@ -109,15 +109,34 @@ export const SchoolClassSection = ({
       <div className="panel">
         <h2>Teachers in School</h2>
         <div className="form-grid">
+          <select
+            value={teacherAssignForm.teacherId || ''}
+            onChange={(event) => {
+              const teacher = teachers.find((entry) => entry._id === event.target.value)
+              setTeacherAssignForm((prev) => ({
+                ...prev,
+                teacherId: event.target.value,
+                teacherEmail: teacher?.email || ''
+              }))
+            }}
+            disabled={!selectedSchoolId}
+          >
+            <option value="">Select Teacher</option>
+            {teachers.map((teacher) => (
+              <option key={teacher._id} value={teacher._id}>
+                {teacher.name} - {teacher.email}
+              </option>
+            ))}
+          </select>
           <input
-            placeholder="Teacher email"
-            value={teacherAssignForm.teacherEmail}
-            onChange={(event) => setTeacherAssignForm((prev) => ({ ...prev, teacherEmail: event.target.value }))}
+            type="hidden"
+            value={teacherAssignForm.teacherEmail || ''}
+            readOnly
           />
           <button
             className="btn"
             onClick={assignTeacherToSchool}
-            disabled={!selectedSchoolId}
+            disabled={!selectedSchoolId || !teacherAssignForm.teacherId}
           >
             Assign Teacher to Selected School
           </button>

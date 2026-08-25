@@ -419,9 +419,10 @@ export const AdminDashboard = () => {
     try {
       await schoolService.assignTeacherToSchool({
         schoolId: selectedSchoolId,
+        teacherId: teacherAssignForm.teacherId,
         teacherEmail: teacherAssignForm.teacherEmail
       });
-      setTeacherAssignForm({ teacherEmail: "" });
+      setTeacherAssignForm({ teacherId: "", teacherEmail: "" });
       setStatusMessage("Teacher assigned to school.");
       await loadSchoolContext(selectedSchoolId, gradeFilter);
     } catch (error) {
