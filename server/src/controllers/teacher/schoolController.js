@@ -366,7 +366,7 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
     let studentResult
     try {
       studentResult = await User.updateOne(
-        { email, schoolId: school._id },
+        { email, $or: [{ schoolId: school._id }, { schoolId: null }, { schoolId: { $exists: false } }] },
         {
           $set: {
             name,
@@ -427,11 +427,20 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
   const students = sheets.get('students') || []
   const classes = sheets.get('classes') || []
   const enrollments = sheets.get('enrollments') || []
-  if (!schools.length || (!students.length && !teachers.length) || !classes.length || !enrollments.length) {
-    throw new ApiError(400, 'Use the single Roster sheet with school, teacher/student, class, and enrolment columns')
+  if (!schools.length) {
+    throw new ApiError(400, 'The Roster sheet must contain at least one school row')
   }
 
-  const summary = { schoolsCreated: 0, teachersCreated: 0, studentsCreated: 0, classesCreated: 0, enrollmentsCreated: 0, skipped: 0, errors: [] }
+  const summary = {
+    schoolsCreated: 0,
+    teachersCreated: 0,
+    studentsCreated: 0,
+    classesCreated: 0,
+    enrollmentsCreated: 0,
+    skipped: 0,
+    errors: [],
+    persisted: { schools: 0, teachers: 0, students: 0, classes: 0, enrollments: 0 }
+  }
   const schoolByCode = new Map()
   for (let index = 0; index < schools.length; index += 1) {
     const row = schools[index]
@@ -450,6 +459,7 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
     if (schoolResult.upsertedCount) summary.schoolsCreated += 1
     const school = await School.findOne({ schoolId })
     schoolByCode.set(schoolId, school)
+    summary.persisted.schools += 1
   }
 
   const usersBySourceId = new Map()
@@ -470,7 +480,7 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
       let userResult
       try {
         userResult = await User.updateOne(
-        { email, schoolId: school._id },
+        { email, $or: [{ schoolId: school._id }, { schoolId: null }, { schoolId: { $exists: false } }] },
         {
           $set: {
             name,
@@ -504,6 +514,7 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
         summary.skipped += 1
         continue
       }
+      summary.persisted[role === 'candidate' ? 'students' : 'teachers'] += 1
       const sourcedId = normalizeName(row.sourced_id || row.userid || row.user_sourced_id)
       if (sourcedId) usersBySourceId.set(`${school.schoolId}:${sourcedId}`, user)
       usersByEmail.set(`${school.schoolId}:${email}`, user)
@@ -533,6 +544,7 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
     )
     if (classResult.upsertedCount) summary.classesCreated += 1
     const classRecord = await Class.findOne(classFilter)
+    summary.persisted.classes += 1
     if (sourcedId) classesBySourceId.set(`${school.schoolId}:${sourcedId}`, classRecord)
   }
 
@@ -553,6 +565,7 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
       { upsert: true }
     )
     if (result.upsertedCount) summary.enrollmentsCreated += 1
+    summary.persisted.enrollments += 1
   }
 
   res.status(201).json(summary)

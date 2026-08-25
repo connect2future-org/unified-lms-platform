@@ -44,7 +44,7 @@ export const SchoolClassSection = ({
     <>
       <div className="panel">
         <h2>Complete C2F Roster Import</h2>
-        <p className="muted">Import one CSV or Excel Roster file. Each row connects a school, teacher or student, class, and enrolment.</p>
+        <p className="muted">Import one CSV or Excel Roster file. Each valid row persists its school, person, class, and enrolment relationships.</p>
         <div className="form-grid import-panel">
           <input
             type="file"

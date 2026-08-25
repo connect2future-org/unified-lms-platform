@@ -502,7 +502,7 @@ export const AdminDashboard = () => {
       setStatusMessage(
         `Roster imported: ${result.schoolsCreated} schools, ${result.teachersCreated} teachers, ` +
         `${result.studentsCreated} students, ${result.classesCreated} classes, ` +
-        `${result.enrollmentsCreated} enrolments. Skipped: ${result.skipped}.`
+        `${result.enrollmentsCreated} enrolments persisted. Skipped: ${result.skipped}.`
       );
       setRosterFile(null);
       await loadSchools();
