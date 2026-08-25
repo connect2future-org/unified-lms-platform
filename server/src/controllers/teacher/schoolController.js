@@ -174,10 +174,34 @@ const resolveSchoolForScopedAdmin = async (req, schoolId) => {
   return School.findById(schoolId)
 }
 
+const linkScopedAdminToSchool = async (req, school) => {
+  if (!school || !['admin', 'teacher'].includes(req.user.role)) return
+
+  // A scoped admin only ever sees their assigned school, so an unassigned creator
+  // would lose sight of the record they just persisted.
+  const linked = await User.findOneAndUpdate(
+    { _id: req.user._id, $or: [{ schoolId: null }, { schoolId: { $exists: false } }] },
+    { $set: { schoolId: school._id } },
+    { new: true }
+  ).select('_id schoolId')
+
+  if (linked) {
+    req.user.schoolId = linked.schoolId
+  }
+}
+
 export const listSchools = asyncHandler(async (req, res) => {
-  const filter = ['admin', 'teacher'].includes(req.user.role)
-    ? { _id: (await User.findById(req.user._id).select('schoolId'))?.schoolId || null }
-    : {}
+  const filter = {}
+
+  if (['admin', 'teacher'].includes(req.user.role)) {
+    const scopedSchoolId = (await User.findById(req.user._id).select('schoolId'))?.schoolId
+    if (!scopedSchoolId) {
+      res.json({ items: [] })
+      return
+    }
+    filter._id = scopedSchoolId
+  }
+
   const schools = await School.find(filter).sort({ name: 1 }).select('_id schoolId name createdAt updatedAt')
   res.json({ items: schools })
 })
@@ -196,6 +220,7 @@ export const createSchool = asyncHandler(async (req, res) => {
   }
 
   const school = await School.create({ schoolId, name })
+  await linkScopedAdminToSchool(req, school)
   res.status(201).json({ school })
 })
 
@@ -460,6 +485,10 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
     const school = await School.findOne({ schoolId })
     schoolByCode.set(schoolId, school)
     summary.persisted.schools += 1
+  }
+
+  if (schoolByCode.size === 1) {
+    await linkScopedAdminToSchool(req, [...schoolByCode.values()][0])
   }
 
   const usersBySourceId = new Map()
