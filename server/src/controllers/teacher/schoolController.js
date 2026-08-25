@@ -70,11 +70,9 @@ const readWorkbookSheets = async (file) => {
   return sheets
 }
 
-const readRosterSheets = async (file) => {
-  if (/\.xlsx$/i.test(file.originalname || '')) return readWorkbookSheets(file)
-
-  const rows = await parseImportRows(file)
+const flatRowsToRosterSheets = (rows) => {
   const schools = new Map()
+  const teachers = []
   const students = []
   const classes = new Map()
   const enrollments = []
@@ -84,19 +82,37 @@ const readRosterSheets = async (file) => {
     const classSourcedId = normalizeName(row.class_sourced_id || row.classid || row.class_id) || `${schoolId}-${classTitle}`
     const userSourcedId = normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || String(row.email || '').trim().toLowerCase()
     if (schoolId) schools.set(schoolId, { school_id: schoolId, name: normalizeName(row.school_name || row.school) || schoolId })
-    students.push({ ...row, sourced_id: userSourcedId })
+    if (normalizeName(row.name || row.full_name) && String(row.email || '').trim()) {
+      if (String(row.role || 'student').trim().toLowerCase() === 'teacher') {
+        teachers.push({ ...row, sourced_id: userSourcedId })
+      } else {
+        students.push({ ...row, sourced_id: userSourcedId })
+      }
+    }
     if (schoolId && classTitle) {
       classes.set(`${schoolId}:${classSourcedId}`, { school_id: schoolId, class_sourced_id: classSourcedId, title: classTitle, subject: row.subject, period: row.period })
-      enrollments.push({ school_id: schoolId, class_sourced_id: classSourcedId, user_sourced_id: userSourcedId, email: row.email, role: 'student', status: 'active', enrollment_sourced_id: row.enrollment_sourced_id })
+      enrollments.push({ school_id: schoolId, class_sourced_id: classSourcedId, user_sourced_id: userSourcedId, email: row.email, role: row.role || 'student', status: row.status || 'active', enrollment_sourced_id: row.enrollment_sourced_id })
     }
   }
   return new Map([
     ['schools', [...schools.values()]],
-    ['teachers', []],
+    ['teachers', teachers],
     ['students', students],
     ['classes', [...classes.values()]],
     ['enrollments', enrollments]
   ])
+}
+
+const readRosterSheets = async (file) => {
+  if (/\.xlsx$/i.test(file.originalname || '')) {
+    const sheets = await readWorkbookSheets(file)
+    const requiredSheets = ['schools', 'teachers', 'students', 'classes', 'enrollments']
+    if (requiredSheets.every((name) => sheets.has(name))) return sheets
+    const rosterRows = sheets.get('roster') || [...sheets.values()][0] || []
+    return flatRowsToRosterSheets(rosterRows)
+  }
+
+  return flatRowsToRosterSheets(await parseImportRows(file))
 }
 
 const parseImportRows = async (file) => {
@@ -299,14 +315,11 @@ export const downloadStudentImportTemplate = asyncHandler(async (_req, res) => {
 
 export const downloadC2FRosterTemplate = asyncHandler(async (_req, res) => {
   const workbook = new ExcelJS.Workbook()
-  const sheets = {
-    Schools: [['school_id', 'name'], ['C2F-001', 'C2F Example School']],
-    Teachers: [['school_id', 'sourced_id', 'name', 'email', 'password'], ['C2F-001', 'C2F-TEACHER-001', 'Example Teacher', 'teacher@example.com', 'C2F@12345']],
-    Students: [['school_id', 'sourced_id', 'name', 'email', 'password', 'grade', 'usn', 'branch', 'college'], ['C2F-001', 'C2F-STUDENT-001', 'Example Student', 'student@example.com', 'C2F@12345', 5, '', '', '']],
-    Classes: [['school_id', 'class_sourced_id', 'title', 'subject', 'period'], ['C2F-001', 'C2F-CLASS-005', 'Grade 5 - A', 'English', '',]],
-    Enrollments: [['school_id', 'class_sourced_id', 'user_sourced_id', 'email', 'role', 'status', 'enrollment_sourced_id'], ['C2F-001', 'C2F-CLASS-005', 'C2F-STUDENT-001', 'student@example.com', 'student', 'active', 'C2F-ENROLMENT-001'], ['C2F-001', 'C2F-CLASS-005', 'C2F-TEACHER-001', 'teacher@example.com', 'teacher', 'active', 'C2F-ENROLMENT-002']]
-  }
-  for (const [name, rows] of Object.entries(sheets)) workbook.addWorksheet(name).addRows(rows)
+  workbook.addWorksheet('Roster').addRows([
+    ['school_id', 'school_name', 'sourced_id', 'name', 'email', 'password', 'role', 'grade', 'class', 'class_sourced_id', 'subject', 'period', 'status', 'enrollment_sourced_id', 'usn', 'branch', 'college'],
+    ['C2F-001', 'C2F Example School', 'C2F-TEACHER-001', 'Example Teacher', 'teacher@example.com', 'C2F@12345', 'teacher', '', 'Grade 5 - A', 'C2F-CLASS-005', 'English', '', 'active', 'C2F-ENROLMENT-001', '', '', ''],
+    ['C2F-001', 'C2F Example School', 'C2F-STUDENT-001', 'Example Student', 'student@example.com', 'C2F@12345', 'student', 5, 'Grade 5 - A', 'C2F-CLASS-005', 'English', '', 'active', 'C2F-ENROLMENT-002', '', '', '']
+  ])
   res.type('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
   res.attachment('c2f-school-roster-template.xlsx')
   await workbook.xlsx.write(res)
@@ -414,8 +427,8 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
   const students = sheets.get('students') || []
   const classes = sheets.get('classes') || []
   const enrollments = sheets.get('enrollments') || []
-  if (!schools.length || !students.length || !classes.length || !enrollments.length) {
-    throw new ApiError(400, 'Workbook must contain Schools, Students, Classes, and Enrollments sheets')
+  if (!schools.length || (!students.length && !teachers.length) || !classes.length || !enrollments.length) {
+    throw new ApiError(400, 'Use the single Roster sheet with school, teacher/student, class, and enrolment columns')
   }
 
   const summary = { schoolsCreated: 0, teachersCreated: 0, studentsCreated: 0, classesCreated: 0, enrollmentsCreated: 0, skipped: 0, errors: [] }

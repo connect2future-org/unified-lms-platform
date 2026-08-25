@@ -2,8 +2,6 @@ import { Link } from "react-router-dom";
 
 export const StudentsSection = ({
   registration,
-  setStudentCsvFile,
-  importStudentsCsv,
   students,
   exportFinalDataExcel
 }) => {
@@ -13,10 +11,8 @@ export const StudentsSection = ({
       <div className="form-grid">
         <input readOnly value={registration?.adminCode || ""} placeholder="Admin registration code" />
         <textarea readOnly value={registration?.registrationLink || ""} rows={2} placeholder="Registration link" />
-        <input type="file" accept=".csv,text/csv" onChange={(event) => setStudentCsvFile(event.target.files?.[0] || null)} />
-        <button className="btn" onClick={importStudentsCsv}>Bulk Import Students CSV</button>
         <button className="btn btn-ghost" onClick={exportFinalDataExcel}>Export Final Data (Excel)</button>
-        <p className="muted">CSV headers: name,email,password</p>
+        <p className="muted">Use the School &amp; Class tab to import the complete C2F Roster Excel file.</p>
       </div>
 
       <h3 style={{ marginTop: "1rem" }}>Registered Students</h3>

@@ -47,7 +47,6 @@ export const AdminDashboard = () => {
   const [statusMessage, setStatusMessage] = useState("");
   const [csvFile, setCsvFile] = useState(null);
   const [csvUploading, setCsvUploading] = useState(false);
-  const [studentCsvFile, setStudentCsvFile] = useState(null);
   const [userMigrationSummary, setUserMigrationSummary] = useState(null);
   const [userMigrationLoading, setUserMigrationLoading] = useState(false);
   const [userMigrationMessage, setUserMigrationMessage] = useState("");
@@ -248,18 +247,6 @@ export const AdminDashboard = () => {
     } catch (error) {
       setStatusMessage("Failed to download CSV template.");
     }
-  };
-
-  const importStudentsCsv = async () => {
-    if (!studentCsvFile) {
-      setStatusMessage("Please choose student CSV file.");
-      return;
-    }
-
-    const csvContent = await studentCsvFile.text();
-    const result = await authService.importStudentsCsv({ csvContent });
-    setStatusMessage(`Students imported: ${result.imported}, skipped: ${result.skipped}`);
-    await loadStudents();
   };
 
   const exportFinalDataExcel = async () => {
@@ -634,8 +621,6 @@ export const AdminDashboard = () => {
       {activeTab === "students" ? (
         <StudentsSection
           registration={registration}
-          setStudentCsvFile={setStudentCsvFile}
-          importStudentsCsv={importStudentsCsv}
           students={students}
           exportFinalDataExcel={exportFinalDataExcel}
         />

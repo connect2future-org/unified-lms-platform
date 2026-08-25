@@ -43,8 +43,8 @@ export const SchoolClassSection = ({
   return (
     <>
       <div className="panel">
-        <h2>Complete C2F Roster Workbook</h2>
-        <p className="muted">Import one Excel workbook to populate schools, teachers, students, classes, and enrolments.</p>
+        <h2>Complete C2F Roster Import</h2>
+        <p className="muted">Import one CSV or Excel Roster file. Each row connects a school, teacher or student, class, and enrolment.</p>
         <div className="form-grid import-panel">
           <input
             type="file"
@@ -67,7 +67,7 @@ export const SchoolClassSection = ({
               <option value={25000}>25,000 rows</option>
             </select>
           </label>
-          <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Use XLSX sheets or a flat CSV with school_id, name, email, grade, and class.'}</p>
+          <p className="muted">{rosterFile ? `Selected: ${rosterFile.name}` : 'Use one Excel or CSV Roster sheet with school, teacher, student, class, and enrolment fields.'}</p>
           <p className="muted">Chunk failures show the HTTP status and failed chunk number here.</p>
         </div>
       </div>
@@ -152,28 +152,6 @@ export const SchoolClassSection = ({
 
       <div className="panel">
         <h2>Students and Grades (1-12)</h2>
-        <div className="form-grid import-panel">
-          <div>
-            <strong>C2F school roster import</strong>
-            <p className="muted">Use the C2F template. Each row links a student to a school and class.</p>
-          </div>
-          <input
-            type="file"
-            accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-            onChange={(event) => setSchoolStudentFile(event.target.files?.[0] || null)}
-            disabled={importing}
-          />
-          <p className="muted">
-            {schoolStudentFile ? `Selected: ${schoolStudentFile.name}` : 'Choose a CSV or Excel file first.'}
-            {!selectedSchoolId ? ' Select a school before loading it.' : ''}
-          </p>
-          <button className="btn" onClick={importStudents} disabled={!selectedSchoolId || !schoolStudentFile || importing}>
-            {importing ? 'Importing...' : 'Load Students'}
-          </button>
-          <button className="btn btn-ghost" onClick={downloadStudentImportTemplate}>
-            Download Template
-          </button>
-        </div>
         <div className="form-grid">
           <input
             placeholder="Student name"
