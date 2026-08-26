@@ -22,7 +22,7 @@ const cheatingLogSchema = new mongoose.Schema(
     },
     event: {
       type: String,
-      enum: ["TAB_SWITCH", "WINDOW_BLUR", "WINDOW_FOCUS", "FULLSCREEN_EXIT", "COPY", "PASTE"],
+      enum: ["TAB_SWITCH", "WINDOW_BLUR", "WINDOW_FOCUS", "FULLSCREEN_EXIT", "COPY", "PASTE", "HARD_REFRESH"],
       required: true,
       index: true
     },

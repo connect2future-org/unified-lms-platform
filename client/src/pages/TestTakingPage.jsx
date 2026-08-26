@@ -99,6 +99,15 @@ export const TestTakingPage = () => {
       };
     }
     setAnswers(answerMap);
+
+    if (window.performance?.getEntriesByType("navigation")[0]?.type === "reload") {
+      attemptService.logEvent(attemptData._id, {
+        event: "HARD_REFRESH",
+        metadata: { navigationType: "reload" }
+      }).catch(() => {
+        // A refresh log must not prevent the test from loading.
+      });
+    }
   };
 
   const prepareTestSession = async () => {

@@ -9,6 +9,6 @@ analyticsRoutes.use(adminToUserCompat);
 analyticsRoutes.use(requireLmsAdmin);
 analyticsRoutes.use(requireAdminRole("admin", "super-admin"));
 analyticsRoutes.get("/admin", getAdminAnalytics);
-analyticsRoutes.get("/admin/activity", getAdminAnalytics);
+analyticsRoutes.get("/admin/activity", getAdminActivity);
 analyticsRoutes.get("/admin/students/:studentId/detail", getStudentDetail);
 analyticsRoutes.get("/admin/export/final-data", exportAdminFinalDataExcel);

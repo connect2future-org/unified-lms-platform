@@ -262,6 +262,24 @@ export const logCheatingEvent = asyncHandler(async (req, res) => {
     return res.status(ownership.status).json({ message: ownership.message });
   }
 
+  if (event === "HARD_REFRESH") {
+    const refreshWindowStart = new Date(Date.now() - 60 * 60 * 1000);
+    const refreshCount = await CheatingLog.countDocuments({
+      userId: attempt.userId,
+      event,
+      timestamp: { $gte: refreshWindowStart }
+    });
+
+    if (refreshCount >= 5) {
+      return res.status(429).json({
+        autoSubmitted: false,
+        violationCount: attempt.violationCount,
+        throttled: true,
+        message: "Hard refresh limit reached. Try again later."
+      });
+    }
+  }
+
   const duplicateWindowMs = 2000;
   const latestLog = await CheatingLog.findOne({ attemptId: attempt._id })
     .sort({ timestamp: -1 })
