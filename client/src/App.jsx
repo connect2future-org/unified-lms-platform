@@ -7,6 +7,7 @@ const roleHome = {
   team: '/team/dashboard',
   candidate: '/candidate',
   admin: '/admin',
+  teacher: '/admin',
   'super-admin': '/super-admin'
 }
 
@@ -24,6 +25,9 @@ function TopNav() {
     }
     if (user?.role === 'admin') {
       return 'Admin'
+    }
+    if (user?.role === 'teacher') {
+      return 'Teacher'
     }
     if (user?.role === 'team') {
       return 'Team'
@@ -77,6 +81,14 @@ function TopNav() {
       return [
         { label: 'Admin Dashboard', path: '/admin' },
         { label: 'Team Management', path: '/admin/teams' },
+        { label: 'Reports (Coming Soon)', disabled: true }
+      ]
+    }
+
+    if (user?.role === 'teacher') {
+      return [
+        { label: 'Teacher Dashboard', path: '/admin' },
+        { label: 'Class Management', path: '/admin' },
         { label: 'Reports (Coming Soon)', disabled: true }
       ]
     }

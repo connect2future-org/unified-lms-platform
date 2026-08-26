@@ -38,6 +38,10 @@ function RootRedirect() {
     return <Navigate to={user?.authType === 'platform-admin' ? '/admin/teams' : '/admin'} replace />
   }
 
+  if (user.role === ROLES.TEACHER) {
+    return <Navigate to="/admin" replace />
+  }
+
   if (user.role === ROLES.CANDIDATE) {
     return <Navigate to="/candidate" replace />
   }
@@ -95,7 +99,7 @@ export function AppRouter() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.SUPER_ADMIN]}>
+          <ProtectedRoute allowedRoles={[ROLES.ADMIN, ROLES.TEACHER, ROLES.SUPER_ADMIN]}>
             <AdminDashboard />
           </ProtectedRoute>
         }

@@ -8,7 +8,8 @@ import { PageShell } from "../components/PageShell";
 const ROLE_LABELS = {
   student: "Student",
   team: "Team",
-  admin: "Admin"
+  admin: "Admin",
+  teacher: "Teacher"
 };
 
 export const LoginPage = () => {
@@ -16,7 +17,7 @@ export const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const { login } = useAuth();
   const roleFromQuery = String(searchParams.get("role") || "").toLowerCase();
-  const initialRole = ["student", "team", "admin"].includes(roleFromQuery)
+  const initialRole = ["student", "team", "admin", "teacher"].includes(roleFromQuery)
     ? roleFromQuery
     : "student";
   const [loginType, setLoginType] = useState(initialRole);
@@ -63,12 +64,16 @@ export const LoginPage = () => {
           throw new Error("Selected Admin login, but credentials are not an admin account.");
         }
 
+        if (loginType === "teacher" && data?.user?.role !== "teacher") {
+          throw new Error("Selected Teacher login, but credentials are not a teacher account.");
+        }
+
         login(data);
 
         if (data.user.role === "super-admin") {
           navigate("/super-admin", { replace: true });
         } else {
-          if (data.user.role === "admin") {
+          if (data.user.role === "admin" || data.user.role === "teacher") {
             navigate(data.user.authType === "platform-admin" ? "/admin/teams" : "/admin", { replace: true });
           } else {
             navigate("/candidate", { replace: true });
@@ -144,9 +149,15 @@ export const LoginPage = () => {
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
-          Don't have an account? <Link to={`/signup?role=${loginType === "student" ? "candidate" : loginType}`}>Create one here</Link>
-        </p>
+        {loginType === "teacher" ? (
+          <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            Teacher accounts are created by school administrators.
+          </p>
+        ) : (
+          <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            Don't have an account? <Link to={`/signup?role=${loginType === "student" ? "candidate" : loginType}`}>Create one here</Link>
+          </p>
+        )}
       </section>
     </PageShell>
   );

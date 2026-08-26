@@ -10,6 +10,10 @@ const getRoleHomePath = (role) => {
     return '/admin'
   }
 
+  if (role === 'teacher') {
+    return '/admin'
+  }
+
   if (role === 'candidate') {
     return '/candidate'
   }

@@ -4,6 +4,7 @@ import { OverviewSection } from "../components/admin/OverviewSection";
 import { SchoolClassSection } from "../components/admin/SchoolClassSection";
 import { StudentsSection } from "../components/admin/StudentsSection";
 import { TestEditorSection } from "../components/admin/TestEditorSection";
+import { useAuth } from "../context/AuthContext";
 import { analyticsService } from "../services/analyticsService";
 import { authService } from "../services/authService";
 import { schoolService } from "../services/schoolService";
@@ -37,6 +38,8 @@ const tabs = [
 ];
 
 export const AdminDashboard = () => {
+  const { user } = useAuth();
+  const isTeacherUser = user?.role === "teacher";
   const [activeTab, setActiveTab] = useState("overview");
   const [tests, setTests] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -102,6 +105,9 @@ export const AdminDashboard = () => {
   );
 
   const selectedTest = tests.find((test) => test._id === selectedTestId);
+  const availableTabs = isTeacherUser
+    ? tabs.filter((tab) => tab.id === "schoolClass")
+    : tabs;
 
   const loadOverview = async () => {
     const [testsRes, analyticsRes] = await Promise.all([
@@ -193,7 +199,13 @@ export const AdminDashboard = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      await Promise.all([loadOverview(), loadStudents(), loadActivity(), loadUserMigrationSummary(), loadSchools()]);
+      if (isTeacherUser) {
+        await loadSchools();
+      } else {
+        await Promise.all([loadOverview(), loadStudents(), loadActivity(), loadUserMigrationSummary(), loadSchools()]);
+      }
+    } catch (error) {
+      setStatusMessage(error.response?.data?.message || "Unable to load dashboard data.");
     } finally {
       setLoading(false);
     }
@@ -201,7 +213,13 @@ export const AdminDashboard = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [isTeacherUser]);
+
+  useEffect(() => {
+    if (isTeacherUser && activeTab !== "schoolClass") {
+      setActiveTab("schoolClass");
+    }
+  }, [isTeacherUser, activeTab]);
 
   useEffect(() => {
     loadSchoolContext(selectedSchoolId, gradeFilter);
@@ -572,7 +590,7 @@ export const AdminDashboard = () => {
       <div className="panel">
         <h2>Admin Workspace</h2>
         <div className="tab-row">
-          {tabs.map((tab) => (
+          {availableTabs.map((tab) => (
             <button
               key={tab.id}
               className={`btn ${activeTab === tab.id ? "" : "btn-ghost"}`}
