@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { ActivitySection } from "../components/admin/ActivitySection";
 import { OverviewSection } from "../components/admin/OverviewSection";
 import { SchoolClassSection } from "../components/admin/SchoolClassSection";
@@ -34,7 +35,8 @@ const tabs = [
   { id: "tests", label: "Test & Question Editor" },
   { id: "students", label: "Student Registry" },
   { id: "schoolClass", label: "School & Class" },
-  { id: "activity", label: "Live Activity" }
+  { id: "activity", label: "Live Activity" },
+  { id: "settings", label: "Settings", action: "external" }
 ];
 
 export const AdminDashboard = () => {
@@ -590,15 +592,28 @@ export const AdminDashboard = () => {
       <div className="panel">
         <h2>Admin Workspace</h2>
         <div className="tab-row">
-          {availableTabs.map((tab) => (
-            <button
-              key={tab.id}
-              className={`btn ${activeTab === tab.id ? "" : "btn-ghost"}`}
-              onClick={() => setActiveTab(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
+          {availableTabs.map((tab) => {
+            if (tab.action === "external") {
+              return (
+                <Link
+                  key={tab.id}
+                  to="/settings/school/profile"
+                  className="btn"
+                >
+                  {tab.label}
+                </Link>
+              );
+            }
+            return (
+              <button
+                key={tab.id}
+                className={`btn ${activeTab === tab.id ? "" : "btn-ghost"}`}
+                onClick={() => setActiveTab(tab.id)}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
         </div>
         {statusMessage ? <p className="muted">{statusMessage}</p> : null}
       </div>

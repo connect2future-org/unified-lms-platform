@@ -8,6 +8,7 @@ import { setupSockets } from './sockets/index.js'
 import { ensureProjectPool } from './services/seedService.js'
 import { ensureTeamCredentials } from './services/teamAuthService.js'
 import { getLanIPv4Addresses } from './utils/network.js'
+import { initializePermissionSystem } from './middleware/initializePermissions.js'
 
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled promise rejection:', reason)
@@ -19,6 +20,7 @@ process.on('uncaughtException', (error) => {
 
 const bootstrap = async () => {
   await connectDb()
+  await initializePermissionSystem()
   await ensureProjectPool()
   await ensureTeamCredentials()
 
