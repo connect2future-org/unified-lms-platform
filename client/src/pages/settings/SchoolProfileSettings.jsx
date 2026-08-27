@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { SettingsLayout } from '../SettingsLayout'
 import { useSettings } from '../../hooks/useSettings'
+import { validationSchemas, validateForm, hasErrors } from '../../utils/formValidation'
 
 export const SchoolProfileSettings = () => {
   const { data, loading, error, update } = useSettings('school')
@@ -12,7 +13,9 @@ export const SchoolProfileSettings = () => {
     website: '',
     principal: ''
   })
+  const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
+  const [touched, setTouched] = useState({})
 
   useEffect(() => {
     if (data?.items?.[0]) {
@@ -20,15 +23,59 @@ export const SchoolProfileSettings = () => {
     }
   }, [data])
 
+  const handleChange = (e) => {
+    const { name, value } = e.target
+    setForm({ ...form, [name]: value })
+    
+    // Clear error for this field when user starts typing
+    if (touched[name]) {
+      const fieldError = validationSchemas.schoolProfile[name]
+        ?.reduce((err, validator) => err || validator(value), null)
+      setErrors({ ...errors, [name]: fieldError })
+    }
+  }
+
+  const handleBlur = (e) => {
+    const { name } = e.target
+    setTouched({ ...touched, [name]: true })
+    
+    // Validate field on blur
+    const fieldRules = validationSchemas.schoolProfile[name]
+    if (fieldRules) {
+      const fieldError = fieldRules.reduce((err, validator) => err || validator(form[name]), null)
+      setErrors({ ...errors, [name]: fieldError })
+    }
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
+    
+    // Validate all fields
+    const newErrors = {}
+    for (const [fieldName, fieldRules] of Object.entries(validationSchemas.schoolProfile)) {
+      const fieldError = fieldRules.reduce((err, validator) => err || validator(form[fieldName]), null)
+      if (fieldError) {
+        newErrors[fieldName] = fieldError
+      }
+    }
+    
+    setErrors(newErrors)
+    
+    if (Object.values(newErrors).some(err => err)) {
+      setMessage('Please fix the errors below')
+      return
+    }
+    
     try {
       await update(form._id, form)
       setMessage('School profile updated successfully')
+      setTimeout(() => setMessage(''), 3000)
     } catch (err) {
       setMessage('Failed to update school profile')
     }
   }
+
+  const isFormValid = !hasErrors(errors) && form.name && form.schoolId
 
   return (
     <SettingsLayout>
@@ -38,7 +85,11 @@ export const SchoolProfileSettings = () => {
           <p>Configure your school's basic information</p>
         </div>
 
-        {message && <div className={`message ${message.includes('success') ? 'success' : 'error'}`}>{message}</div>}
+        {message && (
+          <div className={`message ${message.includes('success') ? 'success' : 'error'}`}>
+            {message}
+          </div>
+        )}
 
         {loading && <div className="loader">Loading...</div>}
         {error && <div className="error">{error}</div>}
@@ -46,63 +97,89 @@ export const SchoolProfileSettings = () => {
         <form onSubmit={handleSubmit} className="settings-form">
           <div className="form-section">
             <label>
-              School Name
+              School Name *
               <input
                 type="text"
+                name="name"
                 value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
-                required
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={errors.name ? 'error' : ''}
               />
+              {errors.name && <span className="field-error">{errors.name}</span>}
             </label>
 
             <label>
-              School ID / Code
+              School ID / Code *
               <input
                 type="text"
+                name="schoolId"
                 value={form.schoolId}
-                onChange={(e) => setForm({ ...form, schoolId: e.target.value })}
-                required
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={errors.schoolId ? 'error' : ''}
+                disabled
               />
+              {errors.schoolId && <span className="field-error">{errors.schoolId}</span>}
             </label>
 
             <label>
               Address
               <textarea
+                name="address"
                 value={form.address || ''}
-                onChange={(e) => setForm({ ...form, address: e.target.value })}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={errors.address ? 'error' : ''}
               />
+              {errors.address && <span className="field-error">{errors.address}</span>}
             </label>
 
             <label>
               Contact Number
               <input
                 type="tel"
+                name="contact"
                 value={form.contact || ''}
-                onChange={(e) => setForm({ ...form, contact: e.target.value })}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                className={errors.contact ? 'error' : ''}
               />
+              {errors.contact && <span className="field-error">{errors.contact}</span>}
             </label>
 
             <label>
               Website
               <input
                 type="url"
+                name="website"
                 value={form.website || ''}
-                onChange={(e) => setForm({ ...form, website: e.target.value })}
+                onChange={handleChange}
+                onBlur={handleBlur}
+                placeholder="https://example.com"
+                className={errors.website ? 'error' : ''}
               />
+              {errors.website && <span className="field-error">{errors.website}</span>}
             </label>
 
             <label>
               Principal Name
               <input
                 type="text"
+                name="principal"
                 value={form.principal || ''}
-                onChange={(e) => setForm({ ...form, principal: e.target.value })}
+                onChange={handleChange}
+                onBlur={handleBlur}
               />
             </label>
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn btn-primary" disabled={loading}>
+            <button 
+              type="submit" 
+              className="btn btn-primary" 
+              disabled={loading || !isFormValid}
+            >
               {loading ? 'Saving...' : 'Save Changes'}
             </button>
           </div>
