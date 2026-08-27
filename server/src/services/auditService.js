@@ -68,3 +68,8 @@ export const getAuditLogs = async (filters = {}, page = 1, limit = 50) => {
 
   return { logs, total, page, limit }
 }
+
+export const auditService = {
+  logAudit,
+  getAuditLogs
+}
