@@ -164,7 +164,7 @@ const resolveSchoolForScopedAdmin = async (req, schoolId) => {
 
   const admin = await User.findById(req.user._id).select('_id role schoolId')
   if (!admin || !['admin', 'teacher'].includes(admin.role)) {
-    throw new ApiError(403, 'Admin access required')
+    throw new ApiError(403, 'School management access required')
   }
 
   if (!admin.schoolId || String(admin.schoolId) !== String(schoolId)) {
@@ -175,7 +175,7 @@ const resolveSchoolForScopedAdmin = async (req, schoolId) => {
 }
 
 const linkScopedAdminToSchool = async (req, school) => {
-  if (!school || !['admin', 'teacher'].includes(req.user.role)) return
+  if (!school || req.user.role !== 'admin') return
 
   // A scoped admin only ever sees their assigned school, so an unassigned creator
   // would lose sight of the record they just persisted.
@@ -193,7 +193,7 @@ const linkScopedAdminToSchool = async (req, school) => {
 export const listSchools = asyncHandler(async (req, res) => {
   const filter = {}
 
-  if (['admin', 'teacher'].includes(req.user.role)) {
+  if (req.user.role === 'admin') {
     const scopedSchoolId = (await User.findById(req.user._id).select('schoolId'))?.schoolId
     if (!scopedSchoolId) {
       res.json({ items: [] })
@@ -259,7 +259,7 @@ export const listTeachersBySchool = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'School not found')
   }
 
-  const teachers = await User.find({ role: { $in: ['teacher', 'admin'] }, schoolId: school._id })
+  const teachers = await User.find({ role: 'teacher', schoolId: school._id })
     .select('_id name email role schoolId linkedSuperAdmin createdAt')
     .sort({ createdAt: -1 })
 
@@ -273,7 +273,12 @@ export const listClassesBySchool = asyncHandler(async (req, res) => {
   const school = await resolveSchoolForScopedAdmin(req, req.params.schoolId)
   if (!school) throw new ApiError(404, 'School not found')
 
-  const classes = await Class.find({ schoolId: school._id, status: 'active' })
+  const classFilter = { schoolId: school._id, status: 'active' }
+  if (req.user.role === 'teacher') {
+    const assignments = await Enrollment.find({ userId: req.user._id, role: 'teacher', status: 'active' }).select('classId')
+    classFilter._id = { $in: assignments.map(({ classId }) => classId) }
+  }
+  const classes = await Class.find(classFilter)
     .select('_id title subject period sourcedId schoolId')
     .sort({ title: 1 })
   res.json({ school, items: classes })
@@ -289,8 +294,15 @@ export const listStudentsBySchool = asyncHandler(async (req, res) => {
   const page = Math.max(Number.parseInt(req.query.page, 10) || 1, 1)
   const limit = Math.min(Math.max(Number.parseInt(req.query.limit, 10) || 100, 1), 100)
   const filter = {
-    role: 'candidate',
+    role: 'student',
     schoolId: school._id
+  }
+
+  if (req.user.role === 'teacher') {
+    const assignments = await Enrollment.find({ userId: req.user._id, role: 'teacher', status: 'active' }).select('classId')
+    const assignedClassIds = assignments.map(({ classId }) => classId)
+    const studentEnrollments = await Enrollment.find({ classId: { $in: assignedClassIds }, role: 'student', status: 'active' }).select('userId')
+    filter._id = { $in: studentEnrollments.map(({ userId }) => userId) }
   }
 
   if (grade !== null) {
@@ -395,7 +407,7 @@ export const importStudentsBySchool = asyncHandler(async (req, res) => {
         {
           $set: {
             name,
-            role: 'candidate',
+            role: 'student',
             grade,
             password: passwordHash,
             linkedAdmin: linkedAdminId,
@@ -514,9 +526,9 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
           $set: {
             name,
             schoolId: school._id,
-            role,
+            role: role === 'candidate' ? 'student' : role,
             linkedAdmin: req.user.role === 'admin' ? req.user._id : null,
-            grade: role === 'candidate' ? parseOptionalGrade(row.grade) : null,
+            grade: role === 'candidate' || role === 'student' ? parseOptionalGrade(row.grade) : null,
             sourcedId: normalizeName(row.sourced_id || row.userid || row.user_sourced_id) || undefined,
             usn: String(row.usn || '').trim(),
             branch: String(row.branch || '').trim(),
@@ -536,21 +548,21 @@ export const importC2FRosterWorkbook = asyncHandler(async (req, res) => {
       }
       const user = await User.findOne({ email })
       if (userResult.upsertedCount) {
-        if (role === 'candidate') summary.studentsCreated += 1
+        if (role === 'candidate' || role === 'student') summary.studentsCreated += 1
         else summary.teachersCreated += 1
       } else if (!user) {
         summary.errors.push({ sheet: sheetName, row: index + 2, message: 'email already belongs to another school' })
         summary.skipped += 1
         continue
       }
-      summary.persisted[role === 'candidate' ? 'students' : 'teachers'] += 1
+      summary.persisted[role === 'candidate' || role === 'student' ? 'students' : 'teachers'] += 1
       const sourcedId = normalizeName(row.sourced_id || row.userid || row.user_sourced_id)
       if (sourcedId) usersBySourceId.set(`${school.schoolId}:${sourcedId}`, user)
       usersByEmail.set(`${school.schoolId}:${email}`, user)
     }
   }
   await importUsers(teachers, 'teacher', 'Teachers')
-  await importUsers(students, 'candidate', 'Students')
+  await importUsers(students, 'student', 'Students')
 
   const classesBySourceId = new Map()
   for (let index = 0; index < classes.length; index += 1) {
@@ -672,7 +684,7 @@ export const enrollStudent = asyncHandler(async (req, res) => {
     name,
     email,
     password,
-    role: 'candidate',
+    role: 'student',
     linkedAdmin: linkedAdminId,
     schoolId: school._id,
     grade,
@@ -701,7 +713,7 @@ export const enrollStudent = asyncHandler(async (req, res) => {
 })
 
 export const updateStudentEnrollment = asyncHandler(async (req, res) => {
-  const student = await User.findOne({ _id: req.params.studentId, role: 'candidate' })
+  const student = await User.findOne({ _id: req.params.studentId, role: 'student' })
   if (!student) {
     throw new ApiError(404, 'Student not found')
   }

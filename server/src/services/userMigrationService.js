@@ -7,21 +7,22 @@ const ROLE_NORMALIZATION_MAP = {
   administrator: 'admin',
   'platform-admin': 'admin',
   platform_admin: 'admin',
-  student: 'candidate',
-  user: 'candidate'
+  student: 'student',
+  user: 'student',
+  candidate: 'student'
 }
 
 const normalizeRole = (role) => {
   const raw = String(role || '').trim().toLowerCase()
   if (!raw) {
-    return 'candidate'
+    return 'student'
   }
 
-  if (['super-admin', 'admin', 'candidate'].includes(raw)) {
+  if (['super-admin', 'admin', 'teacher', 'student'].includes(raw)) {
     return raw
   }
 
-  return ROLE_NORMALIZATION_MAP[raw] || 'candidate'
+  return ROLE_NORMALIZATION_MAP[raw] || 'student'
 }
 
 const generateAdminCode = () => {
@@ -53,7 +54,7 @@ export const migrateUsersForUnifiedAuth = async ({ dryRun = true } = {}) => {
     adminCodeBackfilled: 0,
     linkedAdminCleared: 0,
     linkedSuperAdminCleared: 0,
-    candidateMissingAdminLink: 0
+    studentMissingAdminLink: 0
   }
 
   for (const user of users) {
@@ -84,7 +85,7 @@ export const migrateUsersForUnifiedAuth = async ({ dryRun = true } = {}) => {
       stats.adminCodeBackfilled += 1
     }
 
-    if (nextRole !== 'candidate' && user.linkedAdmin) {
+    if (nextRole !== 'student' && user.linkedAdmin) {
       unsetOps.linkedAdmin = ''
       stats.linkedAdminCleared += 1
     }
@@ -94,8 +95,8 @@ export const migrateUsersForUnifiedAuth = async ({ dryRun = true } = {}) => {
       stats.linkedSuperAdminCleared += 1
     }
 
-    if (nextRole === 'candidate' && !user.linkedAdmin) {
-      stats.candidateMissingAdminLink += 1
+    if (nextRole === 'student' && !user.linkedAdmin) {
+      stats.studentMissingAdminLink += 1
     }
 
     const hasSet = Object.keys(setOps).length > 0

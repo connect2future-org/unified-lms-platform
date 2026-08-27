@@ -25,11 +25,11 @@ router.use(requireLmsAdmin)
 router.use(requireAdminRole('admin', 'teacher', 'super-admin'))
 
 router.get('/', listSchools)
-router.post('/', createSchool)
-router.patch('/:schoolId', updateSchool)
+router.post('/', requireAdminRole('admin', 'super-admin'), createSchool)
+router.patch('/:schoolId', requireAdminRole('admin', 'super-admin'), updateSchool)
 
-router.get('/:schoolId/teachers', listTeachersBySchool)
-router.patch('/teachers/assign-school', assignTeacherToSchool)
+router.get('/:schoolId/teachers', requireAdminRole('admin', 'super-admin'), listTeachersBySchool)
+router.patch('/teachers/assign-school', requireAdminRole('admin', 'super-admin'), assignTeacherToSchool)
 
 router.get('/:schoolId/students', listStudentsBySchool)
 router.get('/:schoolId/classes', listClassesBySchool)

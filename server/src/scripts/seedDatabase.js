@@ -99,8 +99,8 @@ const seedDatabase = async () => {
       { email: 'admin@school.local', role: 'admin', name: 'Admin User' },
       { email: 'teacher1@school.local', role: 'teacher', name: 'John Teacher' },
       { email: 'teacher2@school.local', role: 'teacher', name: 'Jane Smith' },
-      { email: 'student1@school.local', role: 'candidate', name: 'Alice Student' },
-      { email: 'student2@school.local', role: 'candidate', name: 'Bob Student' }
+      { email: 'student1@school.local', role: 'student', name: 'Alice Student' },
+      { email: 'student2@school.local', role: 'student', name: 'Bob Student' }
     ]
 
     const users = []
@@ -125,7 +125,7 @@ const seedDatabase = async () => {
 
     const adminUser = users.find(u => u.role === 'admin')
     const teachers = users.filter(u => u.role === 'teacher')
-    const students = users.filter(u => u.role === 'candidate')
+    const students = users.filter(u => u.role === 'student')
 
     // 4. Create Academic Year
     console.log('\n📅 Creating academic year...')

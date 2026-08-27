@@ -15,7 +15,7 @@ attemptRoutes.use(requireAuth);
 
 attemptRoutes.get("/", listAttempts);
 attemptRoutes.get("/:attemptId", getAttemptById);
-attemptRoutes.post("/start/:testId", requireRole("candidate"), startAttempt);
-attemptRoutes.patch("/:attemptId/answers", requireRole("candidate"), saveAnswer);
-attemptRoutes.post("/:attemptId/logs", requireRole("candidate"), logCheatingEvent);
-attemptRoutes.post("/:attemptId/submit", requireRole("candidate"), submitAttempt);
+attemptRoutes.post("/start/:testId", requireRole("student"), startAttempt);
+attemptRoutes.patch("/:attemptId/answers", requireRole("student"), saveAnswer);
+attemptRoutes.post("/:attemptId/logs", requireRole("student"), logCheatingEvent);
+attemptRoutes.post("/:attemptId/submit", requireRole("student"), submitAttempt);

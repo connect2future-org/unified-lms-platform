@@ -13,13 +13,18 @@ import {
   updateQuestionInTest,
   updateTest
 } from "../controllers/admin/testController.js";
-import { requireAdminAuth, requireAdminRole, adminToUserCompat, requireLmsAdmin } from "../middleware/auth.js";
-import { requireAuth } from "../middleware/authMiddleware.js";
+import { requireAuth, requireRole } from "../middleware/authMiddleware.js";
 import { uploadTestImportFile } from "../middleware/upload.js";
+import { assignTestToStudents, getTestAssignment } from "../controllers/testAssignmentController.js";
+import { findAssignedTestByCode, getAssignedTest, listAssignedTests, listManagedTests } from "../controllers/student/testController.js";
 
 export const testRoutes = Router();
 
-testRoutes.get("/", requireAuth, getTests);
+testRoutes.get("/", requireAuth, (req, res, next) => {
+  if (req.user.role === "student") return listAssignedTests(req, res, next);
+  if (req.user.role === "teacher") return listManagedTests(req, res, next);
+  return getTests(req, res, next);
+});
 testRoutes.get("/csv-template", requireAuth, (req, res) => {
   const csv = `Question Type,Question,Option A,Option B,Option C,Option D,Correct Answer,Explanation,Difficulty,Topic,Marks
 MCQ,"Sample Question","Option A","Option B","Option C","Option D","A","One-line explanation","Easy","Sample Topic",1`;
@@ -31,27 +36,31 @@ MCQ,"Sample Question","Option A","Option B","Option C","Option D","A","One-line 
   );
   return res.status(200).send(csv);
 });
-testRoutes.get("/:id", requireAuth, getTestById);
+testRoutes.get("/code/:accessCode", requireAuth, findAssignedTestByCode);
+testRoutes.get("/:id", requireAuth, (req, res, next) => {
+  if (req.user.role === "student") return getAssignedTest(req, res, next);
+  return getTestById(req, res, next);
+});
 
-testRoutes.use(requireAdminAuth);
-testRoutes.use(adminToUserCompat);
-testRoutes.use(requireLmsAdmin);
+testRoutes.use(requireAuth);
 
-testRoutes.post("/import/csv", requireAdminRole("admin"), importTestsFromCsv);
-testRoutes.post("/import/file", requireAdminRole("admin"), uploadTestImportFile.single("file"), importTestsFromFile);
-testRoutes.post("/", requireAdminRole("admin"), createTest);
-testRoutes.get("/:id/questions", requireAdminRole("admin"), getTestQuestions);
-testRoutes.post("/:id/questions", requireAdminRole("admin"), addQuestionToTest);
-testRoutes.patch("/:id/questions/:questionId", requireAdminRole("admin"), updateQuestionInTest);
-testRoutes.delete("/:id/questions/:questionId", requireAdminRole("admin"), deleteQuestionFromTest);
-testRoutes.patch("/:id", requireAdminRole("admin"), updateTest);
-testRoutes.delete("/:id", requireAdminRole("admin"), deleteTest);
-testRoutes.patch("/:id/publish", requireAdminRole("admin"), (req, res, next) => {
+testRoutes.post("/import/csv", requireRole("admin", "teacher"), importTestsFromCsv);
+testRoutes.post("/import/file", requireRole("admin", "teacher"), uploadTestImportFile.single("file"), importTestsFromFile);
+testRoutes.post("/", requireRole("admin", "teacher"), createTest);
+testRoutes.get("/:id/questions", requireRole("admin", "teacher"), getTestQuestions);
+testRoutes.post("/:id/questions", requireRole("admin", "teacher"), addQuestionToTest);
+testRoutes.get("/:id/assignment", requireRole("admin", "teacher"), getTestAssignment);
+testRoutes.put("/:id/assignment", requireRole("admin", "teacher"), assignTestToStudents);
+testRoutes.patch("/:id/questions/:questionId", requireRole("admin", "teacher"), updateQuestionInTest);
+testRoutes.delete("/:id/questions/:questionId", requireRole("admin", "teacher"), deleteQuestionFromTest);
+testRoutes.patch("/:id", requireRole("admin", "teacher"), updateTest);
+testRoutes.delete("/:id", requireRole("admin", "teacher"), deleteTest);
+testRoutes.patch("/:id/publish", requireRole("admin", "teacher"), (req, res, next) => {
   req.body = req.body || {};
   req.body.isPublished = true;
   next();
 }, setPublishStatus);
-testRoutes.patch("/:id/unpublish", requireAdminRole("admin"), (req, res, next) => {
+testRoutes.patch("/:id/unpublish", requireRole("admin", "teacher"), (req, res, next) => {
   req.body = req.body || {};
   req.body.isPublished = false;
   next();
