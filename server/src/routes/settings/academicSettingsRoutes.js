@@ -1,30 +1,26 @@
 import { Router } from 'express'
 import { checkPermissions } from '../../services/permissionService.js'
 import { asyncHandler } from '../../utils/asyncHandler.js'
+import { academicController } from '../../controllers/settings/academicController.js'
 
 const router = Router()
 
-// GET /api/settings/academic - List academic configuration
-router.get('/', checkPermissions(['academic.view']), asyncHandler(async (req, res) => {
-  res.json({
-    years: [],
-    terms: [],
-    classes: [],
-    sections: [],
-    subjects: [],
-    departments: [],
-    grading: {}
-  })
-}))
+// Academic Years
+router.get('/years', checkPermissions(['academic.view']), asyncHandler(academicController.listAcademicYears))
+router.post('/years', checkPermissions(['academic.create']), asyncHandler(academicController.createAcademicYear))
+router.patch('/years/:id', checkPermissions(['academic.edit']), asyncHandler(academicController.updateAcademicYear))
+router.delete('/years/:id', checkPermissions(['academic.delete']), asyncHandler(academicController.deleteAcademicYear))
 
-// POST /api/settings/academic/years - Create academic year
-router.post('/years', checkPermissions(['academic.create']), asyncHandler(async (req, res) => {
-  res.json({ message: 'Academic year created' })
-}))
+// Departments
+router.get('/departments', checkPermissions(['academic.view']), asyncHandler(academicController.listDepartments))
+router.post('/departments', checkPermissions(['academic.create']), asyncHandler(academicController.createDepartment))
 
-// POST /api/settings/academic/terms - Create term
-router.post('/terms', checkPermissions(['academic.create']), asyncHandler(async (req, res) => {
-  res.json({ message: 'Term created' })
-}))
+// Subjects
+router.get('/subjects', checkPermissions(['academic.view']), asyncHandler(academicController.listSubjects))
+router.post('/subjects', checkPermissions(['academic.create']), asyncHandler(academicController.createSubject))
+
+// Grade Scales
+router.get('/grading', checkPermissions(['academic.view']), asyncHandler(academicController.listGradeScales))
+router.post('/grading', checkPermissions(['academic.create']), asyncHandler(academicController.createGradeScale))
 
 export default router

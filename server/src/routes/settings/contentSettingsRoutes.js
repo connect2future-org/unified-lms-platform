@@ -1,10 +1,12 @@
 import { Router } from 'express'
 import { checkPermissions } from '../../services/permissionService.js'
+import { asyncHandler } from '../../utils/asyncHandler.js'
+import { contentController } from '../../controllers/settings/contentController.js'
 
 const router = Router()
 
-router.get('/', checkPermissions(['content.view']), (req, res) => {
-  res.json({ content: {} })
-})
+// Content Management
+router.get('/', checkPermissions(['content.view']), asyncHandler(contentController.listContent))
+router.post('/', checkPermissions(['content.create']), asyncHandler(contentController.createContent))
 
 export default router

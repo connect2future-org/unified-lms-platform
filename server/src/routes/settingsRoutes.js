@@ -19,6 +19,7 @@ import integrationSettingsRoutes from './settings/integrationSettingsRoutes.js'
 import securitySettingsRoutes from './settings/securitySettingsRoutes.js'
 import auditSettingsRoutes from './settings/auditSettingsRoutes.js'
 import systemSettingsRoutes from './settings/systemSettingsRoutes.js'
+import localeSettingsRoutes from './settings/localeSettingsRoutes.js'
 
 const router = Router()
 
@@ -42,5 +43,6 @@ router.use('/integrations', integrationSettingsRoutes)
 router.use('/security', securitySettingsRoutes)
 router.use('/audit', auditSettingsRoutes)
 router.use('/system', systemSettingsRoutes)
+router.use('/locale', localeSettingsRoutes)
 
 export default router
